@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ThemeProvider, useTheme } from '@/components/providers/ThemeProvider';
 import { useAuth } from '@/hooks/useAuth';
 import { useStorage } from '@/hooks/useStorage';
@@ -42,6 +43,7 @@ import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 // ─── Inner component (must live inside ThemeProvider) ─────────────────────────
 
 function GameContent() {
+  const router = useRouter();
   const { T, tf, isDyslexic } = useTheme();
 
   // All hooks in dependency order
@@ -345,6 +347,7 @@ function GameContent() {
               () => ui.toggleModal('userProfile'),
               ui.showUserProfile
             )}
+          {tbBtn('Home', () => router.push('/'))}
           {auth.token && tbBtn('Logout', () => void auth.logout())}
         </div>
       </div>
