@@ -41,6 +41,9 @@ AI-powered browser RPG built on Next.js.
 ---
 
 ## Latest Session Updates (2026-03-13)
+- **Server-authoritative narrator context**: `/api/claude` now prefers canonical player/world state from cloud save when building narrator system prompts, reducing client-side state tampering impact.
+- **Cloud save ownership validation**: `/api/save` now validates JSON payloads and enforces that saved `playerId` matches the authenticated account.
+- **Admin auth hardening**: Admin routes now support header-based secrets (`x-admin-secret` or bearer token) and treat URL/body secrets as legacy compatibility paths.
 - **Docs alignment pass**: Cross-checked MEMORY.md, CLAUDE.md, and CHANGELOG.md to keep architecture notes consistent.
 - **Legacy filename status clarified**: Confirmed no root `index.html`/`index.hmtl` or `server.js` files exist in this Next.js workspace.
 - **Memory baseline migrated**: Removed legacy architecture guidance that still described the deprecated monolithic frontend/backend file layout and replaced it with a Next.js-first project overview.
@@ -100,10 +103,11 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
+| 2026-03-13 | Security hardening pass: narrator prompt context now uses canonical server save state; cloud save validates ownership; admin routes moved to header-first secret auth with compatibility fallback |
 | 2026-03-13 | Cross-checked MEMORY/CLAUDE/CHANGELOG and documented that `index.html`/`index.hmtl` and `server.js` are legacy references, not active root files |
 | 2026-03-13 | Tidied MEMORY.md for faster scanning; added Quick Start; updated preference to allow auto-commits for Next.js work when git is available |
 | 2026-03-13 | Updated MEMORY.md to a Next.js-first baseline; removed deprecated legacy file references and updated game URL |
-| 2026-03-13 | Removed dead client narrator block; moved live geography/road/dungeon prompt templates into backend task types; admin auth now header-only and session-only |
+| 2026-03-13 | Removed dead client narrator block; moved live geography/road/dungeon prompt templates into backend task types; admin auth shifted to header-first session secret checks |
 | 2026-03-13 | Security hardening: support dashboard moved behind backend route; admin secret now session-only + header-based (no query-string secrets) |
 | 2026-03-12 | Location Grid + World Geography (coord-based routing, all settlements + POIs, harbour flags) |
 | 2026-03-12 | Keeper of the Kiln NPC; `goldChange` + `repChange` tags; Theft RULE; time refinement (rest=8h, camp=7h) |

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     // 2. Try cache first
     const cacheKey = `save:${playerId}`;
-    const cached = await cacheGetJson<any>(cacheKey);
+    const cached = await cacheGetJson<unknown>(cacheKey);
     if (cached) {
       return NextResponse.json(cached, { status: 200 });
     }
@@ -88,6 +88,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const parsedPlayer = parseJsonField(player_json);
+    const parsedSeed = parseJsonField(seed_json);
+    const parsedMessages = parseJsonField(messages_json, []);
+    const parsedLog = parseJsonField(log_json, []);
+
+    if (
+      !parsedPlayer ||
+      typeof parsedPlayer !== 'object' ||
+      Array.isArray(parsedPlayer) ||
+      !parsedSeed ||
+      typeof parsedSeed !== 'object' ||
+      Array.isArray(parsedSeed)
+    ) {
+      return NextResponse.json(
+        { error: 'invalid_payload', message: 'player_json and seed_json must be valid JSON objects' },
+        { status: 400 }
+      );
+    }
+
+    const playerPayload = parsedPlayer as Record<string, unknown>;
+
+    if (typeof playerPayload.playerId === 'string' && playerPayload.playerId !== playerId) {
+      return NextResponse.json(
+        { error: 'forbidden', message: 'player mismatch' },
+        { status: 403 }
+      );
+    }
+
+    playerPayload.playerId = playerId;
+
+    const safePlayerJson = JSON.stringify(playerPayload);
+    const safeSeedJson = JSON.stringify(parsedSeed);
+    const safeMessagesJson = JSON.stringify(Array.isArray(parsedMessages) ? parsedMessages : []);
+    const safeLogJson = JSON.stringify(Array.isArray(parsedLog) ? parsedLog : []);
+    const safeNarrative = typeof narrative === 'string' ? narrative.slice(0, 50000) : '';
+
     // 4. Upsert into database
     await db.query(
       `INSERT INTO game_saves
@@ -100,7 +136,7 @@ export async function POST(request: NextRequest) {
          narrative = $5,
          log_json = $6,
          updated_at = NOW()`,
-      [playerId, player_json, seed_json, messages_json || '[]', narrative || '', log_json || '[]']
+      [playerId, safePlayerJson, safeSeedJson, safeMessagesJson, safeNarrative, safeLogJson]
     );
 
     // 5. Clear cache
@@ -115,6 +151,19 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+function parseJsonField(value: unknown, fallback: unknown = null): unknown {
+  if (value == null) return fallback;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return null;
+    }
+  }
+  if (typeof value === 'object') return value;
+  return null;
 }
 
 /**

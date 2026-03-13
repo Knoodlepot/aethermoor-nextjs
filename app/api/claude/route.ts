@@ -3,6 +3,7 @@ import * as auth from '@/lib/auth';
 import * as tokens from '@/lib/tokens';
 import * as anthropic from '@/lib/external/anthropic';
 import * as ratelimit from '@/lib/ratelimit';
+import * as db from '@/lib/db';
 
 // Strip control characters and truncate
 function sanitiseStr(val: unknown, maxLen: number): string {
@@ -59,6 +60,18 @@ export async function POST(request: NextRequest) {
     const utilityCall = ['SCREENER', 'QUEST_PARSER', 'ENEMY_NAMER'].includes(systemType);
     const needsNarrationSafety = !utilityCall;
 
+    // Resolve narrator context from canonical server save first.
+    // This prevents client-side stat/inventory tampering from driving hidden narrator logic.
+    let effectivePlayer = player;
+    let effectiveWorldSeed = worldSeed;
+    if (!utilityCall) {
+      const canonical = await loadCanonicalNarrationState(authCtx.playerId);
+      if (canonical) {
+        effectivePlayer = canonical.player;
+        effectiveWorldSeed = canonical.worldSeed;
+      }
+    }
+
     // 3. Run safety screen on input if narration
     if (needsNarrationSafety) {
       const gate = await anthropic.runSafetyScreen(messages);
@@ -86,13 +99,13 @@ export async function POST(request: NextRequest) {
 
     // 5. Build system prompt
     let system = '';
-    if (systemType === 'NARRATOR' && player) {
-      system = buildNarratorSystem(player, worldSeed);
+    if (systemType === 'NARRATOR' && effectivePlayer) {
+      system = buildNarratorSystem(effectivePlayer, effectiveWorldSeed);
     } else if (systemType && anthropic.SERVER_SYSTEM_PROMPTS[systemType]) {
       system = anthropic.SERVER_SYSTEM_PROMPTS[systemType];
-    } else if (!systemType && player) {
+    } else if (!systemType && effectivePlayer) {
       // Default: narrator call from useGameLoop (no systemType sent)
-      system = buildNarratorSystem(player, worldSeed);
+      system = buildNarratorSystem(effectivePlayer, effectiveWorldSeed);
     } else {
       system = 'You are a fantasy RPG narrator. Respond with engaging, immersive narration.';
     }
@@ -177,6 +190,29 @@ export async function POST(request: NextRequest) {
       { error: 'upstream_error', message: 'Could not reach the AI. Please try again.' },
       { status: 502 }
     );
+  }
+}
+
+async function loadCanonicalNarrationState(
+  playerId: string
+): Promise<{ player: any; worldSeed: any } | null> {
+  const result = await db.query(
+    `SELECT player_json, seed_json
+     FROM game_saves
+     WHERE player_id = $1`,
+    [playerId]
+  );
+
+  if (result.rows.length === 0) return null;
+
+  try {
+    const row = result.rows[0];
+    const parsedPlayer = JSON.parse(row.player_json || '{}');
+    const parsedSeed = JSON.parse(row.seed_json || '{}');
+    if (!parsedPlayer || typeof parsedPlayer !== 'object') return null;
+    return { player: parsedPlayer, worldSeed: parsedSeed };
+  } catch {
+    return null;
   }
 }
 
