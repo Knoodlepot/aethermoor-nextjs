@@ -6,27 +6,48 @@ import type { WorldSeed } from '@/lib/types';
 
 interface MainQuestPanelProps {
   worldSeed: WorldSeed | null;
+  onOpen?: () => void;
 }
 
-export function MainQuestPanel({ worldSeed }: MainQuestPanelProps) {
+export function MainQuestPanel({ worldSeed, onOpen }: MainQuestPanelProps) {
   const { T, tf } = useTheme();
 
   if (!worldSeed) return null;
 
-  const ACT_LABELS = ['', 'I: The Hook', 'II: The Threat', 'III: The Confrontation', 'IV: The Reckoning', '✓ Complete'];
-  const ACT_COLORS = ['', '#c0a030', '#c07030', '#c04030', '#9030c0', '#60a060'];
+  const ACT_LABELS = ['', 'I: The Hook', 'II: The Threat', 'III: The Confrontation', 'IV: The Reckoning', 'V: The Revelation', '✓ Complete'];
+  const ACT_COLORS = ['', '#c0a030', '#c07030', '#c04030', '#9030c0', '#a060c0', '#60a060'];
+  const ACT_HINTS = [
+    '',
+    'Uncover the ominous signs in the world — seek out NPCs, investigate strange occurrences',
+    'Confront a direct threat from the villain — gather allies, understand the danger',
+    'Endure a major loss or setback — press forward despite the darkness',
+    'Navigate betrayal and despair — find reason to fight on when all seems lost',
+    'Prepare for the final confrontation — gather what you need and journey to the lair',
+    'Victory is yours!'
+  ];
 
-  const act = Math.min(worldSeed.currentAct || 1, 5);
+  const act = Math.min(worldSeed.currentAct || 1, 6);
   const col = ACT_COLORS[act];
   const done = worldSeed.mainQuestComplete;
+  const hint = ACT_HINTS[act] || '';
 
   return (
     <div
+      onClick={onOpen}
       style={{
         background: T.panelAlt,
         border: `1px solid ${col}44`,
         padding: 10,
         marginBottom: 8,
+        cursor: onOpen ? 'pointer' : 'default',
+        transition: 'all 0.2s',
+        opacity: onOpen ? 1 : 1,
+      }}
+      onMouseEnter={(e) => {
+        if (onOpen) (e.currentTarget as HTMLDivElement).style.borderColor = col + '88';
+      }}
+      onMouseLeave={(e) => {
+        if (onOpen) (e.currentTarget as HTMLDivElement).style.borderColor = col + '44';
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
@@ -93,6 +114,20 @@ export function MainQuestPanel({ worldSeed }: MainQuestPanelProps) {
       {done && (
         <div style={{ fontSize: 9, color: '#60a060', marginTop: 3, ...tf, letterSpacing: 1 }}>
           VICTORY · {(worldSeed.finalTone || '').toUpperCase()}
+        </div>
+      )}
+
+      {/* Hint text */}
+      {!done && hint && (
+        <div style={{ fontSize: 9, color: T.textFaint, marginTop: 6, fontStyle: 'italic', lineHeight: 1.4 }}>
+          💡 {hint}
+        </div>
+      )}
+
+      {/* Clickable hint */}
+      {onOpen && (
+        <div style={{ fontSize: 8, color: T.textMuted, marginTop: 3, textAlign: 'center' }}>
+          Click to view quest log
         </div>
       )}
     </div>

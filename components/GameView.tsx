@@ -374,7 +374,12 @@ function GameContent() {
             playerDefending={ui.playerDefending}
           />
         )}
-        {worldSeed && <MainQuestPanel worldSeed={gameState.worldSeed} />}
+        {worldSeed && (
+          <MainQuestPanel
+            worldSeed={gameState.worldSeed}
+            onOpen={() => ui.toggleModal('questLog')}
+          />
+        )}
       </div>
 
       {/* Command panel — fixed to the bottom of the right column */}
@@ -448,7 +453,12 @@ function GameContent() {
             playerDefending={ui.playerDefending}
           />
         )}
-        {worldSeed && <MainQuestPanel worldSeed={gameState.worldSeed} />}
+        {worldSeed && (
+          <MainQuestPanel
+            worldSeed={gameState.worldSeed}
+            onOpen={() => ui.toggleModal('questLog')}
+          />
+        )}
         <MobileCommandPanel
           player={gameState.player}
           onCommand={handleCommand}
