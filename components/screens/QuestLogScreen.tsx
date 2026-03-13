@@ -60,7 +60,7 @@ export function QuestLogScreen({ player, worldSeed, onClose, onDismiss }: QuestL
   const allQuests = player.quests || [];
   const activeQuests = allQuests.filter((q) => (q.status as string) === 'active' && q.type !== 'main');
   const doneQuests = allQuests.filter((q) => (q.status as string) === 'completed' && q.type !== 'main');
-  const failedQuests = allQuests.filter((q) => (q.status as string) === 'failed');
+  const failedQuests = allQuests.filter((q) => (q.status as string) === 'failed' && q.type !== 'main');
   const knownNpcs = player.knownNpcs || [];
 
   const TABS = [
@@ -73,7 +73,9 @@ export function QuestLogScreen({ player, worldSeed, onClose, onDismiss }: QuestL
 
   function QuestItem({ q }: { q: any }) {
     const isOpen = expandedId === q.id;
-    const typeColor = typeColors[q.type] || T.textMuted;
+    // Default to 'side' if type is missing, but ensure main quest shows as 'main'
+    const displayType = q.type === 'main' ? 'main' : (q.type || 'side');
+    const typeColor = typeColors[displayType] || T.textMuted;
     const statusColor = statusColors[(q.status as string)] || T.textMuted;
     return (
       <div
@@ -99,7 +101,7 @@ export function QuestLogScreen({ player, worldSeed, onClose, onDismiss }: QuestL
                   letterSpacing: 1,
                 }}
               >
-                {(q.type || 'side').toUpperCase()}
+                {displayType.toUpperCase()}
               </span>
               <span
                 style={{

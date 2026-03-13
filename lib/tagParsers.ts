@@ -421,13 +421,19 @@ export function processParsedTags(
 
   // New quest
   if (tags.newQuest) {
-    const currentQuests = updatedPlayer.quests || [];
-    const alreadyExists = currentQuests.some((q: any) => q.title === tags.newQuest.title);
-    if (!alreadyExists) {
-      updatedPlayer = {
-        ...updatedPlayer,
-        quests: [...currentQuests, { ...tags.newQuest, status: 'active' }],
-      };
+    // Main quests should NOT be added to the regular quest list
+    // They are tracked on worldSeed instead
+    if (tags.newQuest.type === 'main') {
+      warnings.push('Main quests should be tracked on worldSeed, not in quests list');
+    } else {
+      const currentQuests = updatedPlayer.quests || [];
+      const alreadyExists = currentQuests.some((q: any) => q.title === tags.newQuest.title);
+      if (!alreadyExists) {
+        updatedPlayer = {
+          ...updatedPlayer,
+          quests: [...currentQuests, { ...tags.newQuest, status: 'active' }],
+        };
+      }
     }
   }
 
