@@ -10,7 +10,6 @@ Create `.env.local` in the project root with at least these values:
 DATABASE_URL=postgresql://...
 JWT_SECRET=replace-with-32-plus-character-secret
 SESSION_SECRET=replace-with-32-plus-character-secret
-ANTHROPIC_API_KEY=sk-ant-...
 NEXT_PUBLIC_URL=http://localhost:3000
 ```
 
@@ -19,6 +18,7 @@ This minimum is enough for:
 - cookie/session auth verification
 - protected-route auth rejection checks
 - save ownership/tamper checks
+- real auth session verification via ephemeral account registration
 
 Add this as well if you want real narrator turns to work:
 
@@ -75,6 +75,8 @@ With those set, the runtime verifier can additionally confirm:
 - login returns `200`
 - auth cookie is issued on successful login
 
+If those are not set, the verifier will automatically attempt an ephemeral account registration flow (requires `DATABASE_URL` and `JWT_SECRET`) and then validate that the issued cookie successfully authenticates `/api/auth/me`.
+
 ## Expected Outcomes
 
 - Public health route returns `200`
@@ -86,4 +88,5 @@ With those set, the runtime verifier can additionally confirm:
 ## Notes
 
 - The runtime verifier intentionally degrades gracefully if required env vars are missing.
+- The runtime verifier auto-loads `.env.local` when present.
 - The mock harness reuses the same shared server-side state transition helper used by `/api/claude`.

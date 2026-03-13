@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Account sessions now use safer cookie-based sign-in under the hood for a more secure login flow.
 - Added new internal verification tooling to make local security and progression checks easier to run during updates.
 - Local setup guidance now matches the game's current live environment requirements more closely.
+- Local verification now auto-loads `.env.local` and can run a real cookie session check with an ephemeral account when manual test credentials are not set.
 
 ### Fixed
 - Clarified legacy filename references (`index.html`/`index.hmtl` and `server.js`) so they are no longer treated as active root files.

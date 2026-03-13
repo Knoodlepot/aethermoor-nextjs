@@ -41,6 +41,7 @@ AI-powered browser RPG built on Next.js.
 ---
 
 ## Latest Session Updates (2026-03-13)
+- **Verifier usability improved**: Runtime verifier now auto-loads `.env.local` and can test a real cookie-backed session with ephemeral account registration when `TEST_EMAIL`/`TEST_PASSWORD` are not set.
 - **Env template aligned**: `.env.example` now reflects the actual variables used by the current Next.js app, including `NEXT_PUBLIC_URL` and `DISCORD_REDIRECT_URI`, with minimum-vs-optional sections.
 - **Verification tooling added**: Added a reusable server-side narration state helper plus manual verification scripts for local runtime auth checks and mock narrator-state testing without Anthropic/Postgres.
 - **Local checklist added**: Added a minimal `.env.local` runtime checklist and npm shortcuts for `verify:runtime` and `verify:mock-state`.
@@ -109,6 +110,7 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
+| 2026-03-13 | Improved runtime verifier to auto-load `.env.local` and added ephemeral register/login fallback for real cookie session checks when test credentials are absent |
 | 2026-03-13 | Aligned `.env.example` and local checklist with the repo's actual runtime variables and verification prerequisites |
 | 2026-03-13 | Added local verification tooling: env checklist, runtime verifier, mock narrator-state harness, and shared server-side narration transition helper |
 | 2026-03-13 | Implemented HttpOnly cookie auth sessions across login/register/OAuth/verify and switched protected routes to cookie-aware auth checks; moved tag parse/apply pipeline into `/api/claude` with canonical server persistence |
