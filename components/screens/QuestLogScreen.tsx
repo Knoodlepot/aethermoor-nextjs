@@ -73,8 +73,8 @@ export function QuestLogScreen({ player, worldSeed, onClose, onDismiss }: QuestL
 
   function QuestItem({ q }: { q: any }) {
     const isOpen = expandedId === q.id;
-    // Default to 'side' if type is missing, but ensure main quest shows as 'main'
-    const displayType = q.type === 'main' ? 'main' : (q.type || 'side');
+    // Default to 'main' if type is missing, ensuring main quests always display correctly
+    const displayType = q.type || 'main';
     const typeColor = typeColors[displayType] || T.textMuted;
     const statusColor = statusColors[(q.status as string)] || T.textMuted;
     return (
