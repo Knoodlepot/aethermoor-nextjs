@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "verify:runtime": "tsx __tests__/manual/verifyRuntime.ts",
-    "verify:mock-state": "tsx __tests__/manual/mockClaudeStateHarness.ts"
+    "verify:mock-state": "tsx __tests__/manual/mockClaudeStateHarness.ts",
+    "verify:narrator": "node __tests__/manual/narratorTurnTest.cjs",
+    "verify:narrator:prod": "powershell -NoProfile -Command \"$env:NEXT_PUBLIC_URL='https://aethermoor-nextjs.vercel.app'; node __tests__/manual/narratorTurnTest.cjs\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
