@@ -119,7 +119,7 @@ export function MainQuestPanel({ worldSeed, onOpen }: MainQuestPanelProps) {
 
       {/* Hint text */}
       {!done && hint && (
-        <div style={{ fontSize: 9, color: T.textFaint, marginTop: 6, fontStyle: 'italic', lineHeight: 1.4 }}>
+        <div style={{ fontSize: 9, color: T.textMuted, marginTop: 6, fontStyle: 'italic', lineHeight: 1.4 }}>
           💡 {hint}
         </div>
       )}
