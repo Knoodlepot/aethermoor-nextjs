@@ -49,11 +49,15 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
   const [error, setError] = React.useState('');
   const [success, setSuccess] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [localResetToken, setLocalResetToken] = React.useState<string | null>(resetToken || null);
 
-  // Update mode when resetToken changes (e.g., from URL param read on client side)
+  // Update mode and local token when resetToken prop changes
   React.useEffect(() => {
-    if (resetToken && mode === 'login') {
-      setMode('reset');
+    if (resetToken) {
+      setLocalResetToken(resetToken);
+      if (mode === 'login') {
+        setMode('reset');
+      }
     }
   }, [resetToken, mode]);
 
@@ -150,7 +154,7 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
         body = { email };
       } else if (mode === 'reset') {
         endpoint = '/api/auth/reset-password';
-        body = { token: resetToken || '', password };
+        body = { token: localResetToken || '', password };
       }
 
       const res = await fetch(endpoint, {
