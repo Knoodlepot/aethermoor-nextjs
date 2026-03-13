@@ -14,6 +14,18 @@ ANTHROPIC_API_KEY=sk-ant-...
 NEXT_PUBLIC_URL=http://localhost:3000
 ```
 
+This minimum is enough for:
+
+- cookie/session auth verification
+- protected-route auth rejection checks
+- save ownership/tamper checks
+
+Add this as well if you want real narrator turns to work:
+
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
 Optional for broader coverage:
 
 ```env
@@ -57,6 +69,11 @@ Set these before running the runtime verifier if you want it to test a real logi
 $env:TEST_EMAIL = "your-test-account@example.com"
 $env:TEST_PASSWORD = "your-test-password"
 ```
+
+With those set, the runtime verifier can additionally confirm:
+
+- login returns `200`
+- auth cookie is issued on successful login
 
 ## Expected Outcomes
 

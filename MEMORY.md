@@ -41,6 +41,7 @@ AI-powered browser RPG built on Next.js.
 ---
 
 ## Latest Session Updates (2026-03-13)
+- **Env template aligned**: `.env.example` now reflects the actual variables used by the current Next.js app, including `NEXT_PUBLIC_URL` and `DISCORD_REDIRECT_URI`, with minimum-vs-optional sections.
 - **Verification tooling added**: Added a reusable server-side narration state helper plus manual verification scripts for local runtime auth checks and mock narrator-state testing without Anthropic/Postgres.
 - **Local checklist added**: Added a minimal `.env.local` runtime checklist and npm shortcuts for `verify:runtime` and `verify:mock-state`.
 - **Cookie session migration**: Auth flows now set/clear HttpOnly auth cookies and protected API routes accept cookie-backed sessions by default.
@@ -108,6 +109,7 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
+| 2026-03-13 | Aligned `.env.example` and local checklist with the repo's actual runtime variables and verification prerequisites |
 | 2026-03-13 | Added local verification tooling: env checklist, runtime verifier, mock narrator-state harness, and shared server-side narration transition helper |
 | 2026-03-13 | Implemented HttpOnly cookie auth sessions across login/register/OAuth/verify and switched protected routes to cookie-aware auth checks; moved tag parse/apply pipeline into `/api/claude` with canonical server persistence |
 | 2026-03-13 | Security hardening pass: narrator prompt context now uses canonical server save state; cloud save validates ownership; admin routes moved to header-first secret auth with compatibility fallback |
