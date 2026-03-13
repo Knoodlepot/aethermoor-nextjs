@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
     const resetToken = await auth.requestPasswordReset(normalizedEmail);
     if (resetToken) {
       const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
-      await sendPasswordResetEmail(normalizedEmail, resetToken, baseUrl).catch((err: Error) =>
+      const authUrl = `${baseUrl}/auth`;
+      await sendPasswordResetEmail(normalizedEmail, resetToken, authUrl).catch((err: Error) =>
         console.error('[FORGOT PASSWORD] Email send error:', err)
       );
     }
