@@ -1,0 +1,334 @@
+import { Pool, PoolClient, QueryResult } from 'pg';
+
+// Database connection pool
+let pool: Pool | null = null;
+
+export interface Account {
+  id: string;
+  email: string;
+  password_hash: string;
+  player_id: string;
+  reset_token?: string;
+  reset_expires?: Date;
+  verified: boolean;
+  verify_token?: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Player {
+  player_id: string;
+  account_id?: string;
+  tokens: number;
+  total_spent: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface TokenLog {
+  id: number;
+  player_id: string;
+  change: number;
+  reason: string;
+  created_at: Date;
+}
+
+export interface Purchase {
+  id: string;
+  player_id: string;
+  stripe_session_id?: string;
+  tokens_awarded: number;
+  amount_pence: number;
+  status: 'pending' | 'completed' | 'failed';
+  created_at: Date;
+}
+
+export interface DungeonProgress {
+  player_id: string;
+  current_floor: number;
+  deepest_floor: number;
+  last_descent_at?: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface LeaderboardEntry {
+  player_id: string;
+  hero_name: string;
+  hero_class: 'Warrior' | 'Rogue' | 'Mage' | 'Cleric';
+  hero_level: number;
+  deepest_floor: number;
+  ng_plus: number;
+  updated_at: Date;
+}
+
+export interface DungeonDescent {
+  id: number;
+  player_id: string;
+  floor: number;
+  created_at: Date;
+}
+
+export interface GameSave {
+  player_id: string;
+  player_json: string;
+  seed_json: string;
+  messages_json?: string;
+  narrative?: string;
+  log_json?: string;
+  saved_at: Date;
+  updated_at: Date;
+}
+
+export interface ModerationIncident {
+  id: number;
+  account_id: string;
+  player_id: string;
+  source: string;
+  reason: string;
+  trigger_text?: string;
+  status: 'pending' | 'dismissed' | 'escalated';
+  admin_notes?: string;
+  created_at: Date;
+  reviewed_at?: Date;
+  reviewed_by?: string;
+}
+
+let dbInitialized = false;
+
+/**
+ * Initialize PostgreSQL connection pool
+ */
+export async function initDb(): Promise<void> {
+  if (dbInitialized && pool) {
+    return;
+  }
+
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL environment variable is not set');
+  }
+
+  pool = new Pool({
+    connectionString: databaseUrl,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  });
+
+  // Test connection
+  const client = await pool.connect();
+  try {
+    await client.query('SELECT 1');
+    console.log('✓ Database connection established');
+  } finally {
+    client.release();
+  }
+
+  dbInitialized = true;
+}
+
+/**
+ * Get database client from pool
+ */
+export async function getDbClient(): Promise<PoolClient> {
+  if (!pool || !dbInitialized) {
+    await initDb();
+  }
+  return pool!.connect();
+}
+
+/**
+ * Execute database query
+ */
+export async function query<T extends Record<string, any> = Record<string, any>>(
+  text: string,
+  params?: any[]
+): Promise<QueryResult<T>> {
+  if (!pool || !dbInitialized) {
+    await initDb();
+  }
+  return pool!.query<T>(text, params);
+}
+
+/**
+ * Initialize database schema (create tables if they don't exist)
+ */
+export async function migrateDb(): Promise<void> {
+  const client = await getDbClient();
+  let migrated = false;
+
+  try {
+    // Check if tables exist
+    const res = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_name = 'accounts'
+      )
+    `);
+
+    if (res.rows[0].exists) {
+      console.log('✓ Database tables already exist');
+      return;
+    }
+
+    console.log('Creating database schema...');
+
+    // Create accounts table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS accounts (
+        id UUID PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        player_id TEXT UNIQUE NOT NULL,
+        reset_token TEXT,
+        reset_expires TIMESTAMPTZ,
+        verified BOOLEAN DEFAULT false,
+        verify_token TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_accounts_email ON accounts(email);
+      CREATE INDEX IF NOT EXISTS idx_accounts_player_id ON accounts(player_id);
+    `);
+
+    // Create players table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS players (
+        player_id TEXT PRIMARY KEY,
+        account_id UUID UNIQUE REFERENCES accounts(id) ON DELETE CASCADE,
+        tokens INTEGER NOT NULL DEFAULT 0 CHECK (tokens >= 0),
+        total_spent INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_players_account_id ON players(account_id);
+    `);
+
+    // Create token_log table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS token_log (
+        id SERIAL PRIMARY KEY,
+        player_id TEXT NOT NULL REFERENCES players(player_id),
+        change INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_token_log_player_id ON token_log(player_id);
+    `);
+
+    // Create purchases table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS purchases (
+        id TEXT PRIMARY KEY,
+        player_id TEXT NOT NULL REFERENCES players(player_id),
+        stripe_session_id TEXT,
+        tokens_awarded INTEGER NOT NULL CHECK (tokens_awarded > 0),
+        amount_pence INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed')),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_purchases_player_id ON purchases(player_id);
+    `);
+
+    // Create dungeon_progress table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS dungeon_progress (
+        player_id TEXT PRIMARY KEY REFERENCES players(player_id),
+        current_floor INTEGER NOT NULL DEFAULT 0,
+        deepest_floor INTEGER NOT NULL DEFAULT 0,
+        last_descent_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    // Create leaderboard_entries table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS leaderboard_entries (
+        player_id TEXT PRIMARY KEY REFERENCES players(player_id),
+        hero_name TEXT NOT NULL,
+        hero_class TEXT NOT NULL CHECK (hero_class IN ('Warrior', 'Rogue', 'Mage', 'Cleric')),
+        hero_level INTEGER NOT NULL DEFAULT 1 CHECK (hero_level > 0),
+        deepest_floor INTEGER NOT NULL DEFAULT 0,
+        ng_plus INTEGER NOT NULL DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_leaderboard_floor ON leaderboard_entries(deepest_floor DESC);
+    `);
+
+    // Create dungeon_descents table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS dungeon_descents (
+        id SERIAL PRIMARY KEY,
+        player_id TEXT NOT NULL REFERENCES players(player_id),
+        floor INTEGER NOT NULL CHECK (floor > 0),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_dungeon_descents_player_id ON dungeon_descents(player_id);
+    `);
+
+    // Create game_saves table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS game_saves (
+        player_id TEXT PRIMARY KEY REFERENCES players(player_id),
+        player_json TEXT NOT NULL,
+        seed_json TEXT NOT NULL,
+        messages_json TEXT DEFAULT '[]',
+        narrative TEXT DEFAULT '',
+        log_json TEXT DEFAULT '[]',
+        saved_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    // Create moderation_incidents table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS moderation_incidents (
+        id SERIAL PRIMARY KEY,
+        account_id UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+        player_id TEXT NOT NULL,
+        source TEXT NOT NULL,
+        reason TEXT NOT NULL,
+        trigger_text TEXT,
+        status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'dismissed', 'escalated')),
+        admin_notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        reviewed_at TIMESTAMPTZ,
+        reviewed_by UUID REFERENCES accounts(id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_moderation_account_id ON moderation_incidents(account_id);
+      CREATE INDEX IF NOT EXISTS idx_moderation_status ON moderation_incidents(status);
+    `);
+
+    migrated = true;
+  } finally {
+    if (migrated) {
+      console.log('✓ Database schema created successfully');
+    }
+    client.release();
+  }
+}
+
+/**
+ * Test database connection
+ */
+export async function testDb(): Promise<boolean> {
+  try {
+    const result = await query('SELECT 1');
+    return result.rowCount === 1;
+  } catch (error) {
+    console.error('Database test failed:', error);
+    return false;
+  }
+}
+
+/**
+ * Close database connection pool
+ */
+export async function closeDb(): Promise<void> {
+  if (pool) {
+    await pool.end();
+    pool = null;
+    dbInitialized = false;
+    console.log('✓ Database connection closed');
+  }
+}

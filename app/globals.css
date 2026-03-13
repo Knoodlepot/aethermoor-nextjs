@@ -1,0 +1,73 @@
+/* ── Aethermoor Global Styles ── */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  height: 100dvh;
+}
+
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #0d0a06;
+  color: #d4b896;
+  font-family: Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+/* Theme Standard */
+:root {
+  --gold: #f0c060;
+  --accent: #c4873a;
+  --hp-color: #c03030;
+  --xp-color: #8060d0;
+  --choice-color: #c4873a;
+  --system-text: #4a6040;
+  --bg: #0d0a06;
+  --panel: #13100a;
+  --panel-alt: #0a0805;
+  --border: #2e2010;
+  --text: #d4b896;
+  --text-muted: #9a7a55;
+  --text-faint: #6a523c;
+  --selected-bg: #1e1508;
+  --input-bg: #0a0805;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+
