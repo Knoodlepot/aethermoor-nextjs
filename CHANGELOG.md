@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- Behind-the-scenes documentation now matches the live Next.js game architecture more consistently.
+
+### Fixed
+- Clarified legacy filename references (`index.html`/`index.hmtl` and `server.js`) so they are no longer treated as active root files.
+
 ## [0.3.1] - 2026-03-14
 
 ### Added

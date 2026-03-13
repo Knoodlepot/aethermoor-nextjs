@@ -30,3 +30,4 @@ Do this without being asked. If the session only involved discussion (no code ch
 - Tags: Same JSON tag system as legacy code — extract, parse, handle, strip
 - Player state: stored in DB (game_saves) on cloud save; localStorage fallback for demo
 - Theme: 5 colorblind-safe themes via ThemeContext in `components/providers/ThemeProvider.tsx`
+- Legacy naming note: there is no active root `index.html`/`index.hmtl` or `server.js` in this repo; treat mentions as migration/history references only.
