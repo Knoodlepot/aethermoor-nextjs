@@ -531,7 +531,15 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
               )}
               {(mode === 'forgot' || mode === 'reset') && (
                 <button
-                  onClick={() => { setMode('login'); setError(''); }}
+                  onClick={() => {
+                    setMode('login');
+                    setLocalResetToken(null);
+                    setError('');
+                    setPassword('');
+                    setConfirmPw('');
+                    setEmail('');
+                    window.history.replaceState({}, '', window.location.pathname);
+                  }}
                   style={{ background: 'none', border: 'none', color: S.muted, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', padding: 0 }}
                 >
                   Back to sign in
