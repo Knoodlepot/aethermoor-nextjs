@@ -154,7 +154,7 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
         body = { email };
       } else if (mode === 'reset') {
         endpoint = '/api/auth/reset-password';
-        body = { token: localResetToken || '', password };
+        body = { token: localResetToken || '', newPassword: password };
       }
 
       const res = await fetch(endpoint, {
