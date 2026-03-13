@@ -458,7 +458,7 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
                       transition: 'border-color 0.2s',
                     }}
                   >
-                    <span>G</span> Google
+                    Google
                   </button>
                   <button
                     type="button"
