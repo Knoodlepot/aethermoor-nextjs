@@ -6,9 +6,10 @@ import type { WorldSeed } from '@/lib/types';
 
 interface MainQuestPanelProps {
   worldSeed: WorldSeed | null;
+  onQuestClick?: () => void;
 }
 
-export function MainQuestPanel({ worldSeed }: MainQuestPanelProps) {
+export function MainQuestPanel({ worldSeed, onQuestClick }: MainQuestPanelProps) {
   const { T, tf } = useTheme();
 
   if (!worldSeed) return null;
@@ -30,6 +31,29 @@ export function MainQuestPanel({ worldSeed }: MainQuestPanelProps) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+        <button
+          onClick={onQuestClick}
+          style={{
+            background: 'transparent',
+            border: `1px solid ${col}44`,
+            borderRadius: 3,
+            padding: '4px 6px',
+            cursor: 'pointer',
+            fontSize: 11,
+            color: col,
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = col + '11';
+            (e.currentTarget as HTMLButtonElement).style.borderColor = col + '88';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+            (e.currentTarget as HTMLButtonElement).style.borderColor = col + '44';
+          }}
+        >
+          📖
+        </button>
         <span style={{ fontSize: 15 }}>{worldSeed.templateIcon || '⚔️'}</span>
         <div style={{ flex: 1 }}>
           <div style={{ ...tf, fontSize: 9, color: col, letterSpacing: 2, marginBottom: 1 }}>
