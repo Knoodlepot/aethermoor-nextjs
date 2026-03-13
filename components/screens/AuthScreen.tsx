@@ -169,7 +169,8 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
 
       if (mode === 'login' || mode === 'register') {
         if (data.token) {
-          storageSet('authToken', data.token);
+          storageSet('rpg-auth-token', data.token);
+          if (data.email) storageSet('rpg-auth-email', data.email);
           onAuth(data);
         } else if (mode === 'register') {
           setMode('verify_sent');
