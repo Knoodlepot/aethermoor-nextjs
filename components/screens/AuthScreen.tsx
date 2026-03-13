@@ -50,6 +50,13 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
   const [success, setSuccess] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
+  // Update mode when resetToken changes (e.g., from URL param read on client side)
+  React.useEffect(() => {
+    if (resetToken && mode === 'login') {
+      setMode('reset');
+    }
+  }, [resetToken, mode]);
+
   // On mount: handle OAuth redirect codes in URL params
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
