@@ -41,6 +41,9 @@ AI-powered browser RPG built on Next.js.
 ---
 
 ## Latest Session Updates (2026-03-13)
+- **Cookie session migration**: Auth flows now set/clear HttpOnly auth cookies and protected API routes accept cookie-backed sessions by default.
+- **Client token storage removed from active flow**: Frontend auth hooks and account modals now use cookie-authenticated requests instead of localStorage bearer tokens.
+- **Server-side tag authority**: `/api/claude` now parses tags, applies state transitions server-side, and persists canonical progression state before returning results.
 - **Server-authoritative narrator context**: `/api/claude` now prefers canonical player/world state from cloud save when building narrator system prompts, reducing client-side state tampering impact.
 - **Cloud save ownership validation**: `/api/save` now validates JSON payloads and enforces that saved `playerId` matches the authenticated account.
 - **Admin auth hardening**: Admin routes now support header-based secrets (`x-admin-secret` or bearer token) and treat URL/body secrets as legacy compatibility paths.
@@ -103,6 +106,7 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
+| 2026-03-13 | Implemented HttpOnly cookie auth sessions across login/register/OAuth/verify and switched protected routes to cookie-aware auth checks; moved tag parse/apply pipeline into `/api/claude` with canonical server persistence |
 | 2026-03-13 | Security hardening pass: narrator prompt context now uses canonical server save state; cloud save validates ownership; admin routes moved to header-first secret auth with compatibility fallback |
 | 2026-03-13 | Cross-checked MEMORY/CLAUDE/CHANGELOG and documented that `index.html`/`index.hmtl` and `server.js` are legacy references, not active root files |
 | 2026-03-13 | Tidied MEMORY.md for faster scanning; added Quick Start; updated preference to allow auto-commits for Next.js work when git is available |

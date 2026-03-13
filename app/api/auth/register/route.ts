@@ -58,13 +58,15 @@ export async function POST(request: NextRequest) {
       console.error('[REGISTER] Email send error:', err)
     );
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       requiresVerification: true,
       token: result.token,
       accountId: result.accountId,
       playerId: result.playerId,
       message: 'Account created. Check your email to verify.',
     });
+    auth.setAuthCookie(response, result.token);
+    return response;
   } catch (error) {
     console.error('[AUTH REGISTER]', error);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });

@@ -5,9 +5,7 @@ import { query } from '@/lib/db';
 // One-time migration: creates dungeon_progress row if it doesn't exist
 export async function POST(request: NextRequest) {
   try {
-    const authCtx = auth.authenticateFromHeaders(
-      request.headers.get('authorization') || undefined
-    );
+    const authCtx = auth.authenticateRequest(request);
     if (!authCtx) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
     const { playerId } = authCtx;

@@ -22,11 +22,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       token: result.token,
       accountId: result.accountId,
       playerId: result.playerId,
     });
+    auth.setAuthCookie(response, result.token);
+    return response;
   } catch (error) {
     console.error('[AUTH LOGIN]', error);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });

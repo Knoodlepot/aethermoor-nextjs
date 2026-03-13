@@ -3,9 +3,7 @@ import * as auth from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const authCtx = auth.authenticateFromHeaders(
-      request.headers.get('authorization') || undefined
-    );
+    const authCtx = auth.authenticateRequest(request);
     if (!authCtx) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
     const body = await request.json();

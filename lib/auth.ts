@@ -3,9 +3,12 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from './db';
 import type { Account } from './db';
+import type { NextRequest, NextResponse } from 'next/server';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const JWT_EXPIRY = '90d'; // 90 days
+export const AUTH_COOKIE_NAME = 'aethermoor_auth';
+const AUTH_COOKIE_MAX_AGE_SECONDS = 90 * 24 * 60 * 60;
 
 export interface JwtPayload {
   accountId: string;
@@ -240,11 +243,8 @@ export async function changePassword(
  * Authenticate request (extract JWT from headers)
  */
 export function authenticateFromHeaders(authHeader?: string): AuthContext | null {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-
-  const token = authHeader.substring(7);
+  const token = extractBearerToken(authHeader);
+  if (!token) return null;
   const decoded = verifyJwt(token);
 
   if (!decoded) {
@@ -256,4 +256,57 @@ export function authenticateFromHeaders(authHeader?: string): AuthContext | null
     playerId: decoded.playerId,
     email: decoded.email,
   };
+}
+
+export function authenticateRequest(request: NextRequest): AuthContext | null {
+  const headerCtx = authenticateFromHeaders(request.headers.get('authorization') || undefined);
+  if (headerCtx) return headerCtx;
+
+  const cookieToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  if (!cookieToken) return null;
+  const decoded = verifyJwt(cookieToken);
+  if (!decoded) return null;
+
+  return {
+    accountId: decoded.accountId,
+    playerId: decoded.playerId,
+    email: decoded.email,
+  };
+}
+
+export function getTokenFromRequest(request: NextRequest): string | null {
+  const headerToken = extractBearerToken(request.headers.get('authorization') || undefined);
+  if (headerToken) return headerToken;
+  return request.cookies.get(AUTH_COOKIE_NAME)?.value || null;
+}
+
+export function setAuthCookie(response: NextResponse, token: string): void {
+  response.cookies.set({
+    name: AUTH_COOKIE_NAME,
+    value: token,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: AUTH_COOKIE_MAX_AGE_SECONDS,
+  });
+}
+
+export function clearAuthCookie(response: NextResponse): void {
+  response.cookies.set({
+    name: AUTH_COOKIE_NAME,
+    value: '',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
+}
+
+function extractBearerToken(authHeader?: string): string | null {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  return authHeader.substring(7);
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { storageSet } from '@/hooks/useLocalStorage';
 
 // ── OAuth config ──
 const GOOGLE_CLIENT_ID = '899787108374-ichv1no0u6oncvtjo5asrf8h0cttj4im.apps.googleusercontent.com';
@@ -77,12 +76,12 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
       fetch(`/api/auth/oauth/${provider}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ code: googleCode, redirectUri: window.location.origin + window.location.pathname }),
       })
         .then((r) => r.json())
         .then((data) => {
           if (data.token) {
-            storageSet('rpg-auth-token', data.token);
             onAuth(data);
           } else {
             setError(data.error || 'OAuth login failed.');
@@ -158,6 +157,7 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(body),
       });
       const data = await res.json();
@@ -168,9 +168,7 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
       }
 
       if (mode === 'login' || mode === 'register') {
-        if (data.token) {
-          storageSet('rpg-auth-token', data.token);
-          if (data.email) storageSet('rpg-auth-email', data.email);
+        if (data.token || data.accountId) {
           onAuth(data);
         } else if (mode === 'register') {
           setMode('verify_sent');

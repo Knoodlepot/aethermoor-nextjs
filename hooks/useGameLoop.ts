@@ -5,8 +5,6 @@ import type { Player, WorldSeed } from '../lib/types';
 import type { GameStateContext } from './useGameState';
 import type { UIContext } from './useUI';
 import type { UseStorageReturn } from './useStorage';
-import { parseAllTags, stripContextTag, processParsedTags } from '../lib/tagParsers';
-import { cleanupExpiredEvents, pruneBestiary } from '../lib/helpers';
 
 export interface GameLoopContext {
   executeCommand: (
@@ -25,7 +23,7 @@ export function useGameLoop(
   gameState: GameStateContext,
   ui: UIContext,
   storage: UseStorageReturn,
-  authToken?: string | null
+  _authToken?: string | null
 ): GameLoopContext {
   const [isLoading, setIsLoading] = useState(false);
   const [combatState, setCombatState] = useState<any | null>(null);
@@ -57,46 +55,33 @@ export function useGameLoop(
           return { success: false, error: narratorResponse.error || 'AI call failed' };
         }
 
-        // 3. Parse all tags from response
-        const rawNarrative = narratorResponse.narrative;
-        const parsedTags = parseAllTags(rawNarrative);
+        // 3. Use server-applied state updates from /api/claude
+        const cleanNarrative = narratorResponse.cleanNarrative || narratorResponse.narrative;
+        if (narratorResponse.player && narratorResponse.worldSeed) {
+          updatedPlayer = narratorResponse.player;
+          updatedSeed = narratorResponse.worldSeed;
+        }
 
-        // 4. Strip tags from display narrative
-        const cleanNarrative = stripContextTag(rawNarrative);
-
-        // 5. Apply all parsed tags to game state
-        const tagResult = processParsedTags(updatedPlayer, parsedTags, updatedSeed);
-        updatedPlayer = tagResult.player;
-        updatedSeed = { ...updatedSeed, ...tagResult.worldSeed };
-
-        // 6. Update world events and cleanup
-        let cleanupResult = cleanupExpiredEvents(updatedPlayer, updatedSeed);
-        updatedPlayer = cleanupResult.player;
-        updatedSeed = cleanupResult.worldSeed;
-
-        // 7. Prune bestiary
-        updatedPlayer = pruneBestiary(updatedPlayer);
-
-        // 8. Update all game state
+        // 4. Update all game state
         gs.setPlayer(updatedPlayer);
         gs.setWorldSeed(updatedSeed);
         gs.setNarrative(cleanNarrative);
         gs.addMessage('assistant', cleanNarrative);
 
-        // 9. Add to game log
+        // 5. Add to game log
         gs.addLogEntry('action', command);
         gs.addLogEntry('response', cleanNarrative.substring(0, 100));
 
-        // 10. Save game state — include assistant response in saved history
+        // 6. Save game state — include assistant response in saved history
         const fullMessages = [
           ...userMessages,
           { role: 'assistant', content: cleanNarrative },
         ];
         await storage.saveGame(updatedPlayer, updatedSeed, fullMessages, cleanNarrative, gs.log);
 
-        // 11. Update UI suggestions if provided
-        if (parsedTags.suggestions && parsedTags.suggestions.length > 0) {
-          ui.setSuggestions(parsedTags.suggestions.slice(0, 5));
+        // 7. Update UI suggestions if provided
+        if (narratorResponse.suggestions && narratorResponse.suggestions.length > 0) {
+          ui.setSuggestions(narratorResponse.suggestions.slice(0, 5));
           ui.setPendingSuggestion(null);
         } else {
           ui.setSuggestions([]);
@@ -121,14 +106,22 @@ export function useGameLoop(
       messages: any[],
       player: Player,
       worldSeed: WorldSeed
-    ): Promise<{ success: boolean; narrative?: string; error?: string }> => {
+    ): Promise<{
+      success: boolean;
+      narrative?: string;
+      cleanNarrative?: string;
+      player?: Player;
+      worldSeed?: WorldSeed;
+      suggestions?: string[];
+      error?: string;
+    }> => {
       try {
         const res = await fetch('/api/claude', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(authToken && { Authorization: `Bearer ${authToken}` }),
           },
+          credentials: 'include',
           body: JSON.stringify({
             messages,
             player,
@@ -139,7 +132,14 @@ export function useGameLoop(
         const data = await res.json();
 
         if (res.ok && data.narrative) {
-          return { success: true, narrative: data.narrative };
+          return {
+            success: true,
+            narrative: data.narrative,
+            cleanNarrative: data.cleanNarrative,
+            player: data.player,
+            worldSeed: data.worldSeed,
+            suggestions: data.suggestions,
+          };
         }
 
         return { success: false, error: data.error || 'API error' };
@@ -148,7 +148,7 @@ export function useGameLoop(
         return { success: false, error: error.message };
       }
     },
-    [authToken]
+    []
   );
 
   return {

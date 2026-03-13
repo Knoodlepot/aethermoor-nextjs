@@ -9,8 +9,7 @@ import { cacheGetJson, cacheSetJson, cacheDel } from '@/lib/redis';
 export async function GET(request: NextRequest) {
   try {
     // 1. Authenticate JWT from Authorization header
-    const authHeader = request.headers.get('authorization');
-    const authCtx = auth.authenticateFromHeaders(authHeader || undefined);
+    const authCtx = auth.authenticateRequest(request);
 
     if (!authCtx) {
       return NextResponse.json(
@@ -64,8 +63,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate JWT from Authorization header
-    const authHeader = request.headers.get('authorization');
-    const authCtx = auth.authenticateFromHeaders(authHeader || undefined);
+    const authCtx = auth.authenticateRequest(request);
 
     if (!authCtx) {
       return NextResponse.json(

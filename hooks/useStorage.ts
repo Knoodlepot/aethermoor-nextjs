@@ -104,8 +104,8 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
           },
+          credentials: 'include',
           body: JSON.stringify({
             player_json: JSON.stringify(player),
             seed_json: JSON.stringify(worldSeed),
@@ -134,7 +134,7 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
 
     try {
       const res = await fetch('/api/save', {
-        headers: { Authorization: `Bearer ${authToken}` },
+        credentials: 'include',
       });
 
       if (res.ok) {

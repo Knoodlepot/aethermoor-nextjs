@@ -4,20 +4,23 @@ import { blockToken } from '@/lib/redis';
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization') || undefined;
-    const authCtx = auth.authenticateFromHeaders(authHeader);
+    const authCtx = auth.authenticateRequest(request);
+    const rawToken = auth.getTokenFromRequest(request);
 
-    if (authCtx && authHeader) {
+    if (authCtx && rawToken) {
       // Blocklist the token in Redis so it can't be reused before expiry
-      const rawToken = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader;
       await blockToken(rawToken, 90 * 24 * 60 * 60); // 90 days (JWT max lifetime)
     }
 
-    // Always return success — client clears state regardless
-    return NextResponse.json({ success: true });
+    // Always return success and clear cookie regardless
+    const response = NextResponse.json({ success: true });
+    auth.clearAuthCookie(response);
+    return response;
   } catch (error) {
     console.error('[AUTH LOGOUT]', error);
     // Still return success — client-side logout proceeds regardless
-    return NextResponse.json({ success: true });
+    const response = NextResponse.json({ success: true });
+    auth.clearAuthCookie(response);
+    return response;
   }
 }

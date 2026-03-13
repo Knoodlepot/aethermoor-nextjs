@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeDiscordCode } from '@/lib/external/oauth';
-import { issueJwt } from '@/lib/auth';
+import * as auth from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,14 +20,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = issueJwt(account.accountId, account.playerId, account.email);
+    const token = auth.issueJwt(account.accountId, account.playerId, account.email);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       token,
       accountId: account.accountId,
       playerId: account.playerId,
       email: account.email,
     });
+    auth.setAuthCookie(response, token);
+    return response;
   } catch (error) {
     console.error('[OAUTH DISCORD]', error);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });

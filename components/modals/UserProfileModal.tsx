@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { storageGet } from '@/hooks/useLocalStorage';
 
 interface UserProfileModalProps {
   email: string;
@@ -92,13 +91,12 @@ export function UserProfileModal({
     setLoading(true);
     setError('');
     try {
-      const token = storageGet('authToken');
       const res = await fetch('/api/auth/change-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
+        credentials: 'include',
         body: JSON.stringify({ newEmail, currentPassword: emailCurrentPw }),
       });
       const data = await res.json();
@@ -134,13 +132,12 @@ export function UserProfileModal({
     setLoading(true);
     setError('');
     try {
-      const token = storageGet('authToken');
       const res = await fetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
+        credentials: 'include',
         body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw }),
       });
       const data = await res.json();

@@ -4,9 +4,7 @@ import { query } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
-    const authCtx = auth.authenticateFromHeaders(
-      request.headers.get('authorization') || undefined
-    );
+    const authCtx = auth.authenticateRequest(request);
     if (!authCtx) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
     const { accountId, playerId } = authCtx;
@@ -63,7 +61,9 @@ export async function POST(request: NextRequest) {
     // Issue new JWT with updated email
     const newToken = auth.issueJwt(accountId, playerId, normalizedEmail);
 
-    return NextResponse.json({ success: true, token: newToken, email: normalizedEmail });
+    const response = NextResponse.json({ success: true, token: newToken, email: normalizedEmail });
+    auth.setAuthCookie(response, newToken);
+    return response;
   } catch (error) {
     console.error('[CHANGE EMAIL]', error);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });

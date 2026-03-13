@@ -4,9 +4,7 @@ import * as tokens from '@/lib/tokens';
 
 export async function GET(request: NextRequest) {
   try {
-    const authCtx = auth.authenticateFromHeaders(
-      request.headers.get('authorization') || undefined
-    );
+    const authCtx = auth.authenticateRequest(request);
     if (!authCtx) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
     const { playerId } = authCtx;

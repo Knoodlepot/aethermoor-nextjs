@@ -35,13 +35,15 @@ export async function GET(request: NextRequest) {
 
     const jwt = auth.issueJwt(accountId, playerId, email);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Email verified successfully.',
       token: jwt,
       accountId,
       playerId,
     });
+    auth.setAuthCookie(response, jwt);
+    return response;
   } catch (error) {
     console.error('[VERIFY EMAIL]', error);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });

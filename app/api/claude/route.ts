@@ -4,6 +4,8 @@ import * as tokens from '@/lib/tokens';
 import * as anthropic from '@/lib/external/anthropic';
 import * as ratelimit from '@/lib/ratelimit';
 import * as db from '@/lib/db';
+import { parseAllTags, processParsedTags, stripContextTag } from '@/lib/tagParsers';
+import { cleanupExpiredEvents, pruneBestiary } from '@/lib/helpers';
 
 // Strip control characters and truncate
 function sanitiseStr(val: unknown, maxLen: number): string {
@@ -16,8 +18,7 @@ function sanitiseStr(val: unknown, maxLen: number): string {
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate JWT from Authorization header
-    const authHeader = request.headers.get('authorization');
-    const authCtx = auth.authenticateFromHeaders(authHeader || undefined);
+    const authCtx = auth.authenticateRequest(request);
 
     if (!authCtx) {
       return NextResponse.json(
@@ -164,10 +165,42 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    let cleanNarrative = narrative;
+    let responsePlayer = effectivePlayer;
+    let responseWorldSeed = effectiveWorldSeed;
+    let responseSuggestions: string[] = [];
+
+    if (!utilityCall && effectivePlayer) {
+      const tags = parseAllTags(narrative);
+      cleanNarrative = stripContextTag(narrative);
+
+      const tagResult = processParsedTags(effectivePlayer, tags, effectiveWorldSeed || {});
+      const cleanup = cleanupExpiredEvents(tagResult.player, tagResult.worldSeed || {});
+      const finalPlayer = pruneBestiary(cleanup.player);
+      const finalWorldSeed = cleanup.worldSeed || {};
+
+      responsePlayer = finalPlayer;
+      responseWorldSeed = finalWorldSeed;
+      responseSuggestions = Array.isArray(tags.suggestions) ? tags.suggestions.slice(0, 5) : [];
+
+      const fullMessages = [...messages.slice(-19), { role: 'assistant', content: cleanNarrative }];
+      await persistCanonicalNarrationState(
+        authCtx.playerId,
+        finalPlayer,
+        finalWorldSeed,
+        fullMessages,
+        cleanNarrative
+      );
+    }
+
     // 9. Return success response
     return NextResponse.json(
       {
         narrative,
+        cleanNarrative,
+        player: responsePlayer,
+        worldSeed: responseWorldSeed,
+        suggestions: responseSuggestions,
         tokenBalance: spend.remaining,
       },
       { status: 200 }
@@ -177,8 +210,7 @@ export async function POST(request: NextRequest) {
 
     // Try to refund token on network error
     try {
-      const authHeader = request.headers.get('authorization');
-      const authCtx = auth.authenticateFromHeaders(authHeader || undefined);
+      const authCtx = auth.authenticateRequest(request);
       if (authCtx) {
         await tokens.addTokens(authCtx.playerId, 1, 'refund_network_error');
       }
@@ -214,6 +246,33 @@ async function loadCanonicalNarrationState(
   } catch {
     return null;
   }
+}
+
+async function persistCanonicalNarrationState(
+  playerId: string,
+  player: unknown,
+  worldSeed: unknown,
+  messages: unknown,
+  narrative: string
+): Promise<void> {
+  await db.query(
+    `INSERT INTO game_saves
+     (player_id, player_json, seed_json, messages_json, narrative, log_json, saved_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, COALESCE((SELECT log_json FROM game_saves WHERE player_id = $1), '[]'), NOW(), NOW())
+     ON CONFLICT (player_id) DO UPDATE SET
+       player_json = $2,
+       seed_json = $3,
+       messages_json = $4,
+       narrative = $5,
+       updated_at = NOW()`,
+    [
+      playerId,
+      JSON.stringify(player || {}),
+      JSON.stringify(worldSeed || {}),
+      JSON.stringify(Array.isArray(messages) ? messages : []),
+      narrative,
+    ]
+  );
 }
 
 /**

@@ -9,11 +9,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - Behind-the-scenes documentation now matches the live Next.js game architecture more consistently.
 - Save integrity checks are now stricter, so cloud saves stay tied to the correct adventurer account.
+- Account sessions now use safer cookie-based sign-in under the hood for a more secure login flow.
 
 ### Fixed
 - Clarified legacy filename references (`index.html`/`index.hmtl` and `server.js`) so they are no longer treated as active root files.
 - Tightened protection against browser-side state tampering affecting hidden narrator context.
 - Improved admin endpoint protection with safer header-based authentication paths.
+- Core narrator-driven state updates now resolve server-side first, reducing client-side manipulation risk during progression.
 
 ## [0.3.1] - 2026-03-14
 
