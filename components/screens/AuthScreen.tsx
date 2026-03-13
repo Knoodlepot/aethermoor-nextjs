@@ -53,13 +53,11 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
 
   // Update mode and local token when resetToken prop changes
   React.useEffect(() => {
-    if (resetToken) {
+    if (resetToken && !localResetToken) {
       setLocalResetToken(resetToken);
-      if (mode === 'login') {
-        setMode('reset');
-      }
+      setMode('reset');
     }
-  }, [resetToken, mode]);
+  }, [resetToken]); // Only depend on resetToken, not mode
 
   // On mount: handle OAuth redirect codes in URL params
   React.useEffect(() => {
