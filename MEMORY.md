@@ -41,6 +41,8 @@ AI-powered browser RPG built on Next.js.
 ---
 
 ## Latest Session Updates (2026-03-13)
+- **Full 8/8 verification passed**: All runtime security checks pass against live Railway DB — auth, save ownership, cookie session, and ephemeral real-login flow are all confirmed.
+- **DB schema patched**: `players` table on Railway was missing `account_id` column (created before migration was added); column added via one-time migration script.
 - **Verifier flow hardened**: Runtime verifier now uses real cookie sessions for tamper-save checks and reports DB connectivity/setup issues as blocked checks with actionable hints.
 - **Verifier usability improved**: Runtime verifier now auto-loads `.env.local` and can test a real cookie-backed session with ephemeral account registration when `TEST_EMAIL`/`TEST_PASSWORD` are not set.
 - **Env template aligned**: `.env.example` now reflects the actual variables used by the current Next.js app, including `NEXT_PUBLIC_URL` and `DISCORD_REDIRECT_URI`, with minimum-vs-optional sections.
@@ -111,6 +113,7 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
+| 2026-03-13 | Full 8/8 runtime verification passed against live Railway DB; patched missing account_id column on players table |
 | 2026-03-13 | Updated runtime verifier to use real authenticated cookies for tamper-save checks and classify DB/setup failures as blocked with guidance |
 | 2026-03-13 | Improved runtime verifier to auto-load `.env.local` and added ephemeral register/login fallback for real cookie session checks when test credentials are absent |
 | 2026-03-13 | Aligned `.env.example` and local checklist with the repo's actual runtime variables and verification prerequisites |

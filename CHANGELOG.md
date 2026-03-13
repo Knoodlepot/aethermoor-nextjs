@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Local setup guidance now matches the game's current live environment requirements more closely.
 - Local verification now auto-loads `.env.local` and can run a real cookie session check with an ephemeral account when manual test credentials are not set.
 - Local verification now reports database connectivity/setup blockers more clearly and only runs tamper-save checks after a real authenticated session is available.
+- All local security verification checks now pass end-to-end including real account registration, cookie session auth, and tamper-save rejection.
 
 ### Fixed
 - Clarified legacy filename references (`index.html`/`index.hmtl` and `server.js`) so they are no longer treated as active root files.
