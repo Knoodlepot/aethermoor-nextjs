@@ -701,18 +701,8 @@ export interface CommandGroup {
 
 export const COMMAND_GROUPS: CommandGroup[] = [
   {
-    label: 'Move',
-    commands: [
-      { id: 'go_north', icon: '⬆', label: 'North', desc: 'Head north — deeper into whatever lies that way.', context: ['explore', 'town', 'camp'] },
-      { id: 'go_south', icon: '⬇', label: 'South', desc: 'Turn south and travel in that direction.', context: ['explore', 'town', 'camp'] },
-      { id: 'go_east', icon: '➡', label: 'East', desc: 'Set off eastward along the road or terrain.', context: ['explore', 'town', 'camp'] },
-      { id: 'go_west', icon: '⬅', label: 'West', desc: 'Make your way west, watching the path ahead.', context: ['explore', 'town', 'camp'] },
-    ],
-  },
-  {
     label: 'Explore',
     commands: [
-      { id: 'search', icon: '🔍', label: 'Search', desc: 'Hunt for hidden items, forage for food/herbs in the wild, or seek clues and secret passages.', context: ['explore', 'town', 'camp'] },
       { id: 'forage', icon: '🌿', label: 'Forage', desc: 'Gather food and herbs from the wild. Better tools improve results.', context: ['explore', 'camp'] },
       { id: 'farm', icon: '🌾', label: 'Farm', desc: 'Work nearby fields for grain and produce. A sickle helps.', context: ['explore', 'camp'] },
       { id: 'chop_wood', icon: '🪓', label: 'Chop Wood', desc: 'Gather timber for shelter and trade. A hatchet is required.', context: ['explore', 'camp'] },
@@ -724,15 +714,6 @@ export const COMMAND_GROUPS: CommandGroup[] = [
     label: 'Actions',
     commands: [
       { id: 'noticeboard', icon: '📋', label: 'Notice Board', desc: 'Read the local notice board for job postings, wanted notices, and news.', context: ['town'] },
-    ],
-  },
-  {
-    label: 'Combat',
-    commands: [
-      { id: 'attack', icon: '⚔️', label: 'Attack', desc: 'Strike at your enemy with your weapon. STR or AGI determines your damage.', context: ['combat'] },
-      { id: 'ability', icon: '✨', label: 'Ability', desc: 'Use your class ability — a powerful move that can turn the tide of battle.', context: ['combat'] },
-      { id: 'defend', icon: '🛡', label: 'Defend', desc: 'Take a defensive stance. Reduce incoming damage and wait for an opening.', context: ['combat'] },
-      { id: 'flee', icon: '💨', label: 'Flee', desc: 'Turn and run! Your AGI determines whether you escape. Cowardly but sometimes wise.', context: ['combat'] },
     ],
   },
 ];

@@ -54,75 +54,8 @@ export function MobileCommandPanel({ player, onCommand, isLoading, isDyslexic }:
         <span style={{ ...tf, color: T.gold, fontSize: 11 }}>{player?.location}</span>
       </div>
 
-      {/* Move grid */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ ...tf, color: T.textFaint, fontSize: 10, letterSpacing: 2, marginBottom: 8, textAlign: 'center' }}>
-          MOVE
-        </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateAreas: `". north ." "west center east" ". south ."`,
-            gridTemplateColumns: '1fr 1fr 1fr',
-            gridTemplateRows: '60px 60px 60px',
-            gap: 4,
-            maxWidth: 220,
-            margin: '0 auto',
-          }}
-        >
-          {([['go_north', '⬆', 'N', 'north'], ['go_west', '⬅', 'W', 'west'], ['go_east', '➡', 'E', 'east'], ['go_south', '⬇', 'S', 'south']] as const).map(
-            ([id, icon, label, area]) => (
-              <button
-                key={id}
-                onClick={() => { if (!isLoading) onCommand(id); }}
-                disabled={isLoading}
-                style={{
-                  gridArea: area,
-                  background: T.panel,
-                  border: `1px solid ${T.border}`,
-                  color: isLoading ? T.textFaint : T.accent,
-                  cursor: isLoading ? 'default' : 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 2,
-                  fontSize: 22,
-                  borderRadius: 6,
-                  transition: 'all 0.15s',
-                  opacity: isLoading ? 0.4 : 1,
-                }}
-                onTouchStart={(e) => {
-                  if (!isLoading) e.currentTarget.style.background = T.accent + '33';
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.background = T.panel;
-                }}
-              >
-                <span>{icon}</span>
-                <span style={{ fontSize: 10, ...tf, color: T.textMuted }}>{label}</span>
-              </button>
-            )
-          )}
-          <div
-            style={{
-              gridArea: 'center',
-              background: T.bg,
-              border: `1px solid ${T.border}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 20,
-              borderRadius: 6,
-            }}
-          >
-            🧭
-          </div>
-        </div>
-      </div>
-
       {/* Action groups */}
-      {COMMAND_GROUPS.filter((g) => g.label !== 'Move').map((group) => {
+      {COMMAND_GROUPS.map((group) => {
         const cmds = group.commands.filter(
           (c) => c.context.includes(ctx) && (!c.requiresLocation || player?.location === c.requiresLocation)
         );

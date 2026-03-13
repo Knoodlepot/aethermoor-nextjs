@@ -36,51 +36,6 @@ export function CommandPanel({ player, onCommand, isLoading, isDyslexic }: Comma
   };
   const ctxData = ctxInfo[ctx] || ctxInfo.explore;
 
-  const moveBtn = (id: string, icon: string, label: string, gridArea: string) => {
-    const available = !isLoading;
-    return (
-      <div key={id} style={{ gridArea, position: 'relative' }}>
-        <button
-          onClick={() => { if (available) onCommand(id); }}
-          disabled={!available || isLoading}
-          style={{
-            width: '100%',
-            height: '100%',
-            background: T.panel,
-            border: `1px solid ${T.border}`,
-            color: available ? T.accent : T.textFaint,
-            cursor: available ? 'pointer' : 'default',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 2,
-            padding: '6px 4px',
-            fontSize: 18,
-            transition: 'all 0.15s',
-            opacity: available ? 1 : 0.35,
-            ...btnFont,
-          }}
-          onMouseEnter={(e) => {
-            if (available && !isLoading) {
-              e.currentTarget.style.background = T.accent + '22';
-              e.currentTarget.style.borderColor = T.accent;
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = T.panel;
-            e.currentTarget.style.borderColor = T.border;
-          }}
-        >
-          <span style={{ fontSize: 16 }}>{icon}</span>
-          <span style={{ fontSize: 9, color: T.textMuted, letterSpacing: 1, ...tf }}>
-            {label.toUpperCase()}
-          </span>
-        </button>
-      </div>
-    );
-  };
-
   const actionBtn = (cmd: { id: string; icon: string; label: string; desc: string; context: string[] }) => {
     const available = cmd.context.includes(ctx) && !isLoading;
     return (
@@ -156,67 +111,28 @@ export function CommandPanel({ player, onCommand, isLoading, isDyslexic }: Comma
       </div>
 
       {/* Button grid */}
-      <div style={{ padding: '10px 12px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-        {/* Movement grid */}
-        <div style={{ flexShrink: 0 }}>
-          <div style={{ ...tf, color: T.textFaint, fontSize: 9, letterSpacing: 2, marginBottom: 5, textAlign: 'center' }}>
-            MOVE
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateAreas: `". north ." "west center east" ". south ."`,
-              gridTemplateColumns: '42px 42px 42px',
-              gridTemplateRows: '36px 36px 36px',
-              gap: 2,
-            }}
-          >
-            {moveBtn('go_north', '⬆', 'N', 'north')}
-            {moveBtn('go_west', '⬅', 'W', 'west')}
-            <div
-              style={{
-                gridArea: 'center',
-                background: T.bg,
-                border: `1px solid ${T.border}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 14,
-              }}
-            >
-              🧭
-            </div>
-            {moveBtn('go_east', '➡', 'E', 'east')}
-            {moveBtn('go_south', '⬇', 'S', 'south')}
-          </div>
-        </div>
-
-        <div style={{ width: 1, background: T.border, alignSelf: 'stretch', flexShrink: 0 }} />
-
-        {/* Action buttons */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {COMMAND_GROUPS.filter((g) => g.label !== 'Move').map((group) => {
-            const hasActive = group.commands.some((c) => c.context.includes(ctx));
-            return (
-              <div key={group.label}>
-                <div
-                  style={{
-                    ...tf,
-                    color: hasActive ? T.accent : T.textFaint + '66',
-                    fontSize: 9,
-                    letterSpacing: 2,
-                    marginBottom: 4,
-                  }}
-                >
-                  {group.label.toUpperCase()}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 3 }}>
-                  {group.commands.map((cmd) => actionBtn(cmd))}
-                </div>
+      <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {COMMAND_GROUPS.map((group) => {
+          const hasActive = group.commands.some((c) => c.context.includes(ctx));
+          return (
+            <div key={group.label}>
+              <div
+                style={{
+                  ...tf,
+                  color: hasActive ? T.accent : T.textFaint + '66',
+                  fontSize: 9,
+                  letterSpacing: 2,
+                  marginBottom: 4,
+                }}
+              >
+                {group.label.toUpperCase()}
               </div>
-            );
-          })}
-        </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 3 }}>
+                {group.commands.map((cmd) => actionBtn(cmd))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
