@@ -89,4 +89,5 @@ If those are not set, the verifier will automatically attempt an ephemeral accou
 
 - The runtime verifier intentionally degrades gracefully if required env vars are missing.
 - The runtime verifier auto-loads `.env.local` when present.
+- If your database host/credentials are still placeholders, DB-backed checks are reported as `BLOCK` with guidance instead of generic failures.
 - The mock harness reuses the same shared server-side state transition helper used by `/api/claude`.

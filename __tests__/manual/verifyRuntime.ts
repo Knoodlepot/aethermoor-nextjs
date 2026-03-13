@@ -10,6 +10,11 @@ type CheckResult = {
   details: string;
 };
 
+type SessionResult = {
+  result: CheckResult;
+  cookie?: string;
+};
+
 async function main() {
   loadEnvLocal();
 
@@ -25,27 +30,43 @@ async function main() {
     results.push(await checkUnauthorized('GET /api/save', '/api/save'));
     results.push(await checkUnauthorizedClaude());
     results.push(await checkCookieLogout());
-    results.push(await checkTamperedSave());
   } else {
     results.push(blocked('GET /api/auth/me', 'Blocked: local dev server is not reachable. Start `npm run dev` first.'));
     results.push(blocked('GET /api/save', 'Blocked: local dev server is not reachable. Start `npm run dev` first.'));
     results.push(blocked('POST /api/claude (anonymous)', 'Blocked: local dev server is not reachable. Start `npm run dev` first.'));
     results.push(blocked('POST /api/auth/logout (cookie session)', 'Blocked: local dev server is not reachable. Start `npm run dev` first.'));
-    results.push(blocked('POST /api/save rejects mismatched playerId', 'Blocked: local dev server is not reachable. Start `npm run dev` first.'));
   }
 
+  let sessionResult: SessionResult;
   const credentialsAvailable = !!process.env.TEST_EMAIL && !!process.env.TEST_PASSWORD;
   if (credentialsAvailable) {
-    results.push(await checkRealLoginFlow());
+    sessionResult = await checkRealLoginFlow();
   } else if (process.env.DATABASE_URL && process.env.JWT_SECRET) {
-    results.push(await checkEphemeralAuthFlow());
+    sessionResult = await checkEphemeralAuthFlow();
   } else {
-    results.push(
-      blocked(
+    sessionResult = {
+      result: blocked(
         'Real login flow',
         'Skipped: set TEST_EMAIL and TEST_PASSWORD, or provide DATABASE_URL and JWT_SECRET for ephemeral registration fallback.'
-      )
-    );
+      ),
+    };
+  }
+
+  results.push(sessionResult.result);
+
+  if (health.status === 'pass') {
+    if (sessionResult.cookie) {
+      results.push(await checkTamperedSave(sessionResult.cookie));
+    } else {
+      results.push(
+        blocked(
+          'POST /api/save rejects mismatched playerId',
+          'Blocked: requires a valid authenticated cookie session from the real login flow.'
+        )
+      );
+    }
+  } else {
+    results.push(blocked('POST /api/save rejects mismatched playerId', 'Blocked: local dev server is not reachable. Start `npm run dev` first.'));
   }
 
   printResults(results);
@@ -138,12 +159,8 @@ async function checkUnauthorizedClaude(): Promise<CheckResult> {
 
 async function checkCookieLogout(): Promise<CheckResult> {
   try {
-    const token = createTestJwt();
     const response = await fetch(`${BASE_URL}/api/auth/logout`, {
       method: 'POST',
-      headers: {
-        Cookie: `aethermoor_auth=${token}`,
-      },
     });
     const setCookie = response.headers.get('set-cookie') || '';
     const ok = response.status === 200 && setCookie.includes('aethermoor_auth=') && setCookie.includes('HttpOnly');
@@ -155,14 +172,13 @@ async function checkCookieLogout(): Promise<CheckResult> {
   }
 }
 
-async function checkTamperedSave(): Promise<CheckResult> {
+async function checkTamperedSave(authCookie: string): Promise<CheckResult> {
   try {
-    const token = createTestJwt();
     const response = await fetch(`${BASE_URL}/api/save`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Cookie: `aethermoor_auth=${token}`,
+        Cookie: authCookie,
       },
       body: JSON.stringify({
         player_json: JSON.stringify({ playerId: 'other-player', name: 'Tamper' }),
@@ -181,7 +197,7 @@ async function checkTamperedSave(): Promise<CheckResult> {
   }
 }
 
-async function checkRealLoginFlow(): Promise<CheckResult> {
+async function checkRealLoginFlow(): Promise<SessionResult> {
   try {
     const response = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
@@ -193,15 +209,24 @@ async function checkRealLoginFlow(): Promise<CheckResult> {
     });
 
     const setCookie = response.headers.get('set-cookie') || '';
-    return response.status === 200 && setCookie.includes('aethermoor_auth=')
-      ? passed('POST /api/auth/login (real credentials)', `Status ${response.status}; cookie=present`)
-      : fail('POST /api/auth/login (real credentials)', `Status ${response.status}; cookie=${setCookie ? 'present' : 'missing'}`);
+    const cookie = extractCookiePair(setCookie);
+
+    if (response.status === 200 && cookie) {
+      return {
+        result: passed('POST /api/auth/login (real credentials)', `Status ${response.status}; cookie=present`),
+        cookie,
+      };
+    }
+
+    return {
+      result: fail('POST /api/auth/login (real credentials)', `Status ${response.status}; cookie=${setCookie ? 'present' : 'missing'}`),
+    };
   } catch (error) {
-    return failure('POST /api/auth/login (real credentials)', error);
+    return { result: failure('POST /api/auth/login (real credentials)', error) };
   }
 }
 
-async function checkEphemeralAuthFlow(): Promise<CheckResult> {
+async function checkEphemeralAuthFlow(): Promise<SessionResult> {
   const email = `runtime-check-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
   const password = `RuntimeCheck-${Math.random().toString(36).slice(2, 10)}-A1!`;
 
@@ -215,10 +240,16 @@ async function checkEphemeralAuthFlow(): Promise<CheckResult> {
     const setCookie = register.headers.get('set-cookie') || '';
     const cookiePair = extractCookiePair(setCookie);
     if (register.status !== 200 || !cookiePair) {
-      return fail(
-        'Real login flow',
-        `Ephemeral register failed. Status ${register.status}; cookie=${cookiePair ? 'present' : 'missing'}`
-      );
+      const details = `Ephemeral register failed. Status ${register.status}; cookie=${cookiePair ? 'present' : 'missing'}`;
+      if (register.status >= 500) {
+        return {
+          result: blocked('Real login flow', `${details}. Check DATABASE_URL host/credentials and DB availability.`),
+        };
+      }
+
+      return {
+        result: fail('Real login flow', details),
+      };
     }
 
     const me = await fetch(`${BASE_URL}/api/auth/me`, {
@@ -226,12 +257,24 @@ async function checkEphemeralAuthFlow(): Promise<CheckResult> {
     });
 
     if (me.status !== 200) {
-      return fail('Real login flow', `Ephemeral auth check failed. GET /api/auth/me returned ${me.status}`);
+      return {
+        result: fail('Real login flow', `Ephemeral auth check failed. GET /api/auth/me returned ${me.status}`),
+      };
     }
 
-    return passed('Real login flow', 'Ephemeral registration succeeded and session cookie authenticated /api/auth/me.');
+    return {
+      result: passed('Real login flow', 'Ephemeral registration succeeded and session cookie authenticated /api/auth/me.'),
+      cookie: cookiePair,
+    };
   } catch (error) {
-    return failure('Real login flow', error);
+    const details = error instanceof Error ? error.message : 'Unknown error';
+    if (details.includes('ENOTFOUND') || details.includes('ECONNREFUSED') || details.includes('ETIMEDOUT')) {
+      return {
+        result: blocked('Real login flow', `${details}. Check DATABASE_URL host/credentials and DB connectivity.`),
+      };
+    }
+
+    return { result: failure('Real login flow', error) };
   }
 }
 
@@ -242,19 +285,6 @@ function extractCookiePair(setCookieHeader: string): string | null {
   }
 
   return first;
-}
-
-function createTestJwt(): string {
-  const jwt = require('jsonwebtoken') as typeof import('jsonwebtoken');
-  return jwt.sign(
-    {
-      accountId: 'acct-test',
-      playerId: 'player-test',
-      email: 'test@example.com',
-    },
-    process.env.JWT_SECRET || 'dev-secret-change-in-production',
-    { expiresIn: '90d' }
-  );
 }
 
 function failure(name: string, error: unknown): CheckResult {

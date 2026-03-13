@@ -41,6 +41,7 @@ AI-powered browser RPG built on Next.js.
 ---
 
 ## Latest Session Updates (2026-03-13)
+- **Verifier flow hardened**: Runtime verifier now uses real cookie sessions for tamper-save checks and reports DB connectivity/setup issues as blocked checks with actionable hints.
 - **Verifier usability improved**: Runtime verifier now auto-loads `.env.local` and can test a real cookie-backed session with ephemeral account registration when `TEST_EMAIL`/`TEST_PASSWORD` are not set.
 - **Env template aligned**: `.env.example` now reflects the actual variables used by the current Next.js app, including `NEXT_PUBLIC_URL` and `DISCORD_REDIRECT_URI`, with minimum-vs-optional sections.
 - **Verification tooling added**: Added a reusable server-side narration state helper plus manual verification scripts for local runtime auth checks and mock narrator-state testing without Anthropic/Postgres.
@@ -110,6 +111,7 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
+| 2026-03-13 | Updated runtime verifier to use real authenticated cookies for tamper-save checks and classify DB/setup failures as blocked with guidance |
 | 2026-03-13 | Improved runtime verifier to auto-load `.env.local` and added ephemeral register/login fallback for real cookie session checks when test credentials are absent |
 | 2026-03-13 | Aligned `.env.example` and local checklist with the repo's actual runtime variables and verification prerequisites |
 | 2026-03-13 | Added local verification tooling: env checklist, runtime verifier, mock narrator-state harness, and shared server-side narration transition helper |
