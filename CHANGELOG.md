@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- Under-the-hood database health now self-heals on each server start, so new columns added in updates apply automatically without manual database work.
 - Behind-the-scenes documentation now matches the live Next.js game architecture more consistently.
 - Save integrity checks are now stricter, so cloud saves stay tied to the correct adventurer account.
 - Account sessions now use safer cookie-based sign-in under the hood for a more secure login flow.

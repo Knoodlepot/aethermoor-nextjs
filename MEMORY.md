@@ -41,6 +41,11 @@ AI-powered browser RPG built on Next.js.
 ---
 
 ## Latest Session Updates (2026-03-13)
+- **DB schema migrations applied**: Applied all missing columns to live Railway DB across 5 tables (`accounts`, `players`, `dungeon_progress`, `game_saves`, `moderation_incidents`). All 9 column additions confirmed OK.
+- **`migrateDb()` hardened**: `lib/db.ts` now runs idempotent `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` on every startup for all known columns — no more silent schema drift after deploys.
+- **Extra moderation columns confirmed legacy**: `accounts.moderation_yellow_count/red_card/last_reason/updated_at` and `moderation_incidents.level` are dormant legacy columns from the 2026-03-11 card system; left in place (harmless, unused by current code).
+- **Temp migration scripts removed**: `migratePlayersTable.cjs`, `dbCleanAndAudit.cjs`, `schemaMigration.cjs` deleted after use.
+- **3 test accounts deleted**: Ephemeral runtime-check and prod-check accounts removed from live Railway DB.
 - **Full 8/8 verification passed**: All runtime security checks pass against live Railway DB — auth, save ownership, cookie session, and ephemeral real-login flow are all confirmed.
 - **DB schema patched**: `players` table on Railway was missing `account_id` column (created before migration was added); column added via one-time migration script.
 - **Verifier flow hardened**: Runtime verifier now uses real cookie sessions for tamper-save checks and reports DB connectivity/setup issues as blocked checks with actionable hints.
@@ -113,6 +118,7 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
+| 2026-03-13 | DB schema migrations applied (9 missing columns across 5 tables); migrateDb() now self-heals on startup; temp scripts removed |
 | 2026-03-13 | Full 8/8 runtime verification passed against live Railway DB; patched missing account_id column on players table |
 | 2026-03-13 | Updated runtime verifier to use real authenticated cookies for tamper-save checks and classify DB/setup failures as blocked with guidance |
 | 2026-03-13 | Improved runtime verifier to auto-load `.env.local` and added ephemeral register/login fallback for real cookie session checks when test credentials are absent |

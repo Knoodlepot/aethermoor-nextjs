@@ -166,7 +166,22 @@ export async function migrateDb(): Promise<void> {
     `);
 
     if (res.rows[0].exists) {
-      console.log('✓ Database tables already exist');
+      // Tables exist — apply any column additions idempotently so deploys self-heal.
+      const columnMigrations = [
+        `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`,
+        `ALTER TABLE players ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`,
+        `ALTER TABLE dungeon_progress ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()`,
+        `ALTER TABLE dungeon_progress ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`,
+        `ALTER TABLE game_saves ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`,
+        `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','dismissed','escalated'))`,
+        `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS admin_notes TEXT`,
+        `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ`,
+        `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS reviewed_by TEXT`,
+      ];
+      for (const sql of columnMigrations) {
+        await client.query(sql);
+      }
+      console.log('✓ Database schema up to date');
       return;
     }
 
