@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Behind-the-scenes documentation now matches the live Next.js game architecture more consistently.
 - Save integrity checks are now stricter, so cloud saves stay tied to the correct adventurer account.
 - Account sessions now use safer cookie-based sign-in under the hood for a more secure login flow.
+- Added new internal verification tooling to make local security and progression checks easier to run during updates.
 
 ### Fixed
 - Clarified legacy filename references (`index.html`/`index.hmtl` and `server.js`) so they are no longer treated as active root files.

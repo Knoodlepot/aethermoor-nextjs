@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:runtime": "tsx __tests__/manual/verifyRuntime.ts",
+    "verify:mock-state": "tsx __tests__/manual/mockClaudeStateHarness.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

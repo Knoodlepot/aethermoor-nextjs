@@ -5,6 +5,11 @@ Manual integration tests for the three core Phase 6a API endpoints:
 - `GET /api/save` — Load game save
 - `POST /api/save` — Save game state
 
+Additional manual verification helpers:
+- `verifyRuntime.ts` — cookie auth and protected-route runtime checks against a live local server
+- `mockClaudeStateHarness.ts` — server-side narrator state transition harness with no Anthropic/Postgres dependency
+- `LOCAL_RUNTIME_CHECKLIST.md` — minimal `.env.local` and copy-paste run steps
+
 ## Prerequisites
 
 1. **Dev server running**: `npm run dev` in the project root
@@ -21,6 +26,12 @@ npm install --save-dev tsx
 
 # Run tests
 npx tsx __tests__/manual/testEndpoints.ts
+
+# Runtime security checks
+npx tsx __tests__/manual/verifyRuntime.ts
+
+# Mock server-side narrator state harness
+npx tsx __tests__/manual/mockClaudeStateHarness.ts
 ```
 
 ### Option 2: Using ts-node
@@ -46,7 +57,11 @@ Set these to customize test behavior:
 ```bash
 TEST_BASE_URL="http://localhost:3000"  # Default
 TEST_JWT="eyJhbGc..."                   # Valid JWT token (optional)
+TEST_EMAIL="your-test-account@example.com"
+TEST_PASSWORD="your-test-password"
 ```
+
+For the minimal local environment checklist, see `LOCAL_RUNTIME_CHECKLIST.md`.
 
 ## Test Coverage
 

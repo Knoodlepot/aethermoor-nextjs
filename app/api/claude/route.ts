@@ -4,8 +4,7 @@ import * as tokens from '@/lib/tokens';
 import * as anthropic from '@/lib/external/anthropic';
 import * as ratelimit from '@/lib/ratelimit';
 import * as db from '@/lib/db';
-import { parseAllTags, processParsedTags, stripContextTag } from '@/lib/tagParsers';
-import { cleanupExpiredEvents, pruneBestiary } from '@/lib/helpers';
+import { applyNarrationState } from '@/lib/server/narrationState';
 
 // Strip control characters and truncate
 function sanitiseStr(val: unknown, maxLen: number): string {
@@ -171,24 +170,22 @@ export async function POST(request: NextRequest) {
     let responseSuggestions: string[] = [];
 
     if (!utilityCall && effectivePlayer) {
-      const tags = parseAllTags(narrative);
-      cleanNarrative = stripContextTag(narrative);
+      const applied = applyNarrationState({
+        player: effectivePlayer,
+        worldSeed: effectiveWorldSeed,
+        narrative,
+        messages,
+      });
+      cleanNarrative = applied.cleanNarrative;
+      responsePlayer = applied.player;
+      responseWorldSeed = applied.worldSeed;
+      responseSuggestions = applied.suggestions;
 
-      const tagResult = processParsedTags(effectivePlayer, tags, effectiveWorldSeed || {});
-      const cleanup = cleanupExpiredEvents(tagResult.player, tagResult.worldSeed || {});
-      const finalPlayer = pruneBestiary(cleanup.player);
-      const finalWorldSeed = cleanup.worldSeed || {};
-
-      responsePlayer = finalPlayer;
-      responseWorldSeed = finalWorldSeed;
-      responseSuggestions = Array.isArray(tags.suggestions) ? tags.suggestions.slice(0, 5) : [];
-
-      const fullMessages = [...messages.slice(-19), { role: 'assistant', content: cleanNarrative }];
       await persistCanonicalNarrationState(
         authCtx.playerId,
-        finalPlayer,
-        finalWorldSeed,
-        fullMessages,
+        applied.player,
+        applied.worldSeed,
+        applied.fullMessages,
         cleanNarrative
       );
     }
