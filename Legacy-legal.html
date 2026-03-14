@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aethermoor - Legal</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0d0a06;
+      color: #d4b896;
+      font-family: Georgia, serif;
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+    h1, h2 {
+      color: #f0c060;
+      font-family: "Cinzel", Georgia, serif;
+      letter-spacing: 1px;
+    }
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #13100a;
+      border: 1px solid #2e2010;
+      padding: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .nav a {
+      color: #f0c060;
+      text-decoration: none;
+      border: 1px solid #c4873a55;
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+    .nav a:hover { background: #c4873a22; }
+    .section {
+      background: #13100a;
+      border: 1px solid #2e2010;
+      padding: 16px;
+      margin-bottom: 12px;
+      scroll-margin-top: 72px;
+    }
+    .muted { color: #8a6f4b; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Aethermoor Legal</h1>
+    <div class="muted">Last updated: 2026-03-11</div>
+
+    <nav class="nav" aria-label="Legal sections">
+      <a href="#terms">Terms of Service</a>
+      <a href="#privacy">Privacy Policy</a>
+      <a href="#refund">Refund Policy</a>
+      <a href="index.html">Back to Game</a>
+    </nav>
+
+    <section id="terms" class="section">
+      <h2>Terms of Service</h2>
+      <p>Aethermoor is a fantasy roleplaying game for players aged 18+. By using the game, you agree not to misuse the service, attempt fraud, or abuse staff/community channels.</p>
+      <p>Accounts, virtual currency/tokens, and progression systems may be adjusted for balance, bug fixes, safety, or policy compliance.</p>
+    </section>
+
+    <section id="privacy" class="section">
+      <h2>Privacy Policy</h2>
+      <p>The game uses local storage for save data and may store account-related data on backend services when signed in. Payment processing is handled by third-party providers.</p>
+      <p>We do not sell personal data. Contact support for data access or removal requests where applicable.</p>
+    </section>
+
+    <section id="refund" class="section">
+      <h2>Refund Policy</h2>
+      <p>Token purchases are generally non-refundable once delivered. If you experience a billing error, duplicate charge, or failed delivery, contact support with transaction details.</p>
+      <p>Support contact:
+        <a href="mailto:support.aethermoor@gmail.com" onclick="openSupportEmail(event)" style="color:#f0c060;text-decoration:underline;text-underline-offset:2px;">support.aethermoor@gmail.com</a>
+      </p>
+      <p><button type="button" onclick="openSupportEmail(event)" style="background:#13100a;color:#f0c060;border:1px solid #c4873a55;padding:6px 10px;cursor:pointer;">Open Email App</button></p>
+    </section>
+  </div>
+  <script>
+    function openSupportEmail(e) {
+      if (e) e.preventDefault();
+      const email = 'support.aethermoor@gmail.com';
+      try { window.location.href = 'mailto:' + email; } catch {}
+      setTimeout(() => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(email).catch(() => {});
+        }
+        alert('If your mail app did not open, the support email was copied: ' + email);
+      }, 250);
+    }
+  </script>
+</body>
+</html>

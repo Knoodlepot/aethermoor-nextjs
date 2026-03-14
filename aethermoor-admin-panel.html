@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aethermoor — Admin Panel</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0a06;
+    color: #d4c5a0;
+    font-family: 'Crimson Text', Georgia, serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .page-header {
+    background: #13100a;
+    border-bottom: 1px solid #2e2515;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .page-header h1 {
+    font-family: 'Cinzel', serif;
+    color: #c9a84c;
+    font-size: 18px;
+    letter-spacing: 4px;
+  }
+  .page-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #5a4a2a;
+    margin-top: 2px;
+  }
+
+  /* ── Tab bar ─────────────────────────────────────────── */
+  .tab-bar {
+    background: #13100a;
+    border-bottom: 1px solid #2e2515;
+    display: flex;
+    flex-shrink: 0;
+    padding: 0 24px;
+  }
+  .tab-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #5a4a2a;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 16px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: #a08040; }
+  .tab-btn.active { color: #c9a84c; border-bottom-color: #c9a84c; }
+
+  /* ── Tab panels ──────────────────────────────────────── */
+  .tab-panel { display: none; flex: 1; }
+  .tab-panel.active { display: flex; flex-direction: column; }
+
+  /* ── Scrollable content panels ───────────────────────── */
+  .scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 16px 48px;
+  }
+
+  /* ── Cards ───────────────────────────────────────────── */
+  .card {
+    background: #13100a;
+    border: 1px solid #2e2515;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .card-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #c9a84c;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #2e2515;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 2px;
+    color: #8a7a5f;
+    margin-bottom: 5px;
+    margin-top: 12px;
+  }
+  label:first-of-type { margin-top: 0; }
+
+  input[type=text], input[type=number], input[type=password] {
+    width: 100%;
+    background: #0d0a06;
+    border: 1px solid #3a2e18;
+    color: #d4c5a0;
+    font-family: 'Crimson Text', serif;
+    font-size: 15px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: #c9a84c; }
+
+  button {
+    font-family: 'Cinzel', serif;
+    letter-spacing: 2px;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 10px 20px;
+    border: 1px solid #c9a84c;
+    background: transparent;
+    color: #c9a84c;
+    margin-top: 14px;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  button:hover { background: #c9a84c22; }
+  button:active { background: #c9a84c44; }
+  button.danger { border-color: #9a4040; color: #9a4040; }
+  button.danger:hover { background: #9a404022; }
+
+  .result-box {
+    margin-top: 14px;
+    padding: 14px;
+    background: #0a0806;
+    border: 1px solid #2e2515;
+    font-size: 14px;
+    line-height: 1.8;
+    display: none;
+  }
+  .result-box.visible { display: block; }
+  .result-box.ok  { border-color: #3a5a3a; }
+  .result-box.err { border-color: #5a2a2a; color: #c07070; }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #1e1a10;
+    font-size: 14px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: #8a7a5f; }
+  .stat-value { color: #c9a84c; font-family: 'Cinzel', serif; font-size: 13px; }
+  .stat-value.big { font-size: 18px; color: #e0c06a; }
+  .stat-value.green { color: #6aaa6a; }
+  .stat-value.red   { color: #c07070; }
+
+  .log-entry {
+    font-size: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid #1e1a10;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .log-change { min-width: 44px; font-family: 'Cinzel', serif; font-size: 12px; }
+  .log-change.pos { color: #6aaa6a; }
+  .log-change.neg { color: #aa6060; }
+  .log-reason { color: #8a7a5f; flex: 1; }
+  .log-date { color: #4a3a2a; font-size: 11px; white-space: nowrap; }
+
+  .config-hint {
+    font-size: 12px;
+    color: #4a3a2a;
+    font-style: italic;
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  .top-log-entry {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13px;
+    padding: 8px 0;
+    border-bottom: 1px solid #1e1a10;
+  }
+  .top-log-entry:last-child { border-bottom: none; }
+  .tl-time   { color: #4a3a2a; font-size: 11px; min-width: 70px; }
+  .tl-pid    { color: #8a7a5f; font-size: 11px; font-family: monospace; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tl-amount { color: #c9a84c; font-family: 'Cinzel', serif; font-size: 12px; min-width: 60px; }
+  .tl-note   { color: #d4c5a0; flex: 1; }
+
+  .quick-fill-hint {
+    font-size: 11px;
+    color: #6aaa6a;
+    font-style: italic;
+    margin-top: 6px;
+    display: none;
+  }
+
+  /* ── Calculator ──────────────────────────────────────── */
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .pkg-row {
+    background: #0d0a06;
+    border: 1px solid #2e2515;
+    padding: 12px 14px;
+  }
+  .pkg-row-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .pkg-name  { font-family: 'Cinzel', serif; font-size: 11px; color: #c9a84c; letter-spacing: 1px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+  .slider-label { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 1px; color: #5a4a2a; min-width: 46px; }
+  .slider-val { font-family: 'Cinzel', serif; font-size: 11px; color: #c9a84c; width: 72px !important; max-width: 72px !important; flex: 0 0 72px !important; text-align: right; background: #13100a; border: 1px solid #3a2e18; padding: 4px 6px; outline: none; transition: border-color 0.2s; }
+  .slider-val:focus { border-color: #c9a84c; }
+  .pkg-qty   {
+    width: 64px !important;
+    max-width: 64px !important;
+    flex: 0 0 64px !important;
+    background: #13100a;
+    border: 1px solid #3a2e18;
+    color: #d4c5a0;
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    padding: 6px 8px;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .pkg-qty:focus { border-color: #c9a84c; }
+
+  .calc-results {
+    background: #0a0806;
+    border: 1px solid #2e2515;
+    padding: 18px 20px;
+    margin-top: 16px;
+  }
+  .calc-section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #5a4a2a;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    margin-top: 14px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #1e1a10;
+  }
+  .calc-section-title:first-child { margin-top: 0; }
+
+  .fee-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .fee-row label { margin: 0; flex: 1; font-size: 11px; }
+  .fee-row input { width: 90px !important; max-width: 90px !important; flex: 0 0 90px !important; font-size: 13px; padding: 6px 8px; margin: 0; }
+
+  /* ── Support iframe ──────────────────────────────────── */
+  .iframe-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .iframe-wrap iframe {
+    flex: 1;
+    border: none;
+    width: 100%;
+  }
+  .iframe-notice {
+    padding: 8px 20px;
+    background: #0f0c07;
+    border-bottom: 1px solid #2e2515;
+    font-size: 11px;
+    color: #4a3a2a;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #3d3020; border-radius: 2px; }
+
+  hr { border: none; border-top: 1px solid #2e2515; margin: 8px 0 16px; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ───────────────────────────────────────────── -->
+<div class="page-header">
+  <div>
+    <h1>⚔ AETHERMOOR</h1>
+    <div class="page-subtitle">ADMIN PANEL</div>
+  </div>
+</div>
+
+<!-- ── Tab bar ──────────────────────────────────────────── -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('players', this)">👤 PLAYERS</button>
+  <button class="tab-btn"        onclick="switchTab('log', this)"     id="log-tab-btn">📋 GIFT LOG</button>
+  <button class="tab-btn"        onclick="switchTab('calc', this)">🧮 CALCULATOR</button>
+  <button class="tab-btn"        onclick="switchTab('support', this)">📧 SUPPORT</button>
+  <button class="tab-btn"        onclick="switchTab('settings', this)">⚙ SETTINGS</button>
+  <button class="tab-btn"        onclick="switchTab('discord', this)" id="discord-tab-btn">📣 DISCORD</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: PLAYERS                                          -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="tab-players" class="tab-panel active">
+  <div class="scroll-content">
+
+    <div class="card">
+      <div class="card-title">🟢 RECENTLY ACTIVE</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+        <select id="active-window" style="background:#0d0a06;border:1px solid #2e2515;color:#d4b896;padding:6px 10px;font-family:'Crimson Text',serif;font-size:13px;cursor:pointer;">
+          <option value="15">Last 15 minutes</option>
+          <option value="60" selected>Last 1 hour</option>
+          <option value="480">Last 8 hours</option>
+          <option value="1440">Last 24 hours</option>
+          <option value="10080">Last 7 days</option>
+        </select>
+        <button onclick="fetchActivePlayers()" style="width:auto;padding:6px 16px;">🔄 Refresh</button>
+        <span id="active-count" style="color:#4a3a2a;font-size:12px;font-family:'Crimson Text',serif;"></span>
+      </div>
+      <div id="active-result"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔍 LOOK UP PLAYER</div>
+      <label>Player ID</label>
+      <input type="text" id="lookup-id" placeholder="player_abc123..." />
+      <button onclick="lookupPlayer()">🔍 LOOK UP</button>
+      <p id="quick-fill-hint" class="quick-fill-hint">✓ Player ID copied to Gift Tokens below</p>
+      <div id="lookup-result" class="result-box"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🪙 GIFT TOKENS</div>
+      <label>Player ID</label>
+      <input type="text" id="gift-id" placeholder="player_abc123..." />
+      <label>Number of Tokens to Add</label>
+      <input type="number" id="gift-amount" value="100" min="1" max="100000" />
+      <label>Note (optional — e.g. "beta tester gift")</label>
+      <input type="text" id="gift-note" placeholder="beta tester gift" />
+      <button onclick="giftTokens()">🎁 GIFT TOKENS</button>
+      <div id="gift-result" class="result-box"></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: GIFT LOG                                         -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="tab-log" class="tab-panel">
+  <div class="scroll-content">
+
+    <div class="card">
+      <div class="card-title">📋 GIFT LOG (this session)</div>
+      <div id="gift-log"><p style="color:#4a3a2a;font-size:13px;font-style:italic;">No gifts sent yet this session.</p></div>
+      <button onclick="clearLog()" class="danger" style="margin-top:16px;width:auto;padding:6px 16px;">🗑 Clear Log</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: CALCULATOR                                       -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="tab-calc" class="tab-panel">
+  <div class="scroll-content">
+
+    <div class="card">
+      <div class="card-title">🧮 TOKEN REVENUE CALCULATOR</div>
+      <p style="font-size:13px;color:#8a7a5f;margin-bottom:16px;line-height:1.6;">Enter how many of each package were sold. Adjust the assumptions below to model your real-world costs and see your estimated profit.</p>
+
+      <!-- Package quantities -->
+      <div class="calc-grid" id="pkg-grid"><!-- Populated by JS --></div>
+
+      <!-- Divider -->
+      <div style="margin:18px 0 14px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;color:#5a4a2a;border-bottom:1px solid #2e2515;padding-bottom:6px;">⚙ ASSUMPTIONS</div>
+
+      <!-- Stripe fees -->
+      <div class="fee-row">
+        <label>Stripe Fee %</label>
+        <input type="number" id="stripe-pct" value="1.5" min="0" max="10" step="0.1" oninput="calcRevenue()" />
+      </div>
+      <div class="fee-row">
+        <label>Stripe Fixed Fee per Transaction (£)</label>
+        <input type="number" id="stripe-fixed" value="0.20" min="0" max="2" step="0.01" oninput="calcRevenue()" />
+      </div>
+
+      <!-- Breakage -->
+      <div class="fee-row">
+        <label style="flex:1;">
+          Token Breakage % &nbsp;<span style="color:#4a3a2a;font-size:10px;letter-spacing:0;font-family:'Crimson Text',serif;">(tokens sold but never used — free money)</span>
+        </label>
+        <input type="number" id="breakage-pct" value="20" min="0" max="100" step="1" oninput="calcRevenue()" />
+      </div>
+      <div id="breakage-display" style="text-align:right;font-size:12px;color:#5a4a2a;font-style:italic;margin-top:4px;"></div>
+
+      <!-- Exchange rate -->
+      <div class="fee-row" style="margin-top:12px;">
+        <label>USD → GBP Rate &nbsp;<span style="color:#4a3a2a;font-size:10px;letter-spacing:0;font-family:'Crimson Text',serif;">(converts Anthropic $ costs to £ — update to live rate)</span></label>
+        <input type="number" id="gbp-rate" value="0.80" min="0.10" max="2.00" step="0.01" oninput="calcRevenue()" />
+      </div>
+
+      <!-- Haiku/Sonnet split -->
+      <div style="margin-top:14px;">
+        <label style="margin-bottom:8px;">
+          % of turns served by Haiku (cheaper) vs Sonnet (pricier)
+          &nbsp;<span style="color:#4a3a2a;font-size:10px;letter-spacing:0;font-family:'Crimson Text',serif;">(simple turns can use Haiku; complex narrative uses Sonnet)</span>
+        </label>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
+          <span style="font-family:'Cinzel',serif;font-size:10px;color:#6aaa6a;letter-spacing:1px;min-width:56px;">HAIKU</span>
+          <input type="range" id="haiku-split" min="0" max="100" value="0" step="5"
+                 oninput="updateHaikuLabel();calcRevenue()"
+                 style="flex:1;accent-color:#c9a84c;cursor:pointer;" />
+          <span style="font-family:'Cinzel',serif;font-size:10px;color:#c9a84c;letter-spacing:1px;min-width:56px;text-align:right;">SONNET</span>
+        </div>
+        <div id="haiku-label" style="text-align:center;font-size:12px;color:#8a7a5f;margin-top:6px;font-style:italic;"></div>
+      </div>
+
+      <!-- Results -->
+      <div class="calc-results" id="calc-results" style="display:none;">
+
+        <div class="calc-section-title">📦 Packages Sold</div>
+        <div id="calc-breakdown"></div>
+
+        <div class="calc-section-title">💷 Revenue Summary</div>
+        <div id="calc-revenue"></div>
+
+        <div class="calc-section-title">🪙 Game Tokens Granted</div>
+        <div id="calc-tokens"></div>
+
+        <div class="calc-section-title">🤖 Anthropic Top-Up Guide</div>
+        <div id="calc-anthropic"></div>
+
+      </div>
+
+      <button onclick="resetCalc()" class="danger" style="margin-top:16px;width:auto;padding:6px 16px;">↺ Reset</button>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: SUPPORT                                          -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="tab-support" class="tab-panel">
+  <div class="iframe-notice">📧 Support Dashboard — both files must be in the same folder for this to work</div>
+  <div class="iframe-wrap">
+    <iframe id="support-frame" src="" title="Support Dashboard"></iframe>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: SETTINGS                                         -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="tab-settings" class="tab-panel">
+  <div class="scroll-content">
+
+    <div class="card">
+      <div class="card-title">⚙ CONFIGURATION</div>
+      <label>Backend URL</label>
+      <input type="text" id="cfg-backend" value="https://aethermoor-backend-production.up.railway.app" />
+      <label>Admin Secret (your SESSION_SECRET from Railway)</label>
+      <input type="password" id="cfg-secret" placeholder="Paste your SESSION_SECRET here" />
+      <label>Discord Webhook URL</label>
+      <input type="password" id="cfg-webhook" placeholder="https://discord.com/api/webhooks/..." />
+      <p class="config-hint">Optional — used by the Discord tab to post patch notes. Stored locally only.</p>
+      <p class="config-hint">Your SESSION_SECRET is in Railway → aethermoor-backend → Variables. The secret is kept only for this browser tab and is sent in a request header, not in the URL.</p>
+      <button onclick="saveConfig()">💾 SAVE SETTINGS</button>
+      <div id="cfg-result" class="result-box"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ℹ ABOUT</div>
+      <div class="stat-row">
+        <span class="stat-label">Backend</span>
+        <span class="stat-value" id="about-backend" style="font-size:11px;font-family:monospace;">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Panel Version</span>
+        <span class="stat-value">v3.0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Support Email</span>
+        <span class="stat-value" style="font-size:11px;font-family:monospace;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="73000603031c01075d1216071b16011e1c1c0133141e121a1f5d101c1e">[email&#160;protected]</a></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: DISCORD                                          -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="tab-discord" class="tab-panel">
+  <div class="scroll-content">
+
+    <!-- Bot setup info -->
+    <div class="card" style="border-color:#5865F2;background:#13100a;">
+      <div class="card-title" style="color:#5865F2;">🤖 BOT SETUP (one-time)</div>
+      <p style="font-size:13px;line-height:1.7;color:#a09070;">To use the Prize Wheel, create a Discord bot at <strong>discord.com/developers</strong> and add these Railway env vars:<br>
+        <code style="color:#c9a84c;">DISCORD_BOT_TOKEN</code> — your bot token<br>
+        <code style="color:#c9a84c;">DISCORD_GUILD_ID</code> — your server ID (Server Settings → Widget)<br>
+        Bot must have <strong>Server Members Intent</strong> enabled and be invited to your server with <em>Read Members</em> permission.
+      </p>
+    </div>
+
+    <!-- Patch notes poster -->
+    <div class="card">
+      <div class="card-title">📝 POST PATCH NOTES</div>
+      <label>Message (editable)</label>
+      <textarea id="discord-patch-textarea" rows="12" style="width:100%;background:#0d0a06;color:#d4c5a0;border:1px solid #2e2515;padding:10px;font-family:monospace;font-size:12px;line-height:1.5;resize:vertical;"></textarea>
+      <p style="font-size:11px;color:#5a4a2a;margin-top:4px;">Webhook URL is taken from Settings. Make sure it's saved there first.</p>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button onclick="copyPatchNotes()" style="flex:1;">📋 COPY</button>
+        <button onclick="postPatchNotes()" style="flex:1;background:#5865F2;border-color:#5865F2;color:#fff;">🚀 POST TO DISCORD</button>
+      </div>
+      <div id="discord-patch-result" class="result-box"></div>
+    </div>
+
+    <!-- Prize wheel -->
+    <div class="card">
+      <div class="card-title">🎡 PRIZE WHEEL</div>
+      <label>Discord Role ID (leave blank for all members)</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="wheel-role-id" placeholder="e.g. 1234567890123456789" style="flex:1;" />
+        <button onclick="fetchDiscordMembers()" id="wheel-fetch-btn" style="flex:0 0 auto;width:auto;padding:6px 14px;">FETCH MEMBERS</button>
+      </div>
+      <div id="wheel-member-badge" style="font-size:12px;color:#5a4a2a;margin-top:6px;display:none;"></div>
+      <div id="discord-fetch-result" class="result-box"></div>
+
+      <!-- Canvas wheel (hidden until members loaded) -->
+      <div id="wheel-container" style="display:none;margin-top:16px;text-align:center;">
+        <div style="position:relative;display:inline-block;">
+          <!-- Pointer triangle -->
+          <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:18px solid #c9a84c;z-index:1;"></div>
+          <canvas id="wheel-canvas" width="480" height="480" style="border-radius:50%;border:3px solid #c9a84c;box-shadow:0 0 24px #c9a84c44;display:block;"></canvas>
+        </div>
+        <div style="margin-top:16px;">
+          <button onclick="spinWheel()" id="wheel-spin-btn" style="font-size:18px;padding:12px 32px;background:#c9a84c;color:#0d0a06;border:none;font-family:'Cinzel',serif;letter-spacing:2px;cursor:pointer;">🎡 SPIN!</button>
+        </div>
+        <div id="wheel-result" style="display:none;margin-top:20px;background:#13100a;border:2px solid #c9a84c;padding:20px;text-align:center;">
+          <div style="font-family:'Cinzel',serif;color:#5a4a2a;font-size:11px;letter-spacing:2px;margin-bottom:6px;">🏆 WINNER</div>
+          <div id="wheel-winner-name" style="font-family:'Cinzel',serif;color:#c9a84c;font-size:26px;letter-spacing:1px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+ src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+// ══════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+
+  // Lazy-load the support iframe only when first clicked
+  if (name === 'support') {
+    const frame = document.getElementById('support-frame');
+    if (!frame.src || frame.src === window.location.href) {
+      frame.src = 'aethermoor-support-dashboard.html';
+    }
+  }
+  if (name === 'discord') initDiscordTab();
+  if (name === 'players') fetchActivePlayers();
+}
+
+
+// ══════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════
+function saveConfig() {
+  const backend = document.getElementById('cfg-backend').value.trim();
+  const secret  = document.getElementById('cfg-secret').value.trim();
+  const webhook = document.getElementById('cfg-webhook').value.trim();
+  if (!backend || !secret) { showResult('cfg-result', 'err', 'Please fill in Backend URL and Admin Secret.'); return; }
+  localStorage.setItem('ae_admin_backend',  backend);
+  sessionStorage.setItem('ae_admin_backend', backend);
+  sessionStorage.setItem('ae_admin_secret',  secret);
+  localStorage.removeItem('ae_admin_secret');
+  localStorage.setItem('ae_discord_webhook', webhook);
+  document.getElementById('about-backend').textContent = backend;
+  showResult('cfg-result', 'ok', '✓ Settings saved.');
+}
+
+function loadConfig() {
+  const b = sessionStorage.getItem('ae_admin_backend') || localStorage.getItem('ae_admin_backend');
+  const s = sessionStorage.getItem('ae_admin_secret');
+  const w = localStorage.getItem('ae_discord_webhook');
+  if (b) { document.getElementById('cfg-backend').value = b; document.getElementById('about-backend').textContent = b; }
+  localStorage.removeItem('ae_admin_secret');
+  if (s) document.getElementById('cfg-secret').value = s;
+  if (w)   document.getElementById('cfg-webhook').value = w;
+}
+
+function getConfig() {
+  return {
+    backend: document.getElementById('cfg-backend').value.trim().replace(/\/$/, ''),
+    secret:  document.getElementById('cfg-secret').value.trim(),
+  };
+}
+
+async function adminFetch(path, options = {}) {
+  const { backend, secret } = getConfig();
+  if (!backend || !secret) throw new Error('missing_admin_config');
+
+  const method = options.method || 'POST';
+  const body = options.body;
+  const headers = {
+    'X-Admin-Secret': secret,
+    ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+    ...(options.headers || {})
+  };
+
+  return fetch(`${backend}${path}`, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+}
+
+function escHtml(v) {
+  return String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function copyTriggerText(btn) {
+  const txt = decodeURIComponent(btn?.dataset?.enc || '');
+  if (!txt) return;
+  try {
+    await navigator.clipboard.writeText(txt);
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1200);
+  } catch {}
+}
+
+
+// ══════════════════════════════════════════════════════════
+// RECENTLY ACTIVE PLAYERS
+// ══════════════════════════════════════════════════════════
+async function fetchActivePlayers() {
+  const { backend, secret } = getConfig();
+  if (!backend || !secret) { document.getElementById('active-result').innerHTML = '<p style="color:#9a4040;font-size:13px;">Configure backend and secret in ⚙ Settings first.</p>'; return; }
+  const minutes = document.getElementById('active-window').value;
+  const el = document.getElementById('active-result');
+  const countEl = document.getElementById('active-count');
+  el.innerHTML = '<p style="color:#4a3a2a;font-size:13px;font-style:italic;">Loading...</p>';
+  countEl.textContent = '';
+  try {
+    const r = await adminFetch('/admin/active-players', { body: { minutes } });
+    const data = await r.json();
+    if (!r.ok) { el.innerHTML = `<p style="color:#9a4040;font-size:13px;">Error: ${data.error || r.status}</p>`; return; }
+    const players = data.players || [];
+    countEl.textContent = `${players.length} player${players.length !== 1 ? 's' : ''}`;
+    if (players.length === 0) {
+      el.innerHTML = '<p style="color:#4a3a2a;font-size:13px;font-style:italic;">No activity in this window.</p>';
+      return;
+    }
+    const rows = players.map(p => {
+      const lastSeen = new Date(p.last_seen);
+      const minsAgo = Math.round((Date.now() - lastSeen) / 60000);
+      const when = minsAgo < 2 ? 'just now' : minsAgo < 60 ? `${minsAgo}m ago` : minsAgo < 1440 ? `${Math.round(minsAgo/60)}h ago` : `${Math.round(minsAgo/1440)}d ago`;
+      return `<tr>
+        <td style="color:#d4b896;font-size:13px;">${p.email || '<span style="color:#4a3a2a;font-style:italic;">guest</span>'}</td>
+        <td style="color:#8a7a5f;font-size:11px;font-family:monospace;">${p.player_id}</td>
+        <td style="color:#c9a84c;font-size:12px;text-align:center;">${p.turns}</td>
+        <td style="color:#8a7a5f;font-size:12px;text-align:right;">${when}</td>
+        <td style="text-align:right;"><button onclick="document.getElementById('lookup-id').value='${p.player_id}';lookupPlayer();" style="width:auto;padding:3px 10px;font-size:11px;">View</button></td>
+      </tr>`;
+    }).join('');
+    el.innerHTML = `<table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:1px solid #2e2515;">
+        <th style="color:#5a4a2a;font-size:10px;letter-spacing:2px;font-family:'Cinzel',serif;text-align:left;padding-bottom:6px;">EMAIL</th>
+        <th style="color:#5a4a2a;font-size:10px;letter-spacing:2px;font-family:'Cinzel',serif;text-align:left;padding-bottom:6px;">PLAYER ID</th>
+        <th style="color:#5a4a2a;font-size:10px;letter-spacing:2px;font-family:'Cinzel',serif;text-align:center;padding-bottom:6px;">TURNS</th>
+        <th style="color:#5a4a2a;font-size:10px;letter-spacing:2px;font-family:'Cinzel',serif;text-align:right;padding-bottom:6px;">LAST SEEN</th>
+        <th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  } catch (e) { el.innerHTML = `<p style="color:#9a4040;font-size:13px;">Could not reach backend: ${e.message}</p>`; }
+}
+
+// LOOK UP PLAYER
+// ══════════════════════════════════════════════════════════
+async function lookupPlayer() {
+  const { backend, secret } = getConfig();
+  if (!backend || !secret) { showResult('lookup-result', 'err', 'Please fill in your configuration in the ⚙ Settings tab first.'); return; }
+  const pid = document.getElementById('lookup-id').value.trim();
+  if (!pid) { showResult('lookup-result', 'err', 'Please enter a Player ID.'); return; }
+
+  showResult('lookup-result', 'ok', 'Looking up...');
+  try {
+    const r = await adminFetch('/admin/player', { body: { playerId: pid } });
+    const d = await r.json();
+    if (!r.ok) { showResult('lookup-result', 'err', `❌ ${d.error || 'Error'}`); return; }
+
+    const mod = d.moderation || {};
+    const yellow = Number(mod.yellowCount || 0);
+    const red = !!mod.redCard;
+    const modStatus = red ? '🟥 RED CARD (locked)' : yellow > 0 ? `🟨 YELLOW CARD (${yellow})` : '✅ Clear';
+    let html = `
+      <div class="stat-row"><span class="stat-label">Player ID</span><span class="stat-value" style="font-family:monospace;font-size:12px">${d.playerId}</span></div>
+      <div class="stat-row"><span class="stat-label">Current Balance</span><span class="stat-value">${d.balance} tokens</span></div>
+      <div class="stat-row"><span class="stat-label">Safety Status</span><span class="stat-value ${red ? 'red' : yellow > 0 ? '' : 'green'}">${modStatus}</span></div>
+      ${(yellow > 0 || red) ? `<button onclick="clearModerationFlags('${d.playerId}')" class="danger" style="width:auto;padding:6px 14px;margin-top:6px;font-size:11px;">🗑 Clear All Flags</button>` : ''}
+    `;
+    if (mod.lastReason) {
+      html += `<div class="stat-row"><span class="stat-label">Last Safety Reason</span><span class="stat-value" style="font-size:11px">${escHtml(mod.lastReason)}</span></div>`;
+    }
+    if (d.recentLog && d.recentLog.length > 0) {
+      html += '<div style="margin-top:10px;font-family:Cinzel,serif;font-size:10px;letter-spacing:2px;color:#5a4a2a;margin-bottom:6px">RECENT ACTIVITY</div>';
+      d.recentLog.forEach(e => {
+        const cls  = e.change > 0 ? 'pos' : 'neg';
+        const sign = e.change > 0 ? '+' : '';
+        const date = new Date(e.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        html += `<div class="log-entry"><span class="log-change ${cls}">${sign}${e.change}</span><span class="log-reason">${escHtml(e.reason)}</span><span class="log-date">${date}</span></div>`;
+      });
+    }
+    if (d.moderationIncidents && d.moderationIncidents.length > 0) {
+      html += '<div style="margin-top:12px;font-family:Cinzel,serif;font-size:10px;letter-spacing:2px;color:#5a4a2a;margin-bottom:6px">SAFETY INCIDENTS (latest 20)</div>';
+      d.moderationIncidents.forEach(e => {
+        const date = new Date(e.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        html += `<div style="border:1px solid #2e2515;background:#0d0a06;padding:8px;margin:6px 0;">
+          <div style="font-size:11px;color:${e.level==='red' ? '#c07070' : '#c9a84c'};margin-bottom:4px;"><strong>${e.level.toUpperCase()}</strong> · ${escHtml(e.source)} · ${date}</div>
+          <div style="font-size:11px;color:#8a7a5f;margin-bottom:6px;">Reason: ${escHtml(e.reason || '')}</div>
+          <div style="font-size:11px;color:#d4c5a0;white-space:pre-wrap;max-height:90px;overflow:auto;border:1px solid #1e1a10;padding:6px;">${escHtml(e.trigger_text || '')}</div>
+          <button onclick="copyTriggerText(this)" data-enc="${encodeURIComponent(e.trigger_text || '')}" style="width:auto;padding:4px 10px;margin-top:6px;font-size:10px;">Copy</button>
+        </div>`;
+      });
+    }
+    document.getElementById('gift-id').value = pid;
+    const hint = document.getElementById('quick-fill-hint');
+    hint.style.display = 'block';
+    setTimeout(() => { hint.style.display = 'none'; }, 3000);
+    showResult('lookup-result', 'ok', html);
+  } catch(e) {
+    showResult('lookup-result', 'err', `❌ Could not connect: ${e.message}`);
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// CLEAR MODERATION FLAGS
+// ══════════════════════════════════════════════════════════
+async function clearModerationFlags(pid) {
+  const { backend, secret } = getConfig();
+  if (!backend || !secret) { alert('Configure backend and secret first.'); return; }
+  if (!confirm(`Clear ALL moderation flags for ${pid}?\n\nThis removes yellow cards, red card lock, and all incident history.`)) return;
+  try {
+    const r = await adminFetch('/admin/clear-moderation', { body: { playerId: pid } });
+    const d = await r.json();
+    if (!r.ok) { alert(`Error: ${d.error || r.status}`); return; }
+    alert('Flags cleared. Re-loading player...');
+    document.getElementById('lookup-id').value = pid;
+    lookupPlayer();
+  } catch(e) { alert(`Could not reach backend: ${e.message}`); }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// GIFT TOKENS
+// ══════════════════════════════════════════════════════════
+async function giftTokens() {
+  const { backend, secret } = getConfig();
+  if (!backend || !secret) { showResult('gift-result', 'err', 'Please fill in your configuration in the ⚙ Settings tab first.'); return; }
+  const pid    = document.getElementById('gift-id').value.trim();
+  const amount = parseInt(document.getElementById('gift-amount').value);
+  const note   = document.getElementById('gift-note').value.trim() || 'admin gift';
+  if (!pid)          { showResult('gift-result', 'err', 'Please enter a Player ID.'); return; }
+  if (!amount || amount < 1) { showResult('gift-result', 'err', 'Please enter a valid amount.'); return; }
+
+  showResult('gift-result', 'ok', 'Sending tokens...');
+  try {
+    const r = await adminFetch('/admin/add-tokens', { body: { playerId: pid, amount, note } });
+    const d = await r.json();
+    if (!r.ok || !d.success) { showResult('gift-result', 'err', `❌ ${d.error || 'Error'}`); return; }
+
+    const msg = `✅ Done! Added <strong>${d.tokensAdded} tokens</strong> to <code style="font-size:12px">${d.playerId}</code><br>New balance: <strong>${d.newBalance} tokens</strong>`;
+    showResult('gift-result', 'ok', msg);
+    addToLog(d.playerId, d.tokensAdded, note, d.newBalance);
+  } catch(e) {
+    showResult('gift-result', 'err', `❌ Could not connect: ${e.message}`);
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// GIFT LOG
+// ══════════════════════════════════════════════════════════
+let giftLog = [];
+
+function addToLog(pid, amount, note, newBalance) {
+  const now = new Date().toLocaleString('en-GB', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  giftLog.unshift({ pid, amount, note, newBalance, time: now });
+  renderGiftLog();
+  document.getElementById('log-tab-btn').textContent = `📋 GIFT LOG (${giftLog.length})`;
+}
+
+function renderGiftLog() {
+  const el = document.getElementById('gift-log');
+  if (giftLog.length === 0) {
+    el.innerHTML = '<p style="color:#4a3a2a;font-size:13px;font-style:italic;">No gifts sent yet this session.</p>';
+    return;
+  }
+  el.innerHTML = giftLog.map(e =>
+    `<div class="top-log-entry">
+      <span class="tl-time">${e.time}</span>
+      <span class="tl-pid" title="${e.pid}">${e.pid}</span>
+      <span class="tl-amount">+${e.amount}</span>
+      <span class="tl-note">${e.note} <span style="color:#4a3a2a">(→ ${e.newBalance})</span></span>
+    </div>`
+  ).join('');
+}
+
+function clearLog() {
+  if (!giftLog.length) return;
+  if (!confirm('Clear the gift log for this session?')) return;
+  giftLog = [];
+  renderGiftLog();
+  document.getElementById('log-tab-btn').textContent = '📋 GIFT LOG';
+}
+
+
+// ══════════════════════════════════════════════════════════
+// CALCULATOR
+// ══════════════════════════════════════════════════════════
+
+const PACKAGES = [
+  { id: 'starter',    name: 'Starter',    tokens: 75,    price: 1.00  },
+  { id: 'adventurer', name: 'Adventurer', tokens: 300,   price: 2.50  },
+  { id: 'hero',       name: 'Hero',       tokens: 750,   price: 5.00  },
+  { id: 'legend',     name: 'Legend',     tokens: 1500,  price: 9.99  },
+  { id: 'champion',   name: 'Champion',   tokens: 3500,  price: 19.99 },
+  { id: 'immortal',   name: 'Immortal',   tokens: 7300,  price: 49.99 },
+];
+
+function buildPkgGrid() {
+  const grid = document.getElementById('pkg-grid');
+  grid.innerHTML = PACKAGES.map(p => `
+    <div class="pkg-row">
+      <div class="pkg-row-top">
+        <div class="pkg-name">${p.name}</div>
+        <input class="pkg-qty" type="number" id="qty-${p.id}" value="0" min="0" max="9999"
+               oninput="calcRevenue()" placeholder="0" />
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">TOKENS</span>
+        <input type="range" id="tok-${p.id}" min="10" max="20000" step="25" value="${p.tokens}"
+               oninput="updatePkgLabel('${p.id}');calcRevenue();"
+               style="flex:1;accent-color:#c9a84c;cursor:pointer;" />
+        <input type="number" class="slider-val" id="tok-val-${p.id}" value="${p.tokens}" min="10" max="20000" step="25"
+               oninput="syncSlider('tok','${p.id}');calcRevenue();" />
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">PRICE £</span>
+        <input type="range" id="prc-${p.id}" min="0.50" max="100" step="0.50" value="${p.price}"
+               oninput="updatePkgLabel('${p.id}');calcRevenue();"
+               style="flex:1;accent-color:#c9a84c;cursor:pointer;" />
+        <input type="number" class="slider-val" id="prc-val-${p.id}" value="${p.price.toFixed(2)}" min="0.50" max="100" step="0.50"
+               oninput="syncSlider('prc','${p.id}');calcRevenue();" />
+      </div>
+    </div>
+  `).join('');
+}
+
+function syncSlider(type, id) {
+  const num = parseFloat(document.getElementById(type + '-val-' + id).value);
+  if (!isNaN(num)) document.getElementById(type + '-' + id).value = num;
+}
+
+function updatePkgLabel(id) {
+  const tok = parseInt(document.getElementById('tok-' + id).value)   || 0;
+  const prc = parseFloat(document.getElementById('prc-' + id).value) || 0;
+  document.getElementById('tok-val-' + id).value = tok;
+  document.getElementById('prc-val-' + id).value = prc.toFixed(2);
+}
+
+// Pricing per million tokens (USD) — Sonnet 4 & Haiku 4.5
+const SONNET_IN  = 3.00;   // $3  per M input tokens
+const SONNET_OUT = 15.00;  // $15 per M output tokens
+const HAIKU_IN   = 0.80;   // $0.80 per M input tokens
+const HAIKU_OUT  = 4.00;   // $4  per M output tokens
+const AVG_INPUT  = 4000;   // realistic for Aethermoor (large system prompt + history)
+const AVG_OUTPUT = 400;
+const GBP_RATE   = 0.80;   // rough USD to GBP conversion
+
+function updateHaikuLabel() {
+  const haiku  = parseInt(document.getElementById('haiku-split').value) || 0;
+  const sonnet = 100 - haiku;
+  document.getElementById('haiku-label').textContent =
+    haiku === 0   ? 'All turns served by Sonnet' :
+    haiku === 100 ? 'All turns served by Haiku' :
+    `${haiku}% Haiku  \xb7  ${sonnet}% Sonnet`;
+}
+
+function calcRevenue() {
+  const stripePct   = parseFloat(document.getElementById('stripe-pct').value)   || 0;
+  const stripeFixed = parseFloat(document.getElementById('stripe-fixed').value) || 0;
+  const breakagePct = parseFloat(document.getElementById('breakage-pct').value) || 0;
+  const haikuPct    = parseInt(document.getElementById('haiku-split').value)    || 0;
+  const sonnetPct   = 100 - haikuPct;
+  const gbpRate     = parseFloat(document.getElementById('gbp-rate').value)     || GBP_RATE;
+
+  let totalGross  = 0;
+  let totalTokens = 0;
+  let totalTx     = 0;
+  const sold = [];
+
+  PACKAGES.forEach(p => {
+    const qty    = parseInt(document.getElementById('qty-' + p.id).value)   || 0;
+    const tokens = parseInt(document.getElementById('tok-' + p.id).value)   || p.tokens;
+    const price  = parseFloat(document.getElementById('prc-' + p.id).value) || p.price;
+    if (qty > 0) {
+      const gross = qty * price;
+      totalGross  += gross;
+      totalTokens += qty * tokens;
+      totalTx     += qty;
+      sold.push({ ...p, qty, gross, tokens, price });
+    }
+  });
+
+  if (sold.length === 0) {
+    document.getElementById('calc-results').style.display = 'none';
+    document.getElementById('breakage-display').innerHTML = '';
+    return;
+  }
+
+  // Breakage: tokens sold but never used
+  const breakageTokens   = Math.round(totalTokens * breakagePct / 100);
+  const servedTokens     = totalTokens - breakageTokens;
+  const avgGBPperToken   = totalTokens > 0 ? totalGross / totalTokens : 0;
+  const breakageValueGBP = breakageTokens * avgGBPperToken;
+  const breakageValueUSD = gbpRate > 0 ? breakageValueGBP / gbpRate : 0;
+
+  document.getElementById('breakage-display').innerHTML =
+    breakagePct > 0
+      ? `\u2248 ${breakageTokens.toLocaleString()} tokens never used \u2014 only ${servedTokens.toLocaleString()} API calls needed`
+          + ` &nbsp;<span style="color:#6aaa6a;">(~\xa3${breakageValueGBP.toFixed(2)} / ~$${breakageValueUSD.toFixed(2)} kept for free)</span>`
+      : '';
+
+  // Stripe
+  const stripeFee  = (totalGross * stripePct / 100) + (stripeFixed * totalTx);
+  const netRevenue = totalGross - stripeFee;
+  const netUSD     = gbpRate > 0 ? netRevenue / gbpRate : 0;
+
+  // API cost blended across model mix
+  const sonnetCostUSD  = (AVG_INPUT * SONNET_IN  + AVG_OUTPUT * SONNET_OUT) / 1000000;
+  const haikuCostUSD   = (AVG_INPUT * HAIKU_IN   + AVG_OUTPUT * HAIKU_OUT)  / 1000000;
+  const blendedCostUSD = (sonnetCostUSD * sonnetPct / 100) + (haikuCostUSD * haikuPct / 100);
+  const blendedCostGBP = blendedCostUSD * gbpRate;
+  const totalApiUSD    = blendedCostUSD * servedTokens;
+  const totalApiGBP    = blendedCostGBP * servedTokens;
+  const margin         = netRevenue - totalApiGBP;
+  const marginUSD      = gbpRate > 0 ? margin / gbpRate : 0;
+
+  // Breakdown
+  document.getElementById('calc-breakdown').innerHTML = sold.map(p =>
+    `<div class="stat-row">
+      <span class="stat-label">${p.name} \xd7 ${p.qty} &nbsp;<span style="color:#3a2e18;font-size:10px;">${p.tokens.toLocaleString()} tok \xb7 \xa3${p.price.toFixed(2)}</span></span>
+      <span class="stat-value">\xa3${p.gross.toFixed(2)} &nbsp;<span style="color:#5a4a2a;font-size:11px">(${(p.qty * p.tokens).toLocaleString()} tokens)</span></span>
+    </div>`
+  ).join('');
+
+  // Revenue
+  document.getElementById('calc-revenue').innerHTML = `
+    <div class="stat-row"><span class="stat-label">Gross Revenue</span><span class="stat-value">\xa3${totalGross.toFixed(2)} &nbsp;<span style="color:#5a4a2a;font-size:11px">/ $${(gbpRate > 0 ? totalGross / gbpRate : 0).toFixed(2)}</span></span></div>
+    <div class="stat-row"><span class="stat-label">Stripe Fees (${stripePct}% + \xa3${stripeFixed.toFixed(2)} \xd7 ${totalTx} tx)</span><span class="stat-value red">\u2212\xa3${stripeFee.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="stat-label" style="font-weight:bold;color:#d4c5a0;">Net Revenue (after Stripe)</span><span class="stat-value big">\xa3${netRevenue.toFixed(2)} &nbsp;<span style="color:#8a7a5f;font-size:13px">/ $${netUSD.toFixed(2)}</span></span></div>
+  `;
+
+  // Tokens
+  document.getElementById('calc-tokens').innerHTML = `
+    <div class="stat-row"><span class="stat-label">Total Game Tokens Sold</span><span class="stat-value green">${totalTokens.toLocaleString()}</span></div>
+    ${breakagePct > 0 ? `
+    <div class="stat-row"><span class="stat-label">Estimated Breakage (${breakagePct}% never used)</span><span class="stat-value green">\u2212${breakageTokens.toLocaleString()} tokens</span></div>
+    <div class="stat-row"><span class="stat-label" style="padding-left:12px;color:#6aaa6a;">\u21b3 Breakage value (free money)</span><span class="stat-value green">\u2248 \xa3${breakageValueGBP.toFixed(2)} / $${breakageValueUSD.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="stat-label" style="color:#d4c5a0;">API Calls Actually Needed</span><span class="stat-value">${servedTokens.toLocaleString()}</span></div>
+    ` : `<div class="stat-row"><span class="stat-label">API Calls to Serve</span><span class="stat-value">${servedTokens.toLocaleString()}</span></div>`}
+  `;
+
+  // Anthropic top-up
+  const modelLabel = haikuPct === 0 ? 'Sonnet only' : haikuPct === 100 ? 'Haiku only' : `${haikuPct}% Haiku + ${sonnetPct}% Sonnet`;
+  document.getElementById('calc-anthropic').innerHTML = `
+    <div class="stat-row"><span class="stat-label">Model Mix</span><span class="stat-value" style="font-size:11px;">${modelLabel}</span></div>
+    <div class="stat-row"><span class="stat-label">Blended cost per API call</span><span class="stat-value" style="font-size:11px;">~$${blendedCostUSD.toFixed(4)} / ~\xa3${blendedCostGBP.toFixed(4)}</span></div>
+    <div class="stat-row"><span class="stat-label">Est. total Anthropic cost</span><span class="stat-value red">~$${totalApiUSD.toFixed(2)} / ~\xa3${totalApiGBP.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="stat-label" style="font-weight:bold;color:#d4c5a0;">Estimated Profit after all costs</span><span class="stat-value big ${margin >= 0 ? 'green' : 'red'}">\xa3${margin.toFixed(2)} &nbsp;<span style="font-size:13px">/ $${marginUSD.toFixed(2)}</span></span></div>
+    <div style="margin-top:12px;padding:14px;background:#0f0c07;border:1px solid ${margin >= 0 ? '#2a4a2a' : '#4a2a2a'};font-size:13px;color:#8a7a5f;line-height:1.8;">
+      \ud83d\udca1 Top up your Anthropic account by at least <strong style="color:#c9a84c">$${totalApiUSD.toFixed(2)}</strong> to serve these ${servedTokens.toLocaleString()} turns.<br>
+      <span style="font-size:12px;color:#4a3a2a;">Based on ~${AVG_INPUT.toLocaleString()} input + ~${AVG_OUTPUT} output tokens per call (${modelLabel}).${haikuPct > 0 && haikuPct < 100 ? ` Sonnet: $${sonnetCostUSD.toFixed(4)}/call \xb7 Haiku: $${haikuCostUSD.toFixed(4)}/call.` : ''} Actual costs may vary.</span>
+    </div>
+  `;
+
+  document.getElementById('calc-results').style.display = 'block';
+}
+
+function resetCalc() {
+  PACKAGES.forEach(p => {
+    const qty = document.getElementById('qty-' + p.id); if (qty) qty.value = 0;
+    const tok = document.getElementById('tok-' + p.id); if (tok) tok.value = p.tokens;
+    const prc = document.getElementById('prc-' + p.id); if (prc) prc.value = p.price;
+    updatePkgLabel(p.id);
+  });
+  document.getElementById('haiku-split').value  = 0;
+  document.getElementById('breakage-pct').value = 20;
+  document.getElementById('gbp-rate').value     = GBP_RATE;
+  updateHaikuLabel();
+  document.getElementById('breakage-display').innerHTML = '';
+  document.getElementById('calc-results').style.display = 'none';
+}
+
+
+// ══════════════════════════════════════════════════════════
+// DISCORD TAB
+// ══════════════════════════════════════════════════════════
+
+function parseChangelogForDiscord(markdown) {
+  // Extract the [Unreleased] section
+  const match = markdown.match(/## \[Unreleased\]([\s\S]*?)(?=\n## \[|\n## v|$)/);
+  if (!match) return '**Aethermoor** — No unreleased changes found in CHANGELOG.md.';
+  const section = match[1];
+  const lines = ['**Aethermoor — Latest Updates**', ''];
+  // Split by subsections (### Added, ### Fixed, ### Changed, etc.)
+  const parts = section.split(/\n(?=### )/);
+  for (const part of parts) {
+    const partLines = part.split('\n').filter(l => l.trim());
+    if (!partLines.length) continue;
+    const heading = partLines[0].replace(/^###\s*/, '').trim();
+    if (heading) lines.push(`__${heading}__`);
+    for (const line of partLines.slice(1)) {
+      const t = line.trim();
+      if (t.startsWith('- ')) {
+        // Top-level bullet only — skip indented sub-bullets for Discord brevity
+        if (!line.match(/^\s{2,}-/)) {
+          lines.push('• ' + t.slice(2).replace(/\*\*([^*]+)\*\*/g, '**$1**'));
+        }
+      }
+    }
+    lines.push('');
+  }
+  return lines.join('\n').trim();
+}
+
+let discordTabInited = false;
+async function initDiscordTab() {
+  if (discordTabInited) return;
+  discordTabInited = true;
+  const ta = document.getElementById('discord-patch-textarea');
+  ta.value = 'Loading changelog…';
+  const { backend, secret } = getConfig();
+  if (!backend || !secret) {
+    ta.value = '(Configure backend & secret in ⚙ Settings to auto-load changelog)';
+    return;
+  }
+  try {
+    const r = await adminFetch('/admin/changelog', { body: {} });
+    if (!r.ok) { ta.value = '(Could not load CHANGELOG.md from backend — is it in the repo?)'; return; }
+    const text = await r.text();
+    ta.value = parseChangelogForDiscord(text);
+  } catch (e) { ta.value = `(Error loading changelog: ${e.message})`; }
+}
+
+async function copyPatchNotes() {
+  const text = document.getElementById('discord-patch-textarea').value;
+  try {
+    await navigator.clipboard.writeText(text);
+    showResult('discord-patch-result', 'ok', '✓ Copied to clipboard.');
+  } catch {
+    showResult('discord-patch-result', 'err', '⚠ Clipboard access denied — select all and copy manually.');
+  }
+}
+
+async function postPatchNotes() {
+  const webhook = localStorage.getItem('ae_discord_webhook') || '';
+  if (!webhook) {
+    showResult('discord-patch-result', 'err', '⚠ No webhook URL saved. Add it in the ⚙ Settings tab first.');
+    return;
+  }
+  if (!/^https:\/\/(canary\.|ptb\.)?discord\.com\/api\/webhooks\/.+/i.test(webhook)) {
+    showResult('discord-patch-result', 'err', '⚠ Saved webhook URL looks invalid. Check Settings.');
+    return;
+  }
+  const content = document.getElementById('discord-patch-textarea').value.trim();
+  if (!content) { showResult('discord-patch-result', 'err', '⚠ Message is empty.'); return; }
+  try {
+    const res = await fetch(webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'Aethermoor Patch Bot', content }),
+    });
+    if (!res.ok) { showResult('discord-patch-result', 'err', `⚠ Discord returned ${res.status}.`); return; }
+    showResult('discord-patch-result', 'ok', '✓ Posted to Discord successfully.');
+  } catch (e) {
+    showResult('discord-patch-result', 'err', '⚠ Post failed — check CORS or network.');
+  }
+}
+
+// ── Prize Wheel ────────────────────────────────────────────
+
+let wheelMembers  = [];  // [{id, name}]
+let wheelAngle    = 0;   // current rotation in radians
+let wheelSpinning = false;
+
+const WHEEL_COLOURS = ['#c9a84c','#2e2515','#8a6a2a','#1a1508','#b08a3c','#3a2e10'];
+
+async function fetchDiscordMembers() {
+  const { backend, secret } = getConfig();
+  if (!backend || !secret) { showResult('discord-fetch-result', 'err', '⚠ Save Settings first.'); return; }
+  const roleId = document.getElementById('wheel-role-id').value.trim();
+  const btn = document.getElementById('wheel-fetch-btn');
+  btn.disabled = true; btn.textContent = 'Fetching…';
+  try {
+    const res = await adminFetch('/admin/discord-members', { body: roleId ? { roleId } : {} });
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data.message || data.error || res.status;
+      showResult('discord-fetch-result', 'err', `⚠ ${msg}`);
+      return;
+    }
+    if (!data.members || data.members.length === 0) {
+      showResult('discord-fetch-result', 'err', '⚠ No members found. Try a different Role ID or leave blank for all members.');
+      return;
+    }
+    wheelMembers = data.members;
+    const badge = document.getElementById('wheel-member-badge');
+    badge.textContent = `✓ ${data.total} member${data.total !== 1 ? 's' : ''} loaded`;
+    badge.style.display = 'block';
+    document.getElementById('wheel-container').style.display = 'block';
+    document.getElementById('wheel-result').style.display = 'none';
+    wheelAngle = 0;
+    drawWheel(wheelMembers, 0);
+    showResult('discord-fetch-result', 'ok', `✓ Loaded ${data.total} members. Ready to spin!`);
+  } catch (e) {
+    showResult('discord-fetch-result', 'err', `⚠ Fetch failed: ${e.message}`);
+  } finally {
+    btn.disabled = false; btn.textContent = 'FETCH MEMBERS';
+  }
+}
+
+function drawWheel(members, rotation) {
+  const canvas = document.getElementById('wheel-canvas');
+  const ctx    = canvas.getContext('2d');
+  const cx = canvas.width  / 2;
+  const cy = canvas.height / 2;
+  const r  = Math.min(cx, cy) - 4;
+  const n  = members.length;
+  const sliceAngle = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < n; i++) {
+    const start = rotation + i * sliceAngle - Math.PI / 2;
+    const end   = start + sliceAngle;
+
+    // Slice fill
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle   = WHEEL_COLOURS[i % WHEEL_COLOURS.length];
+    ctx.strokeStyle = '#0d0a06';
+    ctx.lineWidth   = 2;
+    ctx.fill();
+    ctx.stroke();
+
+    // Label text
+    const textAngle = start + sliceAngle / 2;
+    const textR     = r * 0.65;
+    ctx.save();
+    ctx.translate(cx + Math.cos(textAngle) * textR, cy + Math.sin(textAngle) * textR);
+    ctx.rotate(textAngle + Math.PI / 2);
+    ctx.fillStyle   = WHEEL_COLOURS[i % WHEEL_COLOURS.length] === '#c9a84c' ? '#0d0a06' : '#c9a84c';
+    ctx.font        = `bold ${n > 20 ? 9 : n > 10 ? 11 : 13}px Cinzel, serif`;
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'middle';
+    const label = members[i].name.length > 14 ? members[i].name.slice(0, 13) + '…' : members[i].name;
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
+  }
+
+  // Centre circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 22, 0, 2 * Math.PI);
+  ctx.fillStyle = '#0d0a06';
+  ctx.fill();
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth   = 2;
+  ctx.stroke();
+}
+
+function spinWheel() {
+  if (wheelSpinning || wheelMembers.length === 0) return;
+  wheelSpinning = true;
+  document.getElementById('wheel-result').style.display = 'none';
+  document.getElementById('wheel-spin-btn').disabled = true;
+
+  const n          = wheelMembers.length;
+  const winnerIdx  = Math.floor(Math.random() * n);
+  const sliceAngle = (2 * Math.PI) / n;
+  // We want the winning slice centred at the top (π/2 offset handles that).
+  // The pointer is at 12-o'clock = -π/2 in canvas coords. We need to rotate
+  // so that the middle of slice winnerIdx lands at -π/2.
+  const targetAngle = -(winnerIdx * sliceAngle + sliceAngle / 2);
+  const extraTurns  = (5 + Math.floor(Math.random() * 4)) * 2 * Math.PI; // 5-8 full turns
+  const finalAngle  = targetAngle + extraTurns;
+  const duration    = 4000; // ms
+  const startAngle  = wheelAngle;
+  const startTime   = performance.now();
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+  function frame(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    wheelAngle = startAngle + (finalAngle - startAngle) * easeOut(t);
+    drawWheel(wheelMembers, wheelAngle);
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      wheelAngle = finalAngle % (2 * Math.PI);
+      wheelSpinning = false;
+      document.getElementById('wheel-spin-btn').disabled = false;
+      // Show winner
+      document.getElementById('wheel-winner-name').textContent = wheelMembers[winnerIdx].name;
+      document.getElementById('wheel-result').style.display = 'block';
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function showResult(id, type, html) {
+  const el = document.getElementById(id);
+  el.className = `result-box visible ${type}`;
+  el.innerHTML = html;
+}
+
+function checkUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  const pid = params.get('playerId');
+  if (pid) {
+    document.getElementById('lookup-id').value = pid;
+    document.getElementById('gift-id').value   = pid;
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ═══�
+loadConfig();
+checkUrlParams();
+buildPkgGrid();
+updateHaikuLabel();
+fetchActivePlayers();
+
+</script>
+</body>
+</html>
