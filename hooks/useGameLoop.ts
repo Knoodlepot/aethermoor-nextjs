@@ -424,6 +424,9 @@ export function useGameLoop(
         const narratorResponse = await callClaude(userMessages, updatedPlayer, updatedSeed);
 
         if (!narratorResponse.success || !narratorResponse.narrative) {
+          if (narratorResponse.error === 'no_tokens') {
+            ui.setScreen('out_of_tokens');
+          }
           return { success: false, error: narratorResponse.error || 'AI call failed' };
         }
 

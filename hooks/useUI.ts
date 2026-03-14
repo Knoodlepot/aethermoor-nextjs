@@ -24,6 +24,7 @@ export interface UIContext {
   showFactionOffer: boolean;
   showNGPlusScreen: boolean;
   showDungeonWarning: boolean;
+  showTokenShop: boolean;
 
   // Modal control
   openModal: (modalName: string) => void;
@@ -104,6 +105,7 @@ export function useUI(): UIContext {
   const [showFactionOffer, setShowFactionOffer] = useState(false);
   const [showNGPlusScreen, setShowNGPlusScreen] = useState(false);
   const [showDungeonWarning, setShowDungeonWarning] = useState(false);
+  const [showTokenShop, setShowTokenShop] = useState(false);
 
   // Map state
   const [mapOpen, setMapOpen] = useState(false);
@@ -166,6 +168,7 @@ export function useUI(): UIContext {
       factionOffer: setShowFactionOffer,
       ngPlus: setShowNGPlusScreen,
       dungeonWarning: setShowDungeonWarning,
+      tokenShop: setShowTokenShop,
       map: setMapOpen,
     };
 
@@ -192,6 +195,7 @@ export function useUI(): UIContext {
       factionOffer: setShowFactionOffer,
       ngPlus: setShowNGPlusScreen,
       dungeonWarning: setShowDungeonWarning,
+      tokenShop: setShowTokenShop,
       map: setMapOpen,
     };
 
@@ -218,6 +222,7 @@ export function useUI(): UIContext {
       factionOffer: [showFactionOffer, setShowFactionOffer],
       ngPlus: [showNGPlusScreen, setShowNGPlusScreen],
       dungeonWarning: [showDungeonWarning, setShowDungeonWarning],
+      tokenShop: [showTokenShop, setShowTokenShop],
       map: [mapOpen, setMapOpen],
     };
 
@@ -240,6 +245,7 @@ export function useUI(): UIContext {
     showNGPlusScreen,
     showDungeonWarning,
     mapOpen,
+    showTokenShop,
   ]);
 
   /**
@@ -272,6 +278,7 @@ export function useUI(): UIContext {
     showFactionOffer,
     showNGPlusScreen,
     showDungeonWarning,
+    showTokenShop,
     openModal,
     closeModal,
     toggleModal,

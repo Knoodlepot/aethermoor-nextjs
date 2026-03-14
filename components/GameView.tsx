@@ -36,6 +36,8 @@ import { StandingsScreen } from '@/components/screens/StandingsScreen';
 import { CraftingScreen } from '@/components/screens/CraftingScreen';
 import { NGPlusScreen } from '@/components/screens/NGPlusScreen';
 import { PatchNotesScreen } from '@/components/screens/PatchNotesScreen';
+import { OutOfTokensScreen } from '@/components/screens/OutOfTokensScreen';
+import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 
 // Modals
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
@@ -72,6 +74,26 @@ function GameContent() {
   const [guestMode, setGuestMode] = useState(false);
   const [newGameLoading, setNewGameLoading] = useState(false);
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
+
+  // Token balance
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  // Fetch token balance on mount and after Stripe return
+  useEffect(() => {
+    if (auth.authStatus !== 'authed') return;
+    fetch('/api/tokens/balance', { credentials: 'include' })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.balance != null) setTokenBalance(d.balance); })
+      .catch(() => {});
+
+    if (searchParams.get('payment') === 'success') {
+      setPaymentSuccess(true);
+      // Replace URL to remove query param, then clear banner after 8s
+      window.history.replaceState({}, '', window.location.pathname);
+      setTimeout(() => setPaymentSuccess(false), 8000);
+    }
+  }, [auth.authStatus, searchParams]);
 
   /** Start a new game: generate world, init player, get opening narrative */
   const handleStartNewGame = async (name: string, cls: string) => {
@@ -315,6 +337,12 @@ function GameContent() {
     </button>
   );
 
+  // Token color tier helper
+  const tokenColor = (t: number) =>
+    t > 50 ? '#80c060' : t > 20 ? '#c9a84c' : t > 10 ? '#e08030' : '#e04040';
+  const tokenBorderColor = (t: number) =>
+    t > 50 ? '#80c06044' : t > 20 ? '#c9a84c44' : t > 10 ? '#e0803066' : '#e0404066';
+
   // ── Player Info Panel (for right column) ───────────────────────────────────
 
   // ── XP bar values ──────────────────────────────────────────────────────────
@@ -536,6 +564,37 @@ function GameContent() {
           </div>
         )}
         <div style={{ ...tf, color: clockColor, fontSize: 12, letterSpacing: 1 }}>{clockStr}</div>
+        {/* Token balance display */}
+        {tokenBalance !== null && (
+          <div
+            onClick={() => ui.openModal('tokenShop')}
+            title="Buy more tokens"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              cursor: 'pointer',
+              padding: '4px 7px',
+              border: `1px solid ${tokenBorderColor(tokenBalance)}`,
+              borderRadius: 6,
+              background: tokenBalance <= 10 ? '#e0404022' : 'transparent',
+              transition: 'all 0.2s',
+            }}
+          >
+            <span>🪙</span>
+            <span
+              style={{
+                fontSize: 12,
+                color: tokenColor(tokenBalance),
+                fontWeight: tokenBalance <= 20 ? 'bold' : 'normal',
+                animation: tokenBalance <= 10 ? 'pulse 1s infinite' : 'none',
+                fontFamily: "'Cinzel','Palatino Linotype',serif",
+              }}
+            >
+              {tokenBalance}
+            </span>
+          </div>
+        )}
         <button
           onClick={() => setShowNewGameConfirm(true)}
           style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
@@ -725,6 +784,19 @@ function GameContent() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
+  // Out of tokens — fullscreen takeover
+  if (ui.screen === 'out_of_tokens') {
+    return (
+      <OutOfTokensScreen
+        onBuyTokens={() => {
+          ui.setScreen('game');
+          ui.openModal('tokenShop');
+        }}
+        onReturnToTitle={() => router.push('/')}
+      />
+    );
+  }
+
   return (
     <div
       style={{
@@ -896,6 +968,15 @@ function GameContent() {
       */}
       {(false as boolean) && (
         <ClassInfoModal cls={'' as any} onClose={() => undefined} />
+      )}
+
+      {/* ── Token Shop ────────────────────────────────────────────────────── */}
+      {ui.showTokenShop && (
+        <TokenShopScreen
+          tokenBalance={tokenBalance ?? 0}
+          paymentSuccess={paymentSuccess}
+          onClose={() => ui.closeModal('tokenShop')}
+        />
       )}
 
       {/* ── New Game confirm modal ─────────────────────────────────────────── */}
