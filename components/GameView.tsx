@@ -69,6 +69,7 @@ function GameContent() {
   // Guest-mode flag: bypass auth gate without a real JWT
   const [guestMode, setGuestMode] = useState(false);
   const [newGameLoading, setNewGameLoading] = useState(false);
+  const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
 
   /** Start a new game: generate world, init player, get opening narrative */
   const handleStartNewGame = async (name: string, cls: string) => {
@@ -535,7 +536,7 @@ function GameContent() {
         )}
         <div style={{ ...tf, color: clockColor, fontSize: 12, letterSpacing: 1 }}>{clockStr}</div>
         <button
-          onClick={() => router.push('/')}
+          onClick={() => setShowNewGameConfirm(true)}
           style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
         >
           New Game
@@ -881,6 +882,59 @@ function GameContent() {
       */}
       {(false as boolean) && (
         <ClassInfoModal cls={'' as any} onClose={() => undefined} />
+      )}
+
+      {/* ── New Game confirm modal ─────────────────────────────────────────── */}
+      {showNewGameConfirm && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.75)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: T.panel, border: `1px solid ${T.border}`,
+            borderRadius: 6, padding: '2rem', maxWidth: 360, width: '90%',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 24, marginBottom: 8 }}>⚔️</div>
+            <h2 style={{ ...tf, color: T.gold, fontFamily: "'Cinzel','Palatino Linotype',serif", fontSize: 18, marginBottom: 8 }}>
+              Start a New Game?
+            </h2>
+            <p style={{ ...tf, color: T.textMuted, fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>
+              Would you like to save your current game before starting fresh?
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={async () => {
+                  await storage.saveGame(
+                    gameState.player!, gameState.worldSeed!,
+                    gameState.messages ?? [], gameState.narrative ?? '', gameState.log ?? []
+                  );
+                  setShowNewGameConfirm(false);
+                  router.push('/game?new=1');
+                }}
+                style={{ background: T.gold, color: '#0d0d1a', border: 'none', borderRadius: 4, padding: '8px 18px', fontSize: 13, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", fontWeight: 'bold' }}
+              >
+                💾 Save & New Game
+              </button>
+              <button
+                onClick={() => {
+                  setShowNewGameConfirm(false);
+                  router.push('/game?new=1');
+                }}
+                style={{ background: 'transparent', color: T.textMuted, border: `1px solid ${T.border}`, borderRadius: 4, padding: '8px 18px', fontSize: 13, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif" }}
+              >
+                Skip
+              </button>
+              <button
+                onClick={() => setShowNewGameConfirm(false)}
+                style={{ background: 'transparent', color: T.textMuted, border: `1px solid ${T.border}`, borderRadius: 4, padding: '8px 18px', fontSize: 13, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif" }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
