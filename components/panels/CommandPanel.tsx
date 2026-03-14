@@ -65,3 +65,44 @@ export function CommandPanel({ player, onCommand, isLoading, isDyslexic }: Comma
       </div>
     );
   };
+
+  // Main panel UI
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      {/* Context info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <span style={{ fontSize: 18 }}>{ctxData.icon}</span>
+        <span style={{ color: ctxData.color, fontWeight: 700, fontFamily: tf.fontFamily, fontSize: 13 }}>{ctxData.label}</span>
+        {isLoading && (
+          <span style={{ color: T.textFaint, fontSize: 10, fontStyle: 'italic', marginLeft: 'auto', fontFamily: 'Crimson Text,serif' }}>
+            weaving story...
+          </span>
+        )}
+      </div>
+      {/* Button grid */}
+      <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {COMMAND_GROUPS.map((group) => {
+          const hasActive = group.commands.some((c) => c.context.includes(ctx));
+          return (
+            <div key={group.label}>
+              <div
+                style={{
+                  ...tf,
+                  color: hasActive ? T.accent : T.textFaint + '66',
+                  fontSize: 9,
+                  letterSpacing: 2,
+                  marginBottom: 4,
+                }}
+              >
+                {group.label.toUpperCase()}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 3 }}>
+                {group.commands.map((cmd) => actionBtn(cmd))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
