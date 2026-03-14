@@ -7,25 +7,26 @@ import { advanceGameTime, registerNpc } from './helpers';
 export function stripContextTag(text: string): string {
   let t = text;
 
-  // Strip all tag types
+  // Strip all tag types — use [\s\S]+? (lazy multiline) for nested object tags
+  // to correctly handle notes/values that may contain } characters or newlines
   t = t.replace(/\{"context"\s*:\s*"\w+"\}/g, '');
-  t = t.replace(/\{"npc"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"npcUpdate"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"npcGift"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"grant"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"remove"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"newQuest"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"factionTask"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"timePass"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"scheduleEvent"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"npcTravel"\s*:\s*\{[^}]+\}\}/g, '');
-  t = t.replace(/\{"wanted"\s*:\s*\{[^}]+\}\}/g, '');
+  t = t.replace(/\{"npc"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"npcUpdate"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"npcGift"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"grant"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"remove"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"newQuest"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"factionTask"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"timePass"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"scheduleEvent"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"npcTravel"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"wanted"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"villainAlly"\s*:\s*true\}/g, '');
-  t = t.replace(/\{"worldEvent"\s*:\s*\{[^}]+\}\}/g, '');
+  t = t.replace(/\{"worldEvent"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"grantAbility"\s*:\s*"[^"]+"\}/g, '');
   t = t.replace(/\{"repChange"\s*:\s*-?\d+\}/g, '');
   t = t.replace(/\{"goldChange"\s*:\s*-?\d+\}/g, '');
-  t = t.replace(/\{"shopPrice"\s*:\s*\{[^}]+\}\s*\}/g, '');
+  t = t.replace(/\{"shopPrice"\s*:\s*\{[\s\S]+?\}\s*\}/g, '');
   t = t.replace(/\{"suggestions"\s*:\s*\[[^\]]+\]\}/g, '');
   t = t.replace(/\{"suggestions"\s*:[\s\S]*/g, ''); // Catch truncated suggestions
   t = t.replace(/\{"mainQuestAct"\s*:\s*"[^"]+"\}/g, '');
@@ -33,6 +34,8 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
   t = t.replace(/```[a-z]*\s*\{"context"\s*:\s*"\w+"\}\s*```/g, '');
   t = t.replace(/```[a-z]*\s*```/g, '');
+  // Final safety net: strip any remaining JSON-like tags at end of text
+  t = t.replace(/\s*\{"\w+"[\s\S]*$/, '');
 
   return t.trim();
 }

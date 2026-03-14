@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
-import { parseMarkdown } from '@/lib/tagParsers';
+import { parseMarkdown, stripContextTag } from '@/lib/tagParsers';
 
 interface NarrativePanelProps {
   narrative: string;
@@ -54,14 +54,16 @@ export function NarrativePanel({
             background: T.panelAlt,
             border: `1px solid ${T.border}`,
             padding: isDyslexic ? 24 : 18,
+            paddingBottom: isDyslexic ? 28 : 22,
             marginBottom: 10,
             animation: 'slideIn 0.4s ease',
-            lineHeight: 1.9,
+            lineHeight: 2.0,
             fontSize: 15,
+            overflow: 'visible',
             ...bf,
             ...dyxNarr,
           }}
-          dangerouslySetInnerHTML={{ __html: parseMarkdown(narrative) }}
+          dangerouslySetInnerHTML={{ __html: parseMarkdown(stripContextTag(narrative)) }}
         />
       )}
 
