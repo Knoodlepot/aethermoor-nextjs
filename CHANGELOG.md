@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Comprehensive legal pages**: The Terms of Service, Privacy Policy, and Refund Policy have each been expanded into full, detailed documents and now each open in their own tab. The policies cover players worldwide, with specific sections for the United Kingdom, European Union, United States, Canada, Australia and New Zealand, Brazil and Latin America, the Asia-Pacific region, and Africa — citing the applicable laws and your rights in each region.
+
+### Added
 - **Three save slots**: Your progress is now stored across three separate save slots. Click **Save** in the top toolbar to choose which slot to write to — existing saves show your character name, class, level, location, and the date last saved. Empty slots show clearly. Overwriting a different slot asks for confirmation first.
 - **Load Game slot picker**: The Load Game button on the main menu now opens the slot picker so you can choose which adventure to continue.
 - **Token balance display**: Your current token count now shows in the top toolbar next to the clock.The number glows green when you have plenty, turns gold when running low, orange when getting scarce, and flashes red when critically low (10 or fewer). Click it at any time to open the Token Shop.

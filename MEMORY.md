@@ -43,6 +43,12 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Comprehensive Legal Pages**: Full rewrite of `app/legal/page.tsx` and `Legacy-legal.html`.
+  - Nav changed from scroll-anchors to proper tab switching — active tab highlighted gold, other sections hidden.
+  - **Terms of Service**: full clauses (eligibility, accounts, virtual currency, acceptable use, IP, UGC, service changes, liability, dispute resolution) + per-jurisdiction provisions covering UK (CRA 2015, CCR 2013, Online Safety Act), EU (CRD, Digital Content Directive, DSA), US (COPPA, CFAA, CCPA, CLRA), Canada (LPCQ, CASL, PIPEDA), Australia/NZ (ACL, CGA), Brazil/LATAM (CDC, Marco Civil, Law 24.240, PROFECO, Law 1480, Law 19.496), Asia-Pacific (Japan, South Korea, China, Singapore, India, Thailand + Malaysia/Philippines/Indonesia/Vietnam), Africa (ECT Act, CPA 68/2008, POPIA, Kenya DPA, FCCPA, NDPA, Ghana CPA Act).
+  - **Privacy Policy**: data controller statement, data collected, lawful bases, processor list (Vercel/Railway/Anthropic/Resend), retention, international transfer safeguards (SCCs, adequacy decisions), and per-jurisdiction rights for every major regime: UK GDPR/DPA 2018 (ICO), GDPR (national DPAs), CCPA/CPRA + US state laws, PIPEDA/Quebec Law 25, APPs/OAIC, LGPD/ANPD, PIPL/APPI/PIPA/PDPA/DPDP Act/Thailand PDPA, POPIA/Kenya DPA/NDPA/Ghana Act 843.
+  - **Refund Policy**: always-applies guarantees (billing error, duplicate charge, failed delivery, fraud), chargeback section; statutory rights by region — UK 14-day CCR + CRA 2015, EU 14-day CRD + 2-year conformity period, US CLRA/state law/FTC, Canada by province, Australia ACL major/minor failure, NZ CGA, Brazil 7-day CDC cooling-off + Argentina/Mexico/Colombia/Chile, Asia-Pacific (Japan/South Korea 7-day/China 7-day/Singapore/India/Thailand), Africa (SA CPA 6-month warranty/Kenya/Nigeria/Ghana).
+
 - **Three Save Slots**: Players now have 3 named save slots.
   - DB: `game_saves` migrated to composite PK `(player_id, slot)`; `migrateDb()` self-heals existing installs (adds `slot` column, re-keys constraint).
   - API `/api/save`: `?slot=` for single slot load; `?slots=all` for a summary of all 3; `slot` in POST body.
