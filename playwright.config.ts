@@ -5,6 +5,12 @@ export default defineConfig({
   timeout: 30_000,
   retries: 0,
   globalSetup: require.resolve('./e2e/global-setup.ts'),
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     headless: true,
