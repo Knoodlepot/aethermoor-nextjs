@@ -81,21 +81,21 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
       }}
     >
       {/* Left: context + location */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '6px 12px', gap: 4, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 14 }}>{ctxData.icon}</span>
-          <span style={{ ...tf, color: ctxData.color, fontSize: 10, letterSpacing: 2 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 8px', gap: 2, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontSize: 11 }}>{ctxData.icon}</span>
+          <span style={{ ...tf, color: ctxData.color, fontSize: 8, letterSpacing: 1 }}>
             {ctxData.label.toUpperCase()}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: 12 }}>{locIcon}</span>
-          <span style={{ ...tf, color: T.gold, fontSize: 10, letterSpacing: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <span style={{ fontSize: 10, flexShrink: 0 }}>{locIcon}</span>
+          <span style={{ ...tf, color: T.gold, fontSize: 8, letterSpacing: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
             {ctx === 'travel' && dest ? `${player?.location} → ${dest}` : player?.location}
           </span>
         </div>
         {isLoading && (
-          <span style={{ color: T.textFaint, fontSize: 9, fontStyle: 'italic', fontFamily: 'Crimson Text,serif' }}>
+          <span style={{ color: T.textFaint, fontSize: 8, fontStyle: 'italic', fontFamily: 'Crimson Text,serif' }}>
             weaving story...
           </span>
         )}
