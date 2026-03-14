@@ -324,7 +324,7 @@ function GameContent() {
   );
 
   const actionButtons = player && (
-    <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}`, padding: '6px 8px', gap: 4, flexWrap: 'wrap' as const, justifyContent: 'flex-start', background: T.panelAlt }}>
+    <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}`, padding: '6px 8px', gap: 4, flexWrap: 'wrap' as const, justifyContent: 'center', background: T.panelAlt }}>
       {badgeBtn('📜 Quests', () => ui.toggleModal('questLog'), { count: activeQuestCount, color: T.accent })}
       {['town', 'npc'].includes(player?.context) && tbBtn('🛒 Shop', () => ui.toggleModal('shop'))}
       {tbBtn('🎒 Gear', () => ui.toggleModal('inventory'))}
