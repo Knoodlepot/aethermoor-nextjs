@@ -7,7 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- **Token balance display**: Your current token count now shows in the top toolbar next to the clock. The number glows green when you have plenty, turns gold when running low, orange when getting scarce, and flashes red when critically low (10 or fewer). Click it at any time to open the Token Shop.
+- **Three save slots**: Your progress is now stored across three separate save slots. Click **Save** in the top toolbar to choose which slot to write to — existing saves show your character name, class, level, location, and the date last saved. Empty slots show clearly. Overwriting a different slot asks for confirmation first.
+- **Load Game slot picker**: The Load Game button on the main menu now opens the slot picker so you can choose which adventure to continue.
+- **Token balance display**: Your current token count now shows in the top toolbar next to the clock.The number glows green when you have plenty, turns gold when running low, orange when getting scarce, and flashes red when critically low (10 or fewer). Click it at any time to open the Token Shop.
 - **Token Shop**: A new Token Shop lets you top up your tokens any time. Six packages are available, from a small Starter top-up to the Immortal bundle. Purchases go through secure Stripe checkout and tokens appear in your account immediately on return.
 - **Out of Tokens screen**: If you run out of tokens mid-adventure the narrator pauses gracefully and a dedicated screen appears. From there you can head straight to the Token Shop or return to the title.
 

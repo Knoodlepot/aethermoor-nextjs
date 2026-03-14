@@ -43,6 +43,14 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Three Save Slots**: Players now have 3 named save slots.
+  - DB: `game_saves` migrated to composite PK `(player_id, slot)`; `migrateDb()` self-heals existing installs (adds `slot` column, re-keys constraint).
+  - API `/api/save`: `?slot=` for single slot load; `?slots=all` for a summary of all 3; `slot` in POST body.
+  - `useStorage`: slot-aware with `currentSlot`/`setCurrentSlot`, `loadSlots()`, backward-compat localStorage keys.
+  - `SaveSlotModal`: shows all 3 slots (name, class, level, location, date); overwrite-confirm for non-current slots.
+  - `GameView`: Save button opens slot picker; `?slot=` URL param selects active slot on load.
+  - Main menu Load Game opens slot picker before navigating.
+
 - **Token System UI**: Ported the full token system UI from legacy to Next.js.
   - Toolbar now shows a live 🪙 token balance with 4-tier color coding (green → gold → orange → red) and a pulse animation when critically low (≤10). Clicking it opens the Token Shop.
   - New `TokenShopScreen` — 6 purchase packages (Starter 100/£1 → Immortal 8500/£49.99). Calls `/api/tokens/buy`, redirects to Stripe Checkout. Shows payment success banner on return (`?payment=success`).
