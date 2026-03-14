@@ -7,7 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- **Fast Travel**: Open the world map and click any location you've previously visited in the new left panel. A popup appears showing your travel options:
+- **Character creation**: Starting a New Game now takes you to a "Forge Your Hero" screen. Enter your character's name, choose a class from a 2×2 card grid (Warrior, Rogue, Mage, or Cleric) showing their key stats at a glance, and hit "Enter Aethermoor." The narrator then paints your opening scene based on a freshly generated world.
+- **Fast Travel**: Open the world map and click any location you've previously visited in the new left panel.A popup appears showing your travel options:
   - **On Foot** — always free, full journey time.
   - **Your Horse** — if you own and have equipped a horse, travel is free and takes 60% less time.
   - **Hire a Horse** — 15 gold, same speed as owning one.

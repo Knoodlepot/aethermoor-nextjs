@@ -43,6 +43,15 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Character creation screen**: Pressing New Game now shows a "Forge Your Hero" screen before entering the world.
+  - Players enter their name, select a class (Warrior, Rogue, Mage, Cleric) from a 2×2 grid with stats displayed.
+  - A "ℹ Class Details" button opens ClassInfoModal for full class info.
+  - On submit: world is generated procedurally, narrator delivers an opening scene, save is created.
+  - New file `lib/worldgen.ts` — full port of world/quest generation from legacy: `generateProceduralWorld`, `buildTravelMatrix`, `generateMainQuestSeed`, `generateWorldSeed`, `initFactionStandings`, `initLocationStandings`, `INIT_PLAYER`.
+  - New file `components/screens/CharacterCreationScreen.tsx` — the "Forge Your Hero" UI.
+  - `GameView.tsx` now gates on `isLoaded && !player` to show `CharacterCreationScreen`.
+
+### Previous Session
 - **Fast travel system**: Players can open the map and click any previously-visited location in the left panel to fast-travel there.
   - Travel popup shows method options: On Foot (free), Your Horse (free if mounted) / Hire Horse (15g), River Barge (if both nodes have river access), Sea Vessel (if both have harbour).
   - Travel time is calculated from locationGrid coordinates (distance × 1.5h foot; horse 2.5× faster, barge 3×, boat 4×).
