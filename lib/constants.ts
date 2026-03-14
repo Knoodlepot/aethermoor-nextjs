@@ -378,12 +378,38 @@ export const ITEM_INFO = {
 } as const;
 
 // ============================================
+// STATUS EFFECTS — canonical list with display info
+// ============================================
+export const STATUS_EFFECTS: Record<string, { icon: string; label: string; description: string; cure: string }> = {
+  poisoned:  { icon: '☠️', label: 'Poisoned',  description: 'Venom courses through you. Lose HP each turn. WIL 6+ resists; WIL 9+ near-immune.', cure: 'Antidote, Medicinal Herb, or Herb Broth' },
+  burning:   { icon: '🔥', label: 'Burning',   description: 'Flames eat at your flesh. Ongoing fire damage until extinguished.', cure: 'Roll in water or dirt; wait it out' },
+  stunned:   { icon: '⚡', label: 'Stunned',   description: 'Your senses reel. You cannot act this turn.', cure: 'Wears off after one turn' },
+  fearful:   { icon: '😨', label: 'Fearful',   description: 'Dread clouds your mind. You may freeze or flee. Attack rolls penalised. WIL 5–7 resists basic fear; WIL 8+ is immune.', cure: 'Courage Draught, or a successful WIL test' },
+  bleeding:  { icon: '🩸', label: 'Bleeding',  description: 'An open wound bleeds steadily. Lose 3 HP per turn until bound.', cure: 'Bandage' },
+  cursed:    { icon: '🌑', label: 'Cursed',    description: 'Dark magic gnaws at your spirit. WIL and INT reduced by 2 each.', cure: 'Purification Charm, holy water, or a temple blessing' },
+  blinded:   { icon: '🙈', label: 'Blinded',   description: 'Your vision is stripped away. Heavy penalty to accuracy and AGI.', cure: 'Eyewash, or wears off after 2 turns' },
+  weakened:  { icon: '💔', label: 'Weakened',  description: 'Your muscles betray you. STR halved until you recover.', cure: 'Tonic of Might, or a long rest' },
+  chilled:   { icon: '❄️', label: 'Chilled',   description: 'Cold seeps into your bones. AGI reduced by 3; you act last in initiative.', cure: 'Warming Draught, or move near a fire' },
+};
+
+// ============================================
 // CONSUMABLE EFFECTS
 // ============================================
-export const CONSUMABLE_EFFECTS = {
-  "health potion": { hp: 30, msg: "You drink the Health Potion. +30 HP." },
+export type ConsumableEffect = {
+  hp?: number;
+  hpFull?: boolean;
+  str?: number;
+  agi?: number;
+  int?: number;
+  wil?: number;
+  clearStatus?: string[];
+  msg?: string;
+};
+
+export const CONSUMABLE_EFFECTS: Record<string, ConsumableEffect> = {
+  "health potion":        { hp: 30, msg: "You drink the Health Potion. +30 HP." },
   "strong health potion": { hp: 60, msg: "You drink the Strong Health Potion. +60 HP." },
-  "elixir of vigour": { hpFull: true, msg: "You drink the Elixir of Vigour. HP fully restored!" },
+  "elixir of vigour":     { hpFull: true, msg: "You drink the Elixir of Vigour. HP fully restored!" },
   ambrosia: {
     hpFull: true,
     str: 5,
@@ -392,26 +418,33 @@ export const CONSUMABLE_EFFECTS = {
     wil: 5,
     msg: "You consume the Ambrosia. HP restored and all stats +5 temporarily!",
   },
-  "mana potion": { wil: 1, msg: "You drink the Mana Potion. +1 WIL (arcane energy restored)." },
-  antidote: { msg: "You drink the Antidote. Poison neutralised." },
-  "travel bread": { hp: 8, msg: "You eat the Travel Bread. +8 HP." },
-  rations: { hp: 15, msg: "You eat the Rations. +15 HP." },
-  "rations x3": { hp: 15, msg: "You eat some Rations. +15 HP." },
-  "rations x2": { hp: 15, msg: "You eat some Rations. +15 HP." },
-  "rations x1": { hp: 15, msg: "You eat the last of your Rations. +15 HP." },
-  "dried meat": { hp: 12, msg: "You eat the Dried Meat. +12 HP." },
-  "trail bread": { hp: 8, msg: "You chew through the Trail Bread. +8 HP." },
-  "iron rations": { hp: 20, msg: "You eat the Iron Rations. +20 HP." },
-  "medicinal herb": { hp: 20, clearPoison: true, msg: "You apply the Medicinal Herb. +20 HP. Poison cleansed." },
-  "rare mushroom": { hp: 35, msg: "The Rare Mushroom restores you significantly. +35 HP." },
-  "healing herb": { hp: 5, msg: "You chew the Healing Herb. +5 HP." },
-  "scroll of fire": { msg: "You read the Scroll of Fire. It crumbles to ash — the spell is cast!" },
-  "scroll of mending": { hp: 40, msg: "You read the Scroll of Mending. +40 HP." },
-  "scroll of lightning": { msg: "You read the Scroll of Lightning. It crumbles to ash — the spell is cast!" },
-  "herb broth": { hp: 25, clearPoison: true, msg: "You drink the Herb Broth. +25 HP. Poison cleansed." },
-  "mushroom stew": { hp: 45, msg: "You eat the Mushroom Stew. +45 HP." },
-  "ranger's pottage": { hpFull: true, msg: "You eat the Ranger's Pottage. HP fully restored." },
-} as const;
+  "mana potion":          { wil: 1, msg: "You drink the Mana Potion. +1 WIL (arcane energy restored)." },
+  antidote:               { clearStatus: ['poisoned'], msg: "You drink the Antidote. Poison neutralised." },
+  "travel bread":         { hp: 8,  msg: "You eat the Travel Bread. +8 HP." },
+  rations:                { hp: 15, msg: "You eat the Rations. +15 HP." },
+  "rations x3":           { hp: 15, msg: "You eat some Rations. +15 HP." },
+  "rations x2":           { hp: 15, msg: "You eat some Rations. +15 HP." },
+  "rations x1":           { hp: 15, msg: "You eat the last of your Rations. +15 HP." },
+  "dried meat":           { hp: 12, msg: "You eat the Dried Meat. +12 HP." },
+  "trail bread":          { hp: 8,  msg: "You chew through the Trail Bread. +8 HP." },
+  "iron rations":         { hp: 20, msg: "You eat the Iron Rations. +20 HP." },
+  "medicinal herb":       { hp: 20, clearStatus: ['poisoned'], msg: "You apply the Medicinal Herb. +20 HP. Poison cleansed." },
+  "rare mushroom":        { hp: 35, msg: "The Rare Mushroom restores you significantly. +35 HP." },
+  "healing herb":         { hp: 5,  msg: "You chew the Healing Herb. +5 HP." },
+  "scroll of fire":       { msg: "You read the Scroll of Fire. It crumbles to ash — the spell is cast!" },
+  "scroll of mending":    { hp: 40, msg: "You read the Scroll of Mending. +40 HP." },
+  "scroll of lightning":  { msg: "You read the Scroll of Lightning. It crumbles to ash — the spell is cast!" },
+  "herb broth":           { hp: 25, clearStatus: ['poisoned'], msg: "You drink the Herb Broth. +25 HP. Poison cleansed." },
+  "mushroom stew":        { hp: 45, msg: "You eat the Mushroom Stew. +45 HP." },
+  "ranger's pottage":     { hpFull: true, msg: "You eat the Ranger's Pottage. HP fully restored." },
+  // Status effect cures
+  bandage:                { clearStatus: ['bleeding'], msg: "You bind the wound. The bleeding stops." },
+  "courage draught":      { clearStatus: ['fearful'], wil: 1, msg: "You drink the Courage Draught. The dread recedes. +1 WIL." },
+  "purification charm":   { clearStatus: ['cursed'], msg: "You crush the Purification Charm. The dark magic lifts." },
+  eyewash:                { clearStatus: ['blinded'], msg: "You apply the Eyewash. Your vision clears." },
+  "warming draught":      { clearStatus: ['chilled'], msg: "You drink the Warming Draught. Warmth floods your limbs." },
+  "tonic of might":       { clearStatus: ['weakened'], str: 1, msg: "You drink the Tonic of Might. Strength returns to your muscles. +1 STR." },
+};
 
 // ============================================
 // DISGUISED ITEMS (Xephita's Magical Disguises)

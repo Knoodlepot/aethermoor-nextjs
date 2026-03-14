@@ -401,7 +401,7 @@ export function getItemSlotEx(name: string): string | null {
 /**
  * Look up consumable effect by name (case-insensitive)
  */
-export function getConsumableEffect(name: string): { hp?: number; hpFull?: boolean; wil?: number; str?: number; agi?: number; int?: number; clearPoison?: boolean; msg?: string } | undefined {
+export function getConsumableEffect(name: string): { hp?: number; hpFull?: boolean; wil?: number; str?: number; agi?: number; int?: number; clearStatus?: string[]; msg?: string } | undefined {
   if (!name) return undefined;
   const key = name.toLowerCase();
   return (CONSUMABLE_EFFECTS as Record<string, any>)[key];

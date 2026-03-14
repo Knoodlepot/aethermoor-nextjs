@@ -263,6 +263,11 @@ export function useGameLoop(
             let newHp = updatedPlayer.hp;
             if (effect.hpFull) newHp = updatedPlayer.maxHp;
             else if (effect.hp) newHp = Math.min(updatedPlayer.maxHp, newHp + effect.hp);
+            // Clear any status effects this item cures
+            let newStatusEffects = updatedPlayer.statusEffects || [];
+            if (effect.clearStatus && effect.clearStatus.length > 0) {
+              newStatusEffects = newStatusEffects.filter((e: string) => !effect.clearStatus!.includes(e));
+            }
             updatedPlayer = {
               ...updatedPlayer,
               inventory: newInv,
@@ -271,12 +276,14 @@ export function useGameLoop(
               agi: updatedPlayer.agi + (effect.agi ?? 0),
               int: updatedPlayer.int + (effect.int ?? 0),
               wil: updatedPlayer.wil + (effect.wil ?? 0),
+              statusEffects: newStatusEffects,
             };
             if (effect.msg) {
               gs.addLogEntry('action', effect.msg);
               gs.setNarrative(effect.msg);
             }
             gs.setPlayer(updatedPlayer);
+            ui.setPlayerStatusEffects(newStatusEffects);
             await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
             return { success: true };
           }
@@ -442,6 +449,7 @@ export function useGameLoop(
         gs.setWorldSeed(updatedSeed);
         gs.setNarrative(cleanNarrative);
         gs.addMessage('assistant', cleanNarrative);
+        ui.setPlayerStatusEffects(updatedPlayer.statusEffects || []);
 
         // 5. Add to game log
         gs.addLogEntry('action', command);

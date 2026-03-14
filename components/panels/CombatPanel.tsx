@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import type { Enemy } from '@/lib/types';
+import { STATUS_EFFECTS } from '@/lib/constants';
 
 interface CombatPanelProps {
   enemy: Enemy | null;
@@ -50,7 +51,43 @@ export function CombatPanel({
     apex: 'Apex',
   };
 
-  const SI: Record<string, string> = { burning: '🔥', poisoned: '☠️', stunned: '⚡' };
+  const [hoveredEffect, setHoveredEffect] = useState<string | null>(null);
+
+  const StatusBadge = ({ effect }: { effect: string }) => {
+    const info = STATUS_EFFECTS[effect];
+    const icon = info?.icon ?? '❓';
+    const isHovered = hoveredEffect === effect;
+    return (
+      <span
+        onMouseEnter={() => setHoveredEffect(effect)}
+        onMouseLeave={() => setHoveredEffect(null)}
+        style={{ position: 'relative', display: 'inline-block', cursor: 'help' }}
+      >
+        <span style={{ fontSize: 16 }}>{icon}</span>
+        {isHovered && info && (
+          <div style={{
+            position: 'absolute',
+            bottom: '130%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#1a1a2e',
+            border: `1px solid ${T.accent}`,
+            borderRadius: 6,
+            padding: '8px 10px',
+            zIndex: 200,
+            width: 220,
+            pointerEvents: 'none',
+            boxShadow: '0 4px 16px #000a',
+          }}>
+            <div style={{ color: T.accent, fontWeight: 700, fontSize: 12, marginBottom: 4 }}>{icon} {info.label}</div>
+            <div style={{ color: T.text, fontSize: 11, lineHeight: 1.5, marginBottom: 4 }}>{info.description}</div>
+            <div style={{ color: '#a08040', fontSize: 10 }}>Cure: {info.cure}</div>
+          </div>
+        )}
+      </span>
+    );
+  };
+
   const bossGlow = enemy.isFinalBoss
     ? '0 0 30px #ff404066, 0 0 60px #ff404022'
     : enemy.isLieutenant
@@ -130,9 +167,7 @@ export function CombatPanel({
           )}
         </div>
         {enemy.statusEffects?.map((s) => (
-          <span key={s} style={{ fontSize: 16 }}>
-            {SI[s] || '❓'}
-          </span>
+          <StatusBadge key={s} effect={s} />
         ))}
       </div>
 
@@ -169,11 +204,17 @@ export function CombatPanel({
               🛡 Defending
             </span>
           )}
-          {playerStatusEffects.map((s) => (
-            <span key={s} style={{ fontSize: 11, color: '#c06030', border: '1px solid #c0603044', padding: '2px 6px', borderRadius: 3 }}>
-              {SI[s] || s} {s}
-            </span>
-          ))}
+          {playerStatusEffects.map((s) => {
+            const info = STATUS_EFFECTS[s];
+            return (
+              <span key={s} style={{ position: 'relative', display: 'inline-block' }}>
+                <StatusBadge effect={s} />
+                <span style={{ fontSize: 11, color: '#c06030', border: '1px solid #c0603044', padding: '2px 6px', borderRadius: 3, marginLeft: 2 }}>
+                  {info?.label ?? s}
+                </span>
+              </span>
+            );
+          })}
         </div>
       )}
 

@@ -306,7 +306,7 @@ function buildStatRules(str: number, agi: number, int_: number, wil: number): st
 
   const divineDmg    = Math.floor(wil * 1.5);
   const magicResist  = Math.min(30, wil * 2);
-  const fearStatus   = wil >= 8 ? 'immune to all fear' : wil >= 5 ? 'resists basic fear' : 'susceptible to fear';
+  const fearStatus   = wil >= 8 ? 'immune to all fear (fearful effect cannot be applied)' : wil >= 5 ? 'resists basic fear (50% chance to resist fearful effect)' : 'susceptible to fear';
   const poisonNote   = wil >= 9 ? ' | Near-immune to poison/curses' : wil >= 6 ? ' | Partial poison/curse resist' : '';
 
   return `COMBAT MECHANICS — apply these as firm rules in all combat and skill checks:
@@ -579,6 +579,17 @@ RULES:
 - ITEM GRANT RULE: When you narratively give the player a physical object (token, key, letter, map, scroll, pouch, etc.) OR when a conversational purchase concludes and the item is handed over, emit on its own line: {"grant":{"item":"ItemName"}}
 - HORSE RULE: When the player buys, is given, or acquires a horse from a stable, farmer, or merchant, emit {"grant":{"item":"Horse"}} on its own line. The player can then equip the Horse to their mount slot (equip:Horse) to travel faster for free. Fast travel is resolved deterministically by the game client — do NOT narrate the journey or emit timePass for fast travel commands. If the player already has a Horse equipped and travels, simply acknowledge they ride off.
 - ABILITY GRANT RULE: When a named NPC explicitly completes the act of teaching the player a new skill, power, or gift — not when it is merely discussed or offered, but when the teaching moment is fully concluded — emit on its own line: {"grantAbility":"AbilityName"} using the exact ability name. The only ability currently teachable this way is "Spirit Sight" (taught by Sanam upon full resolution of his quest). Do not invent new ability names.
+- STATUS EFFECT RULES — apply to the player when combat or environmental conditions clearly warrant. When a status effect is gained or removed, emit on its own line: {"playerStatus":{"add":"effectName"}} or {"playerStatus":{"remove":"effectName"}}. Use ONLY these effect names:
+  - poisoned: venom from bites, poison arrows, toxic mushrooms. 2–5 HP lost each narrative turn. WIL 6+ gives partial resistance; WIL 9+ near-immune. Cured by Antidote, Medicinal Herb, Herb Broth.
+  - burning: fire damage from Fireball, flame traps, dragon breath. 4–8 HP lost per turn. Cured by rolling in water/dirt.
+  - stunned: from powerful blows, thunder strikes, concussions. Player cannot meaningfully act next turn. Wears off after one turn — emit {"playerStatus":{"remove":"stunned"}} automatically on the next response.
+  - fearful: apply when the player faces a truly terrifying creature, overwhelming odds, or a fear spell. Player hesitates or may flee; –3 to all attack rolls. WIL 5–7: 50% chance to resist (describe the struggle); WIL 8+: immune — do NOT apply this effect. Cured by Courage Draught or a successful WIL test narrated as an act of will.
+  - bleeding: from slashing or piercing wounds, criticals, or deep lacerations. 3 HP lost per turn until treated. Cured by Bandage.
+  - cursed: from necromancers, cursed artefacts, dark shrines, forbidden rituals. Reduces WIL and INT by 2 each while active. Cured by Purification Charm, holy water, or a temple blessing.
+  - blinded: from flash powder, blindness spells, sudden intense light, acid splash. Heavy penalty to accuracy and AGI (–4 each). Wears off after 2 turns or is cured by Eyewash.
+  - weakened: from exhaustion, drain spells, certain poisons, heavy fatigue. STR halved while active. Cured by Tonic of Might or a long rest.
+  - chilled: from ice magic, freezing water, cold environments, frost breath. AGI reduced by 3; player acts last in initiative. Cured by Warming Draught or fire.
+  Only emit playerStatus when an effect clearly begins or clearly ends. Do NOT emit it on every turn — only at the moment of onset or cure. Never stack the same effect twice. Enemy status effects are descriptive only — do not emit playerStatus tags for enemies.
 - ITEM REMOVE RULE: When the player clearly gives, hands over, trades away, donates, or surrenders an item from their own inventory to someone else, emit on its own line: {"remove":{"item":"ItemName"}} using the exact item name if known.
 - THEFT RULE: When the player successfully steals, pickpockets, loots, or takes a physical item from an NPC or bystander through narrative action (not combat), emit on its own line: {"grant":{"item":"ItemName"}} using a descriptive name for the stolen item (e.g. "Stolen Purse", "Merchant's Ledger", "Guard's Keyring"). If gold is stolen, emit {"goldChange":N} with a positive N for the amount taken instead. Only emit these tags when the theft clearly succeeds — if the attempt fails or is interrupted, emit nothing. Do not emit for items the player was already carrying before the theft.
 - QUEST RULE: When you establish a clear new objective or mission for the player (even without a named reward), emit on its own line: {"newQuest":{"title":"Short Quest Name","objective":"One sentence describing what the player must do"}}

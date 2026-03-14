@@ -52,6 +52,7 @@ export interface Player {
   dungeon: DungeonState;
   deathCount: number;
   gravestones: Gravestone[];
+  statusEffects?: string[];
 }
 
 export interface CombatState {

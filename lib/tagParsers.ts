@@ -33,6 +33,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"disguisedReveal"\s*:\s*\[[^\]]*\]\}/g, '');
   t = t.replace(/\{"addPOI"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"addTerrain"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"playerStatus"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
   t = t.replace(/```[a-z]*\s*\{"context"\s*:\s*"\w+"\}\s*```/g, '');
   t = t.replace(/```[a-z]*\s*```/g, '');
@@ -333,6 +334,19 @@ export function extractAddTerrainTag(text: string): any {
 }
 
 /**
+ * Extract player status effect tag: {"playerStatus":{"add":"effectName"}} or {"playerStatus":{"remove":"effectName"}}
+ */
+export function extractPlayerStatusTag(text: string): { add?: string; remove?: string } | null {
+  const m = text.match(/\{"playerStatus"\s*:\s*(\{[^}]+\})\}/);
+  if (!m) return null;
+  try {
+    return JSON.parse(m[1]);
+  } catch {
+    return null;
+  }
+}
+
+/**
  */
 export interface ParsedTags {
   context: string | null;
@@ -358,6 +372,7 @@ export interface ParsedTags {
   disguisedReveal: string[] | null;
   addPOI: any;
   addTerrain: any;
+  playerStatus: { add?: string; remove?: string } | null;
 }
 
 /**
@@ -388,6 +403,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     disguisedReveal: extractDisguisedRevealTag(narrative),
     addPOI: extractAddPOITag(narrative),
     addTerrain: extractAddTerrainTag(narrative),
+    playerStatus: extractPlayerStatusTag(narrative),
   };
 }
 
@@ -631,6 +647,20 @@ export function processParsedTags(
           ],
         },
       };
+    }
+  }
+
+  // Player status effect — add or remove from player.statusEffects
+  if (tags.playerStatus) {
+    const current = updatedPlayer.statusEffects || [];
+    if (tags.playerStatus.add) {
+      const effect = tags.playerStatus.add;
+      if (!current.includes(effect)) {
+        updatedPlayer = { ...updatedPlayer, statusEffects: [...current, effect] };
+      }
+    } else if (tags.playerStatus.remove) {
+      const effect = tags.playerStatus.remove;
+      updatedPlayer = { ...updatedPlayer, statusEffects: current.filter((e) => e !== effect) };
     }
   }
 
