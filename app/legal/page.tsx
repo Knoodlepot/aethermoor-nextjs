@@ -1,6 +1,10 @@
+'use client';
+
 import React from 'react';
 
-export const metadata = { title: 'Aethermoor – Legal' };
+function scrollTo(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 export default function LegalPage() {
   return (
@@ -33,19 +37,21 @@ export default function LegalPage() {
           marginTop: 14,
         }}>
           {[
-            { href: '#terms',   label: 'Terms of Service' },
-            { href: '#privacy', label: 'Privacy Policy' },
-            { href: '#refund',  label: 'Refund Policy' },
-          ].map(({ href, label }) => (
-            <a key={href} href={href} style={{
+            { id: 'terms',   label: 'Terms of Service' },
+            { id: 'privacy', label: 'Privacy Policy' },
+            { id: 'refund',  label: 'Refund Policy' },
+          ].map(({ id, label }) => (
+            <button key={id} onClick={() => scrollTo(id)} style={{
               color: '#f0c060',
-              textDecoration: 'none',
+              background: 'none',
               border: '1px solid #c4873a55',
               padding: '6px 10px',
               fontSize: 14,
+              cursor: 'pointer',
+              fontFamily: 'Georgia, serif',
             }}>
               {label}
-            </a>
+            </button>
           ))}
           <a href="/" style={{
             color: '#f0c060',
