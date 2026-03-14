@@ -54,64 +54,14 @@ export function CommandPanel({ player, onCommand, isLoading, isDyslexic }: Comma
             alignItems: 'center',
             justifyContent: 'center',
             gap: 3,
-            return (
-              <div style={{ borderTop: `1px solid ${T.border}`, background: T.panelAlt }}>
-                {/* Button grid */}
-                <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {COMMAND_GROUPS.map((group) => {
-                    const hasActive = group.commands.some((c) => c.context.includes(ctx));
-                    return (
-                      <div key={group.label}>
-                        <div
-                          style={{
-                            ...btnFont,
-                            fontSize: 10,
-                            color: T.textFaint,
-                            marginBottom: 2,
-                            letterSpacing: 1,
-                          }}
-                        >
-                          {group.label}
-                        </div>
-                        <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                          {group.commands.filter((c) => c.context.includes(ctx)).map(actionBtn)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          <span style={{ color: T.textFaint, fontSize: 10, fontStyle: 'italic', marginLeft: 'auto', fontFamily: 'Crimson Text,serif' }}>
-            weaving story...
-          </span>
-        )}
+            ...btnFont,
+            fontSize: 15,
+            padding: '8px 0',
+          }}
+        >
+          <span style={{ fontSize: 18, marginBottom: 2 }}>{cmd.icon}</span>
+          <span style={{ fontSize: 11 }}>{cmd.label}</span>
+        </button>
       </div>
-
-      {/* Button grid */}
-      <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {COMMAND_GROUPS.map((group) => {
-          const hasActive = group.commands.some((c) => c.context.includes(ctx));
-          return (
-            <div key={group.label}>
-              <div
-                style={{
-                  ...tf,
-                  color: hasActive ? T.accent : T.textFaint + '66',
-                  fontSize: 9,
-                  letterSpacing: 2,
-                  marginBottom: 4,
-                }}
-              >
-                {group.label.toUpperCase()}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 3 }}>
-                {group.commands.map((cmd) => actionBtn(cmd))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+    );
+  };
