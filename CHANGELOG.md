@@ -18,8 +18,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Dismissing a quest from the quest log now removes it.**
 
 ### Added
-- **⚔ AETHERMOOR header** now appears at the top of the game screen with the game title, game clock, New Game, and Logout buttons — matching the classic layout.
-- **Action buttons moved to the bottom of the right panel**, matching the original game layout. Buttons now include Quests, Shop (context-sensitive), Gear, Rep, Bestiary, Craft, Patch Notes, Skills, and Guide.
+- **⚔ AETHERMOOR header** now appears at the top of the game screen with the game title, game clock, New Game, Save, and Logout buttons — matching the classic layout.
+- **💾 Save button** in the header bar lets you manually save your game at any time.
+- **Action buttons moved to the bottom of the right panel**, matching the original game layout. Buttons now include Quests, Shop (context-sensitive), Gear, Rep, Bestiary, Craft, Patch Notes, Skills, and Dungeon.
+- **Action button badges**: the Quests button shows your active quest count, the Bestiary button shows how many creatures you've encountered (in red), and the Skills button shows available skill points (in green).
+- **Dungeon of Echoes button** now appears in the action bar. It pulses red when you're at the Aethermoor Capital and can enter; it's greyed out everywhere else.
+- **📖 Story / 🗺️ Map tab toggle** now appears above the text input bar, letting you switch between the narrative view and the world map inline — no popup needed.
+- **Character panel** in the right column now shows: class icon, XP progress bar, stat allocation buttons (tap + when you have stat points), and your Rations, Reputation, Gold, and current location.
 - **Colorblind themes are now fully distinct** from the default theme. Deuteranopia uses a blue-tinted palette, Protanopia uses a blue-yellow palette, and Tritanopia uses a red-grey palette — each with unique background, text, and accent colours.
 - **Dyslexia-friendly theme is now a light cream mode** (warm off-white background, dark text) instead of dark — making it genuinely easier to read for players with dyslexia.
 

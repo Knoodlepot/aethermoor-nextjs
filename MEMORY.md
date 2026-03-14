@@ -34,17 +34,15 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
-- **Visual UI match to legacy index.html**: Restructured `GameView.tsx` to match the legacy layout.
-  - Header row: "⚔ AETHERMOOR" title left, clock + New Game + Logout right (spans full width).
-  - Right column narrowed from 380px → 280px (legacy canonical width).
-  - Action buttons moved from top toolbar to bottom of right column (legacy position).
-  - Buttons: Quests, Shop (context-sensitive: town/npc only), Gear, Rep, Bestiary, Craft, Patch Notes, Skills, Guide.
-- **Colorblind theme overhaul**: All 4 non-standard themes replaced with legacy exact palettes.
-  - Deuteranopia: blue-tinted (bg #080c12, accent #5b9bd5, gold #e8d44d).
-  - Protanopia: blue-yellow (bg #06080e, accent #4db8e8, gold #f5e642).
-  - Tritanopia: red-grey (bg #0e0808, accent #e85c8a, gold #f0f0f0).
-  - Dyslexia: LIGHT CREAM mode (bg #f5f0e8, text #1a1208) — now genuinely dyslexia-friendly.
-- **E2E debug cleanup**: Removed `debugger;` statements and `console.log('[E2E DEBUG]')` spam from GameView.tsx.
+- **Full visual match to legacy index.html** — all UI elements now match the original:
+  - Player info panel: class icon (emoji), centered name, class·Lv, game clock, HP bar, XP bar with "Next: N XP", attributes grid (STR/AGI/INT/WIL) with + allocation buttons, Rations/Rep/Gold/Location resource row
+  - Story/Map tab toggle: 📖 Story / 🗺️ Map buttons above the input bar in the left column (same as legacy `leftTab` state)
+  - Action button badges: Quests shows active quest count (gold), Bestiary shows entry count (red), Skills shows available skill points (green)
+  - Dungeon button: pulses red when at Aethermoor Capital and not in dungeon; greyed/disabled otherwise
+  - Save button (💾) added to header bar
+  - All E2E debug artifacts fully removed from GameView.tsx
+- **stat_point: handler** added to `useGameLoop.ts` — clicking + on a stat applies the point immediately without narrator call
+- **Header**: ⚔ AETHERMOOR + clock + New Game + Save + Logout (matching legacy gridColumn 1/-1 header)
 - **Faction join**: Joining a faction now grants the correct gift item, applies +50 starting XP to the joined faction, -30 XP to the rival faction, and clears any pending offer.
 - **Faction decline**: Declining 2+ factions now correctly triggers The Forgotten's offer. Rival-faction rejections apply a -50 standing penalty.
 - **Craft handler**: Validates crafting level, consumes all required ingredients (case-insensitive), produces results, and awards crafting XP.
