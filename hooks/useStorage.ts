@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { storageGet, storageSet, storageGetJson, storageSetJson } from './useLocalStorage';
 import type { Player, WorldSeed } from '../lib/types';
 
@@ -208,12 +208,12 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
     }
   }, []);
 
-  return {
+  return useMemo(() => ({
     loadGame,
     saveGame,
     saveToCloud,
     loadFromCloud,
     isSyncingCloud,
     clearAllSaves,
-  };
+  }), [loadGame, saveGame, saveToCloud, loadFromCloud, isSyncingCloud, clearAllSaves]);
 }

@@ -560,7 +560,7 @@ function GameContent() {
         )}
         {auth.token && (
           <button
-            onClick={() => ui.setScreen('title')}
+            onClick={() => router.push('/')}
             style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
           >
             Main Menu
