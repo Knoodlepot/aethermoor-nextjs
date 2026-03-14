@@ -5,7 +5,7 @@ import type { Player, WorldSeed } from '../lib/types';
 import type { GameStateContext } from './useGameState';
 import type { UIContext } from './useUI';
 import type { UseStorageReturn } from './useStorage';
-import { FACTION_JOIN_OFFERS, PROTECTED_ITEMS, RECIPES } from '../lib/constants';
+import { FACTION_JOIN_OFFERS, PROTECTED_ITEMS, RECIPES, CONSUMABLE_EFFECTS } from '../lib/constants';
 import { getItemSlotEx } from '../lib/helpers';
 
 export interface GameLoopContext {
@@ -247,6 +247,39 @@ export function useGameLoop(
           gs.setPlayer(updatedPlayer);
           await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
           return { success: true };
+        }
+
+        // ── use:<itemName> ──
+        if (command.startsWith('use:')) {
+          const itemName = command.slice('use:'.length);
+          const idx = updatedPlayer.inventory.indexOf(itemName);
+          if (idx === -1) return { success: false, error: 'Item not in inventory' };
+          const effect = (CONSUMABLE_EFFECTS as Record<string, any>)[itemName.toLowerCase()];
+          if (!effect) {
+            // Not a consumable — let narrator handle it
+          } else {
+            const newInv = [...updatedPlayer.inventory];
+            newInv.splice(idx, 1);
+            let newHp = updatedPlayer.hp;
+            if (effect.hpFull) newHp = updatedPlayer.maxHp;
+            else if (effect.hp) newHp = Math.min(updatedPlayer.maxHp, newHp + effect.hp);
+            updatedPlayer = {
+              ...updatedPlayer,
+              inventory: newInv,
+              hp: newHp,
+              str: updatedPlayer.str + (effect.str ?? 0),
+              agi: updatedPlayer.agi + (effect.agi ?? 0),
+              int: updatedPlayer.int + (effect.int ?? 0),
+              wil: updatedPlayer.wil + (effect.wil ?? 0),
+            };
+            if (effect.msg) {
+              gs.addLogEntry('action', effect.msg);
+              gs.setNarrative(effect.msg);
+            }
+            gs.setPlayer(updatedPlayer);
+            await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+            return { success: true };
+          }
         }
 
         // ── dismiss_quest:<questId> ──
