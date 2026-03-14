@@ -65,8 +65,7 @@ function GameContent() {
   // Guest-mode flag: bypass auth gate without a real JWT
   const [guestMode, setGuestMode] = useState(false);
 
-  // Story/Map tab toggle (left column, desktop)
-  const [leftTab, setLeftTab] = useState<'story' | 'map'>('story');
+
 
   // Dungeon hint toast
   const [dungeonHint, setDungeonHint] = useState(false);
@@ -462,41 +461,67 @@ function GameContent() {
 
   const desktopLayout = (
     <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-      {/* Left: narrative (or map) + tab toggle + input bar */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {leftTab === 'story' && (
-          <NarrativePanel
-            narrative={gameState.narrative}
-            log={gameState.log}
-            suggestions={ui.suggestions}
-            pendingSuggestion={ui.pendingSuggestion}
-            onSuggestionSelect={(s) => {
-              ui.setPendingSuggestion(s);
-            }}
-          />
-        )}
-        {leftTab === 'map' && player && gameState.worldSeed && (
+      {/* Left: story + suggestions/input bar */}
+      <div style={{ flex: 3, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <NarrativePanel
+          narrative={gameState.narrative}
+          log={gameState.log}
+        />
+        {/* Bottom bar: stacked suggestions (left) + input bar (right) */}
+        <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}` }}>
+          {/* Stacked suggestion buttons */}
+          {ui.suggestions.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, borderRight: `1px solid ${T.border}` }}>
+              {ui.suggestions.slice(0, 3).map((s, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleFreeText(s)}
+                  style={{
+                    padding: '0 14px',
+                    flex: 1,
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: idx < 2 ? `1px solid ${T.border}` : 'none',
+                    color: T.gold,
+                    cursor: 'pointer',
+                    fontFamily: "'Cinzel',serif",
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                    textAlign: 'left' as const,
+                    whiteSpace: 'nowrap' as const,
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = T.panelAlt)}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Input bar fills remaining width */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <InputBar
+              player={gameState.player}
+              onFreeText={handleFreeText}
+              isLoading={gameLoop.isLoading}
+              fillInput={ui.fillInput || null}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Middle: map (always visible) */}
+      <div style={{ flex: 2, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderLeft: `1px solid ${T.border}` }}>
+        {player && gameState.worldSeed ? (
           <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' as const }}>
             <MapView player={gameState.player!} worldSeed={gameState.worldSeed} inline />
           </div>
+        ) : (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textMuted, fontFamily: "'Cinzel',serif", fontSize: 12 }}>
+            Map unavailable
+          </div>
         )}
-        {/* Story / Map tab toggle */}
-        <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}` }}>
-          <button
-            onClick={() => setLeftTab('story')}
-            style={{ flex: 1, padding: '9px 0', background: leftTab === 'story' ? T.panelAlt : 'transparent', border: 'none', borderRight: `1px solid ${T.border}`, color: leftTab === 'story' ? T.gold : T.textMuted, cursor: 'pointer', fontFamily: "'Cinzel',serif", fontSize: 11, letterSpacing: 1.5, transition: 'all 0.2s' }}
-          >📖  Story</button>
-          <button
-            onClick={() => setLeftTab('map')}
-            style={{ flex: 1, padding: '9px 0', background: leftTab === 'map' ? T.panelAlt : 'transparent', border: 'none', color: leftTab === 'map' ? T.gold : T.textMuted, cursor: 'pointer', fontFamily: "'Cinzel',serif", fontSize: 11, letterSpacing: 1.5, transition: 'all 0.2s' }}
-          >🗺️  Map</button>
-        </div>
-        <InputBar
-          player={gameState.player}
-          onFreeText={handleFreeText}
-          isLoading={gameLoop.isLoading}
-          fillInput={ui.fillInput || null}
-        />
       </div>
 
       {rightColumn}
@@ -512,9 +537,6 @@ function GameContent() {
         <NarrativePanel
           narrative={gameState.narrative}
           log={gameState.log}
-          suggestions={ui.suggestions}
-          pendingSuggestion={ui.pendingSuggestion}
-          onSuggestionSelect={(s) => ui.setPendingSuggestion(s)}
         />
       </div>
 

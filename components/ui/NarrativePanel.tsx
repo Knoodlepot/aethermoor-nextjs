@@ -7,17 +7,11 @@ import { parseMarkdown } from '@/lib/tagParsers';
 interface NarrativePanelProps {
   narrative: string;
   log?: Array<{ type: string; text: string; timestamp?: string }>;
-  suggestions?: string[];
-  pendingSuggestion?: any | null;
-  onSuggestionSelect?: (suggestion: string) => void;
 }
 
 export function NarrativePanel({
   narrative,
   log = [],
-  suggestions = [],
-  pendingSuggestion,
-  onSuggestionSelect,
 }: NarrativePanelProps) {
   const { T, bf, isDyslexic } = useTheme();
   const logRef = React.useRef<HTMLDivElement>(null);
@@ -69,70 +63,6 @@ export function NarrativePanel({
           }}
           dangerouslySetInnerHTML={{ __html: parseMarkdown(narrative) }}
         />
-      )}
-
-      {/* Suggestions */}
-      {suggestions.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 8,
-            marginTop: 12,
-          }}
-        >
-          {suggestions.map((suggestion, idx) => (
-            <button
-              key={idx}
-              onClick={() => onSuggestionSelect?.(suggestion)}
-              style={{
-                padding: '8px 12px',
-                background: T.choiceColor,
-                color: T.bg,
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer',
-                fontSize: 13,
-                fontWeight: 600,
-              }}
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Pending suggestion confirmation */}
-      {pendingSuggestion && (
-        <div
-          style={{
-            background: T.selectedBg,
-            border: `2px solid ${T.gold}`,
-            padding: 12,
-            borderRadius: 4,
-            display: 'flex',
-            gap: 8,
-            alignItems: 'center',
-          }}
-        >
-          <span style={{ color: T.text, fontSize: 13 }}>
-            Sending: <strong>{pendingSuggestion}</strong>
-          </span>
-          <button
-            onClick={() => onSuggestionSelect?.(pendingSuggestion)}
-            style={{
-              padding: '4px 8px',
-              background: T.gold,
-              color: T.bg,
-              border: 'none',
-              borderRadius: 2,
-              cursor: 'pointer',
-              fontSize: 12,
-            }}
-          >
-            Confirm
-          </button>
-        </div>
       )}
 
       {/* Game log (last 15 entries) */}
