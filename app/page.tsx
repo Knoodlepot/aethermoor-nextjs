@@ -4,12 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
 import { PatchNotesScreen } from '@/components/screens/PatchNotesScreen';
 import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
+import { SaveSlotModal } from '@/components/modals/SaveSlotModal';
 import { THEMES, type ThemeKey } from '@/components/providers/ThemeProvider';
+import type { SlotSummary } from '@/hooks/useStorage';
 
 export default function Home() {
   const [showGuide, setShowGuide] = useState(false);
   const [showPatches, setShowPatches] = useState(false);
   const [showTokenShop, setShowTokenShop] = useState(false);
+  const [showLoadSlot, setShowLoadSlot] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('standard');
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -26,6 +29,14 @@ export default function Home() {
       setTimeout(() => setPaymentSuccess(false), 8000);
     }
   }, []);
+
+  const loadSlots = async (): Promise<SlotSummary[]> => {
+    try {
+      const res = await fetch('/api/save?slots=all', { credentials: 'include' });
+      if (res.ok) return await res.json();
+    } catch {}
+    return [1, 2, 3].map((s) => ({ slot: s, empty: true }));
+  };
 
   const tokenColor = (t: number) =>
     t > 50 ? '#80c060' : t > 20 ? '#c9a84c' : t > 10 ? '#e08030' : '#e04040';
@@ -110,9 +121,9 @@ export default function Home() {
           <a href="/game?new=1" style={buttonStyle}>
             New Game
           </a>
-          <a href="/game" style={buttonStyle}>
+          <button onClick={() => setShowLoadSlot(true)} style={buttonStyle}>
             Load Game
-          </a>
+          </button>
           <button onClick={() => setShowGuide(true)} style={secondaryButtonStyle}>
             How to Play
           </button>
@@ -212,6 +223,15 @@ export default function Home() {
           tokenBalance={tokenBalance ?? 0}
           paymentSuccess={paymentSuccess}
           onClose={() => setShowTokenShop(false)}
+        />
+      )}
+      {showLoadSlot && (
+        <SaveSlotModal
+          mode="load"
+          currentSlot={1}
+          loadSlots={loadSlots}
+          onLoad={(slot) => { window.location.href = `/game?slot=${slot}`; }}
+          onClose={() => setShowLoadSlot(false)}
         />
       )}
     </div>

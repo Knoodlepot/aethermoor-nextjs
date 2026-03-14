@@ -43,7 +43,7 @@ import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
 import { FactionOfferModal } from '@/components/modals/FactionOfferModal';
 import { UserProfileModal } from '@/components/modals/UserProfileModal';
-// ClassInfoModal is imported here; rendered during character creation (future CharacterCreation screen)
+import { SaveSlotModal } from '@/components/modals/SaveSlotModal';
 import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 
 import { CLASSES } from '@/lib/constants';
@@ -65,7 +65,8 @@ function GameContent() {
 
   // All hooks in dependency order
   const auth = useAuth();
-  const storage = useStorage(auth.token);
+  const initialSlot = Math.min(3, Math.max(1, parseInt(searchParams.get('slot') ?? '1', 10) || 1));
+  const storage = useStorage(auth.token, initialSlot);
   const gameState = useGameState(storage);
   const ui = useUI();
   const gameLoop = useGameLoop(gameState, ui, storage, auth.token);
@@ -74,6 +75,7 @@ function GameContent() {
   const [guestMode, setGuestMode] = useState(false);
   const [newGameLoading, setNewGameLoading] = useState(false);
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
+  const [showSaveSlot, setShowSaveSlot] = useState(false);
 
   // Token balance
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
@@ -603,7 +605,7 @@ function GameContent() {
         </button>
         {player && (
           <button
-            onClick={() => void storage.saveGame(gameState.player!, gameState.worldSeed!, gameState.messages ?? [], gameState.narrative ?? '', gameState.log ?? [])}
+            onClick={() => setShowSaveSlot(true)}
             style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
           >
             💾 Save
@@ -976,6 +978,20 @@ function GameContent() {
           tokenBalance={tokenBalance ?? 0}
           paymentSuccess={paymentSuccess}
           onClose={() => ui.closeModal('tokenShop')}
+        />
+      )}
+
+      {/* ── Save Slot picker ──────────────────────────────────────────────── */}
+      {showSaveSlot && player && (
+        <SaveSlotModal
+          mode="save"
+          currentSlot={storage.currentSlot}
+          loadSlots={storage.loadSlots}
+          onSave={(slot) => {
+            storage.setCurrentSlot(slot);
+            void storage.saveGame(gameState.player!, gameState.worldSeed!, gameState.messages ?? [], gameState.narrative ?? '', gameState.log ?? [], slot);
+          }}
+          onClose={() => setShowSaveSlot(false)}
         />
       )}
 

@@ -173,6 +173,20 @@ export async function migrateDb(): Promise<void> {
         `ALTER TABLE dungeon_progress ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()`,
         `ALTER TABLE dungeon_progress ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`,
         `ALTER TABLE game_saves ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()`,
+        `ALTER TABLE game_saves ADD COLUMN IF NOT EXISTS slot INTEGER NOT NULL DEFAULT 1`,
+        // Re-key game_saves from (player_id) to (player_id, slot) — only if old PK constraint exists
+        // We check by trying to drop it; the new unique constraint acts as the PK
+        `DO $$ BEGIN
+           IF EXISTS (
+             SELECT 1 FROM pg_constraint
+             WHERE conname = 'game_saves_pkey'
+               AND contype = 'p'
+               AND conrelid = 'game_saves'::regclass
+           ) THEN
+             ALTER TABLE game_saves DROP CONSTRAINT game_saves_pkey;
+             ALTER TABLE game_saves ADD PRIMARY KEY (player_id, slot);
+           END IF;
+         END $$`,
         `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','dismissed','escalated'))`,
         `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS admin_notes TEXT`,
         `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ`,
@@ -284,14 +298,16 @@ export async function migrateDb(): Promise<void> {
     // Create game_saves table
     await client.query(`
       CREATE TABLE IF NOT EXISTS game_saves (
-        player_id TEXT PRIMARY KEY REFERENCES players(player_id),
+        player_id TEXT NOT NULL REFERENCES players(player_id),
+        slot INTEGER NOT NULL DEFAULT 1,
         player_json TEXT NOT NULL,
         seed_json TEXT NOT NULL,
         messages_json TEXT DEFAULT '[]',
         narrative TEXT DEFAULT '',
         log_json TEXT DEFAULT '[]',
         saved_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW()
+        updated_at TIMESTAMPTZ DEFAULT NOW(),
+        PRIMARY KEY (player_id, slot)
       );
     `);
 

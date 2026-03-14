@@ -12,23 +12,38 @@ export interface GameSaveState {
   log: any[];
 }
 
+export interface SlotSummary {
+  slot: number;
+  empty: boolean;
+  name?: string;
+  cls?: string;
+  level?: number;
+  location?: string;
+  savedAt?: string;
+}
+
 export interface UseStorageReturn {
-  loadGame: () => Promise<GameSaveState | null>;
+  currentSlot: number;
+  setCurrentSlot: (slot: number) => void;
+  loadGame: (slot?: number) => Promise<GameSaveState | null>;
   saveGame: (
     player: Player,
     worldSeed: WorldSeed,
     messages: any[],
     narrative: string,
-    log: any[]
+    log: any[],
+    slot?: number
   ) => Promise<void>;
   saveToCloud: (
     player: Player,
     worldSeed: WorldSeed,
     messages: any[],
     narrative: string,
-    log: any[]
+    log: any[],
+    slot?: number
   ) => Promise<boolean>;
-  loadFromCloud: () => Promise<GameSaveState | null>;
+  loadFromCloud: (slot?: number) => Promise<GameSaveState | null>;
+  loadSlots: () => Promise<SlotSummary[]>;
   isSyncingCloud: boolean;
   clearAllSaves: () => void;
 }
@@ -36,8 +51,9 @@ export interface UseStorageReturn {
 /**
  * useStorage - Manage dual save system (localStorage + cloud save via API)
  */
-export function useStorage(authToken?: string | null): UseStorageReturn {
+export function useStorage(authToken?: string | null, initialSlot: number = 1): UseStorageReturn {
   const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+  const [currentSlot, setCurrentSlot] = useState(initialSlot);
 
   /**
    * Save to localStorage (synchronous, always succeeds)
@@ -48,14 +64,24 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
       worldSeed: WorldSeed,
       messages: any[],
       narrative: string,
-      log: any[]
+      log: any[],
+      slot: number = 1
     ) => {
       try {
-        storageSetJson('rpg-player', player);
-        storageSetJson('rpg-seed', worldSeed);
-        storageSetJson('rpg-messages', messages);
-        storageSet('rpg-narrative', narrative);
-        storageSetJson('rpg-log', log);
+        const s = `slot${slot}`;
+        storageSetJson(`rpg-player-${s}`, player);
+        storageSetJson(`rpg-seed-${s}`, worldSeed);
+        storageSetJson(`rpg-messages-${s}`, messages);
+        storageSet(`rpg-narrative-${s}`, narrative);
+        storageSetJson(`rpg-log-${s}`, log);
+        // Legacy slot 1 compat: also write old keys so existing code still works
+        if (slot === 1) {
+          storageSetJson('rpg-player', player);
+          storageSetJson('rpg-seed', worldSeed);
+          storageSetJson('rpg-messages', messages);
+          storageSet('rpg-narrative', narrative);
+          storageSetJson('rpg-log', log);
+        }
       } catch (error) {
         console.error('Failed to save to localStorage:', error);
       }
@@ -66,18 +92,21 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
   /**
    * Load from localStorage
    */
-  const loadFromLocalStorage = useCallback((): GameSaveState | null => {
+  const loadFromLocalStorage = useCallback((slot: number = 1): GameSaveState | null => {
     try {
-      const player = storageGetJson<Player>('rpg-player', null as any);
-      const worldSeed = storageGetJson<WorldSeed>('rpg-seed', null as any);
-      const messages = storageGetJson<any[]>('rpg-messages', []);
-      const narrative = storageGet('rpg-narrative') || '';
-      const log = storageGetJson<any[]>('rpg-log', []);
+      const s = `slot${slot}`;
+      // Try slot-keyed first, fall back to legacy keys for slot 1
+      const player = storageGetJson<Player>(`rpg-player-${s}`, null as any)
+        ?? (slot === 1 ? storageGetJson<Player>('rpg-player', null as any) : null);
+      const worldSeed = storageGetJson<WorldSeed>(`rpg-seed-${s}`, null as any)
+        ?? (slot === 1 ? storageGetJson<WorldSeed>('rpg-seed', null as any) : null);
+      const messages = storageGetJson<any[]>(`rpg-messages-${s}`, []);
+      const narrative = storageGet(`rpg-narrative-${s}`) ?? (slot === 1 ? storageGet('rpg-narrative') : '') ?? '';
+      const log = storageGetJson<any[]>(`rpg-log-${s}`, []);
 
       if (player && worldSeed) {
         return { player, worldSeed, messages, narrative, log };
       }
-
       return null;
     } catch (error) {
       console.error('Failed to load from localStorage:', error);
@@ -94,7 +123,8 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
       worldSeed: WorldSeed,
       messages: any[],
       narrative: string,
-      log: any[]
+      log: any[],
+      slot: number = 1
     ): Promise<boolean> => {
       if (!authToken) return false;
 
@@ -102,9 +132,7 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
       try {
         const res = await fetch('/api/save', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
             player_json: JSON.stringify(player),
@@ -112,9 +140,9 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
             messages_json: JSON.stringify(messages),
             narrative,
             log_json: JSON.stringify(log),
+            slot,
           }),
         });
-
         return res.ok;
       } catch (error) {
         console.warn('Cloud save failed (localStorage will persist):', error);
@@ -127,16 +155,12 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
   );
 
   /**
-   * Load from cloud via API (try cloud first if authenticated)
+   * Load from cloud via API
    */
-  const loadFromCloud = useCallback(async (): Promise<GameSaveState | null> => {
+  const loadFromCloud = useCallback(async (slot: number = 1): Promise<GameSaveState | null> => {
     if (!authToken) return null;
-
     try {
-      const res = await fetch('/api/save', {
-        credentials: 'include',
-      });
-
+      const res = await fetch(`/api/save?slot=${slot}`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         if (!data.player_json) return null;
@@ -151,12 +175,38 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
     } catch (error) {
       console.warn('Cloud load failed, falling back to localStorage:', error);
     }
-
     return null;
   }, [authToken]);
 
   /**
-   * Main saveGame function - saves to localStorage first, then cloud async
+   * Load summaries of all 3 slots
+   */
+  const loadSlots = useCallback(async (): Promise<SlotSummary[]> => {
+    if (!authToken) {
+      // Build from localStorage
+      return [1, 2, 3].map((s) => {
+        const save = loadFromLocalStorage(s);
+        if (!save?.player) return { slot: s, empty: true };
+        const p = save.player as any;
+        return {
+          slot: s,
+          empty: false,
+          name: p.name ?? 'Unknown',
+          cls: p.class ?? '',
+          level: p.level ?? 1,
+          location: p.location ?? '',
+        };
+      });
+    }
+    try {
+      const res = await fetch('/api/save?slots=all', { credentials: 'include' });
+      if (res.ok) return await res.json();
+    } catch {}
+    return [1, 2, 3].map((s) => ({ slot: s, empty: true }));
+  }, [authToken, loadFromLocalStorage]);
+
+  /**
+   * Main saveGame — saves to localStorage first, then cloud async
    */
   const saveGame = useCallback(
     async (
@@ -164,34 +214,27 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
       worldSeed: WorldSeed,
       messages: any[],
       narrative: string,
-      log: any[]
+      log: any[],
+      slot: number = currentSlot
     ): Promise<void> => {
-      // Always save to localStorage first (synchronous path)
-      saveToLocalStorage(player, worldSeed, messages, narrative, log);
-
-      // Then save to cloud if authenticated (async, fire-and-forget)
+      saveToLocalStorage(player, worldSeed, messages, narrative, log, slot);
       if (authToken) {
-        await saveToCloud(player, worldSeed, messages, narrative, log);
+        await saveToCloud(player, worldSeed, messages, narrative, log, slot);
       }
     },
-    [authToken, saveToLocalStorage, saveToCloud]
+    [authToken, currentSlot, saveToLocalStorage, saveToCloud]
   );
 
   /**
-   * Main loadGame function - tries cloud first if authenticated, falls back to localStorage
+   * Main loadGame — tries cloud first, falls back to localStorage
    */
-  const loadGame = useCallback(async (): Promise<GameSaveState | null> => {
-    // Try cloud first if authenticated
+  const loadGame = useCallback(async (slot: number = currentSlot): Promise<GameSaveState | null> => {
     if (authToken) {
-      const cloudData = await loadFromCloud();
-      if (cloudData) {
-        return cloudData;
-      }
+      const cloudData = await loadFromCloud(slot);
+      if (cloudData) return cloudData;
     }
-
-    // Fall back to localStorage
-    return loadFromLocalStorage();
-  }, [authToken, loadFromCloud, loadFromLocalStorage]);
+    return loadFromLocalStorage(slot);
+  }, [authToken, currentSlot, loadFromCloud, loadFromLocalStorage]);
 
   /**
    * Clear all saved data from localStorage
@@ -209,11 +252,14 @@ export function useStorage(authToken?: string | null): UseStorageReturn {
   }, []);
 
   return useMemo(() => ({
+    currentSlot,
+    setCurrentSlot,
     loadGame,
     saveGame,
     saveToCloud,
     loadFromCloud,
+    loadSlots,
     isSyncingCloud,
     clearAllSaves,
-  }), [loadGame, saveGame, saveToCloud, loadFromCloud, isSyncingCloud, clearAllSaves]);
+  }), [currentSlot, setCurrentSlot, loadGame, saveGame, saveToCloud, loadFromCloud, loadSlots, isSyncingCloud, clearAllSaves]);
 }
