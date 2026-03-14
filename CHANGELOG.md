@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - **Sea Vessel** — available when both locations have a harbour. Fastest option for coastal routes.
   - Time advances by the actual travel duration, so arriving by horse late at night means it's late at night in-game.
 - **Mount slot**: A new **Mount** equipment slot has been added to your gear screen. If you buy or are given a horse, you can equip it there — it will then be available for free fast travel.
+- **Map zoom**: Scroll the mouse wheel over the map to zoom in or out. Scrolling zooms toward wherever your cursor is pointed. Three overlay buttons (＋ / － / ⌖) let you step zoom with a click or reset to the default view. Zoom range: 60% (overview) to 300% (district detail).
+- **Map pan**: Hold left mouse and drag to move the map around. Useful when zoomed in on a dense region. The map is clamped so it never wanders fully off-screen.
+- **Terrain on the world map**: The narrator now marks the landscape as the world fills in — dense forests, rolling grasslands, open plains, rugged hills, mountain ranges, frozen tundra, and boggy swamps all appear as visual texture on the map. Rivers curve across the map wherever river routes exist. A new **Terrain** section in the map key explains each type.
 
 ### Fixed
 - **Entering the Dungeon of Echoes now works correctly.** Clicking the Dungeon button at Aethermoor Capital now immediately places you on Floor 1 with a scene-setting message — no more routing through the narrator.
