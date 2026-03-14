@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import type { Player } from '@/lib/types';
-import { ITEM_INFO } from '@/lib/constants';
+import { ITEM_INFO, PROTECTED_ITEMS, TIERED_GEAR } from '@/lib/constants';
 import { getProfessionLevel } from '@/lib/helpers';
 import * as helpers from '@/lib/helpers';
 
@@ -56,6 +56,9 @@ function getBasePrice(name: string): number {
   // Try exact match first
   const exact = BASE_PRICES[name];
   if (exact) return exact;
+  // Try TIERED_GEAR (has canonical prices)
+  const tiered = TIERED_GEAR.find((g) => g.name.toLowerCase() === name.toLowerCase());
+  if (tiered) return tiered.price;
   // Try from ITEM_INFO lookup via any cast
   if (getItemInfo) {
     const info = getItemInfo(name);
@@ -103,7 +106,7 @@ export function ShopScreen({ player, onBuy, onSell, onClose, onBarter, shopPrice
       }
     }
     return [];
-  }, [player.location]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [player.location, player.level]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function getItemPrice(item: any): number {
     const override = shopPriceOverrides?.[item.name || item.id];
@@ -304,12 +307,12 @@ export function ShopScreen({ player, onBuy, onSell, onClose, onBarter, shopPrice
 
           {/* ── SELL ── */}
           {tab === 'sell' && (
-            (player.inventory || []).length === 0 ? (
+            (player.inventory || []).filter((n) => !PROTECTED_ITEMS.has(n)).length === 0 ? (
               <div style={{ padding: 40, textAlign: 'center', color: T.textFaint, fontStyle: 'italic' }}>
-                Your inventory is empty.
+                You have nothing the merchant will buy.
               </div>
             ) : (
-              (player.inventory || []).map((itemName, i) => {
+              (player.inventory || []).filter((n) => !PROTECTED_ITEMS.has(n)).map((itemName, i) => {
                 const sellPrice = getSellPrice(itemName);
                 const icon = getItemIcon(itemName);
                 const isConfirming = sellConfirm === itemName + i;

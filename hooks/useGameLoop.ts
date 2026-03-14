@@ -160,6 +160,7 @@ export function useGameLoop(
           const price = parseInt(parts[parts.length - 1], 10);
           const itemName = parts.slice(1, -1).join(':');
           if (!isNaN(price) && itemName) {
+            if (PROTECTED_ITEMS.has(itemName)) return { success: false, error: 'That item cannot be sold' };
             const idx = updatedPlayer.inventory.indexOf(itemName);
             if (idx === -1) return { success: false, error: 'Item not in inventory' };
             const newInv = [...updatedPlayer.inventory];
