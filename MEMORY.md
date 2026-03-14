@@ -7,6 +7,15 @@
   Always ask the AI to UPDATE this file when new features are completed.
 -->
 
+## !! AUTO-COMMIT RULE — READ THIS FIRST !!
+After **every** code change, automatically run:
+```
+git add -A && git commit -m "<short description of change>
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>" && git push
+```
+Do this without being asked. Never leave the user to commit manually.
+
 ## Project Overview
 AI-powered browser RPG built on Next.js.
 - **Game**: https://aethermoor-nextjs.vercel.app/
