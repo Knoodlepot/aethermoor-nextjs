@@ -87,11 +87,20 @@ export default function Home() {
       <div style={{ maxWidth: '700px', width: '100%', textAlign: 'center' }}>
         {/* Header */}
         <div style={{ marginBottom: '3rem' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚔️</div>
+          <p style={{
+            fontSize: '0.75rem',
+            color: '#b8925a',
+            letterSpacing: '0.25em',
+            textTransform: 'uppercase',
+            marginBottom: '0.5rem',
+            fontFamily: 'Cinzel, serif',
+          }}>
+            The Chronicles of
+          </p>
           <h1 style={{
             fontSize: '3rem',
             color: '#c9a84c',
-            marginBottom: '0.5rem',
+            marginBottom: '0.4rem',
             letterSpacing: '0.12em',
             fontFamily: 'Cinzel, serif',
             fontWeight: 'bold',
@@ -99,14 +108,24 @@ export default function Home() {
             AETHERMOOR
           </h1>
           <p style={{
+            fontSize: '0.75rem',
+            color: '#b8925a',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            fontFamily: 'Cinzel, serif',
+            marginBottom: '1.25rem',
+          }}>
+            A Heroic Fantasy Adventure
+          </p>
+          <hr style={{ border: 'none', borderTop: '1px solid #2e2010', maxWidth: 320, margin: '0 auto 1.25rem' }} />
+          <p style={{
             fontSize: '0.95rem',
-            marginBottom: '1.5rem',
             lineHeight: '1.8',
             color: '#b8925a',
-            maxWidth: '500px',
-            margin: '1rem auto',
+            maxWidth: '480px',
+            margin: '0 auto',
           }}>
-            An AI-powered browser RPG where your choices matter, and every decision shapes your destiny.
+            A darkness stirs across the continent. Ancient powers awaken. The fate of Aethermoor rests with one unlikely soul — perhaps you.
           </p>
         </div>
 
