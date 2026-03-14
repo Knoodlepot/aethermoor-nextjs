@@ -43,6 +43,12 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Mini Map**: New `MiniMap` component in right sidebar, below Side Quest Panel, filling the previously empty space.
+  - Renders the world map as a compact ~178px tall canvas (uses existing `MapView inline` prop — no side panels, no zoom controls, no travel popup).
+  - Gold "WORLD MAP" label above; subtle hover border/glow.
+  - Clicking anywhere on it opens the full Map screen (`ui.setMapOpen(true)`).
+  - Only 2 files changed: new `components/ui/MiniMap.tsx`, minor addition to `components/GameView.tsx`.
+
 - **Side Quest Panel**: New `SideQuestPanel` component sits below `MainQuestPanel` in the right sidebar.
   - Shows up to 5 tracked active quests (side, faction, contract types all included).
   - Empty state displays flavour text: "No roads taken yet, wanderer..."
@@ -140,7 +146,8 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
-| current | Side Quest Panel in right sidebar; Main Quest tab in Quest Log (act timeline); Faction quest tab; track toggle on all quests; abandon quest with confirm |
+| current | Mini Map in right sidebar below Side Quest Panel — click to open full map |
+| current-prev | Side Quest Panel in right sidebar; Main Quest tab in Quest Log (act timeline); Faction quest tab; track toggle on all quests; abandon quest with confirm |
 | current-prev | Legacy comparison pass: fixed 3 skill IDs (unbreakable/ghost_walk/avatar_divine), ported 10 canonical factions with rich join offers, added tiered gear shop system, faction gear sets, rank gear, protected/concealed item lists |
 | 2026-03-13 | Production narrator smoke pass complete (5/5) and new `verify:narrator` / `verify:narrator:prod` scripts added |
 | 2026-03-13 | DB schema migrations applied (9 missing columns across 5 tables); migrateDb() now self-heals on startup; temp scripts removed |
