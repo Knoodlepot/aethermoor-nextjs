@@ -310,6 +310,27 @@ export function useGameLoop(
           return { success: true };
         }
 
+        // ── enter_dungeon ──
+        if (command === 'enter_dungeon') {
+          const atCapital = updatedPlayer.location === 'Aethermoor Capital';
+          if (!atCapital) return { success: false, error: 'You must be at Aethermoor Capital to enter the dungeon' };
+          const currentFloor = (updatedPlayer as any).dungeon?.floor ?? 0;
+          if (currentFloor > 0) return { success: false, error: 'Already in the dungeon' };
+          const msg = 'You descend the worn stone steps beneath the Capital. The air grows cold and the torchlight flickers. You stand at the entrance to the Dungeon of Echoes — Floor 1.';
+          updatedPlayer = {
+            ...updatedPlayer,
+            location: 'Dungeon of Echoes - Floor 1',
+            context: 'dungeon',
+            dungeon: { ...(updatedPlayer as any).dungeon, floor: 1, deepestFloor: Math.max(1, (updatedPlayer as any).dungeon?.deepestFloor ?? 0) },
+          } as typeof updatedPlayer;
+          gs.setPlayer(updatedPlayer);
+          gs.setNarrative(msg);
+          gs.addLogEntry('action', 'enter_dungeon');
+          gs.addLogEntry('response', msg.substring(0, 100));
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, msg, gs.log);
+          return { success: true };
+        }
+
         // 1. Add user message to conversation history
         const userMessages = [...gs.messages.slice(-19), { role: 'user', content: command }];
         gs.setMessages(userMessages);

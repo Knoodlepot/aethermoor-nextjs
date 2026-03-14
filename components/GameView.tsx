@@ -307,7 +307,7 @@ function GameContent() {
   const bestiaryCount = (player?.bestiary ?? []).length;
   const skillPts = player?.skillPoints ?? 0;
   const atCapital = player?.location === 'Aethermoor Capital';
-  const inDungeon = !!(player as any)?.dungeon;
+  const inDungeon = ((player as any)?.dungeon?.floor ?? 0) > 0;
   const dungeonAvailable = atCapital && !inDungeon;
 
   const badgeBtn = (label: string, onClick: () => void, badge?: { count: number; color: string }) => (
