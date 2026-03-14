@@ -390,8 +390,12 @@ function GameContent() {
         onSkills={() => ui.toggleModal('skillTree')}
         onQuests={() => ui.toggleModal('questLog')}
         onMap={() => ui.toggleModal('map')}
+        onCraft={() => ui.toggleModal('crafting')}
+        onGear={() => ui.toggleModal('inventory')}
+        onBestiary={() => ui.toggleModal('bestiary')}
         activeQuestCount={activeQuestCount}
         skillPts={skillPts}
+        bestiaryCount={bestiaryCount}
       />
       {/* Scrollable info area */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -545,8 +549,12 @@ function GameContent() {
         onSkills={() => ui.toggleModal('skillTree')}
         onQuests={() => ui.toggleModal('questLog')}
         onMap={() => ui.toggleModal('map')}
+        onCraft={() => ui.toggleModal('crafting')}
+        onGear={() => ui.toggleModal('inventory')}
+        onBestiary={() => ui.toggleModal('bestiary')}
         activeQuestCount={activeQuestCount}
         skillPts={skillPts}
+        bestiaryCount={bestiaryCount}
       />
       <div
         style={{

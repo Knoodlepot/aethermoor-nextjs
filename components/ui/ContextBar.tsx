@@ -14,8 +14,12 @@ interface ContextBarProps {
   onSkills?: () => void;
   onQuests?: () => void;
   onMap?: () => void;
+  onCraft?: () => void;
+  onGear?: () => void;
+  onBestiary?: () => void;
   activeQuestCount?: number;
   skillPts?: number;
+  bestiaryCount?: number;
 }
 
 const TIER_ICONS: Record<string, string> = {
@@ -43,7 +47,7 @@ function locationIcon(locationName: string | undefined, locationGrid?: Record<st
   return TIER_ICONS[tier] ?? '🌲';
 }
 
-export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop, onSkills, onQuests, onMap, activeQuestCount = 0, skillPts = 0 }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop, onSkills, onQuests, onMap, onCraft, onGear, onBestiary, activeQuestCount = 0, skillPts = 0, bestiaryCount = 0 }: ContextBarProps) {
   const { T } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -95,8 +99,50 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
             weaving story...
           </span>
         )}
-        {(onShop || onSkills || onQuests || onMap) && (
+        {(onShop || onSkills || onQuests || onMap || onCraft || onGear || onBestiary) && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            {onBestiary && (
+              <button
+                onClick={onBestiary}
+                style={{
+                  gridColumn: '1 / -1',
+                  background: 'transparent',
+                  border: `1px solid ${T.accent}`,
+                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
+                  position: 'relative' as const, whiteSpace: 'nowrap' as const, textAlign: 'center' as const,
+                }}
+              >
+                📖 Bestiary
+                {bestiaryCount > 0 && (
+                  <span style={{ position: 'absolute', top: -3, right: -3, background: '#c04040', color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {bestiaryCount}
+                  </span>
+                )}
+              </button>
+            )}
+            {onCraft && (
+              <button
+                onClick={onCraft}
+                style={{
+                  background: 'transparent', border: `1px solid ${T.accent}`,
+                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
+                  whiteSpace: 'nowrap' as const,
+                }}
+              >⚒️ Craft</button>
+            )}
+            {onGear && (
+              <button
+                onClick={onGear}
+                style={{
+                  background: 'transparent', border: `1px solid ${T.accent}`,
+                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
+                  whiteSpace: 'nowrap' as const,
+                }}
+              >🎒 Gear</button>
+            )}
             {onShop && (
               <button
                 onClick={onShop}
@@ -116,8 +162,7 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
               <button
                 onClick={onSkills}
                 style={{
-                  background: 'transparent',
-                  border: `1px solid ${T.accent}`,
+                  background: 'transparent', border: `1px solid ${T.accent}`,
                   color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
                   fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
                   position: 'relative' as const, whiteSpace: 'nowrap' as const,
@@ -135,8 +180,7 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
               <button
                 onClick={onQuests}
                 style={{
-                  background: 'transparent',
-                  border: `1px solid ${T.accent}`,
+                  background: 'transparent', border: `1px solid ${T.accent}`,
                   color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
                   fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
                   position: 'relative' as const, whiteSpace: 'nowrap' as const,
@@ -154,8 +198,7 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
               <button
                 onClick={onMap}
                 style={{
-                  background: 'transparent',
-                  border: `1px solid ${T.accent}`,
+                  background: 'transparent', border: `1px solid ${T.accent}`,
                   color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
                   fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
                   whiteSpace: 'nowrap' as const,
