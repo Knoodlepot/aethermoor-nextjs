@@ -3,9 +3,9 @@
 if (typeof window !== 'undefined') {
   // eslint-disable-next-line no-console
   console.log('[E2E DEBUG] GameView.tsx loaded (top-level)');
-  // E2E: force a breakpoint and alert for test
+  // E2E: force a breakpoint for test
   debugger;
-  window.alert('[E2E DEBUG] GameView.tsx loaded (top-level)');
+  // window.alert('[E2E DEBUG] GameView.tsx loaded (top-level)');
 }
 
 import React, { useEffect, useState } from 'react';
@@ -56,9 +56,9 @@ function GameContent() {
     if (typeof window !== 'undefined') {
       // eslint-disable-next-line no-console
       console.log('[E2E DEBUG] GameContent function invoked');
-      // E2E: force a breakpoint and alert for test
+      // E2E: force a breakpoint for test
       debugger;
-      window.alert('[E2E DEBUG] GameContent function invoked');
+      // window.alert('[E2E DEBUG] GameContent function invoked');
     }
 
   const router = useRouter();
