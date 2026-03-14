@@ -191,6 +191,37 @@ const STAT_COLORS: Record<string, string> = {
   HP: '#b04020',
 };
 
+/** Compute combat mechanic lines for a given stat at a given value */
+function statMechanics(key: string, val: number): string[] {
+  switch (key) {
+    case 'STR': {
+      const dmg = 5 + Math.floor(val / 2);
+      const hw  = Math.floor(val / 3);
+      const shv = val >= 10 ? 'guaranteed' : val >= 6 ? 'reliable' : 'unlikely';
+      return [`Melee damage: ${dmg} base`, `Heavy weapon bonus: +${hw}`, `Shove / grapple: ${shv}`];
+    }
+    case 'AGI': {
+      const dodge = Math.min(45, val * 3);
+      const bs    = Math.floor(val * 1.5);
+      const sth   = val >= 8 ? 'expert' : val >= 5 ? 'reliable' : 'risky';
+      return [`Dodge chance: ${dodge}%`, `Backstab damage: ${bs}`, `Stealth / lockpick: ${sth}`];
+    }
+    case 'INT': {
+      const sp  = 6 + Math.floor(val * 1.2);
+      const pot = val >= 9 ? 'bonus tick' : val >= 4 ? 'full effect' : 'half effect';
+      const id  = val >= 7 ? 'auto-identified' : 'manual only';
+      return [`Spell damage: ~${sp}`, `Potions & scrolls: ${pot}`, `Magic item ID: ${id}`];
+    }
+    case 'WIL': {
+      const dv  = Math.floor(val * 1.5);
+      const mr  = Math.min(30, val * 2);
+      const fr  = val >= 8 ? 'immune to all fear' : val >= 5 ? 'resists basic fear' : 'susceptible';
+      return [`Divine Strike / heal: ${dv}`, `Magic resistance: ${mr}%`, `Fear: ${fr}`];
+    }
+    default: return [];
+  }
+}
+
 // ── Hardcoded dark fantasy styles (no useTheme per design rule) ──
 
 const DS = {
@@ -325,7 +356,7 @@ export function ClassInfoModal({ cls, onClose }: ClassInfoModalProps) {
           )}
 
           {/* Stat badges */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
             {stats.map((s) => (
               <div
                 key={s.key}
@@ -353,6 +384,29 @@ export function ClassInfoModal({ cls, onClose }: ClassInfoModalProps) {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Combat mechanics breakdown */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ ...tf, color: DS.accent, fontSize: 10, letterSpacing: 2, marginBottom: 10 }}>
+              STARTING COMBAT MECHANICS
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {(['STR', 'AGI', 'INT', 'WIL'] as const).map((sk) => {
+                const val = (classData as any)[sk.toLowerCase()] as number;
+                const lines = statMechanics(sk, val);
+                return (
+                  <div key={sk} style={{ background: DS.panelAlt, border: `1px solid ${DS.border}`, padding: '8px 10px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div style={{ ...tf, color: STAT_COLORS[sk], fontSize: 11, minWidth: 32, paddingTop: 1 }}>{sk} {val}</div>
+                    <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>
+                      {lines.map((line, i) => (
+                        <span key={i} style={{ fontSize: 11, color: DS.textMuted }}>· {line}</span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Skill tree tier overview */}

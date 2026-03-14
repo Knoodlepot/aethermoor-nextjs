@@ -289,6 +289,34 @@ async function spendTokenSafely(
   return { success, remaining };
 }
 
+/** Compute mechanical stat rules injected into the narrator prompt as hard numbers. */
+function buildStatRules(str: number, agi: number, int_: number, wil: number): string {
+  const meleeDmg     = 5 + Math.floor(str / 2);
+  const heavyBonus   = Math.floor(str / 3);
+  const shoveStatus  = str >= 10 ? 'guaranteed' : str >= 6 ? 'reliable' : 'unlikely';
+
+  const dodgePct     = Math.min(45, agi * 3);
+  const backstabDmg  = Math.floor(agi * 1.5);
+  const stealthStatus = agi >= 8 ? 'expert' : agi >= 5 ? 'reliable' : 'risky';
+
+  const spellDmg     = 6 + Math.floor(int_ * 1.2);
+  const potionEffect = int_ >= 9 ? 'bonus tick' : int_ >= 4 ? 'full effect' : 'half effect';
+  const loreStatus   = int_ >= 9 ? 'instant recognition' : int_ >= 7 ? 'solves most' : int_ >= 4 ? 'partial clues' : 'struggles';
+  const autoId       = int_ >= 7 ? ' | Auto-identifies magic items' : '';
+
+  const divineDmg    = Math.floor(wil * 1.5);
+  const magicResist  = Math.min(30, wil * 2);
+  const fearStatus   = wil >= 8 ? 'immune to all fear' : wil >= 5 ? 'resists basic fear' : 'susceptible to fear';
+  const poisonNote   = wil >= 9 ? ' | Near-immune to poison/curses' : wil >= 6 ? ' | Partial poison/curse resist' : '';
+
+  return `COMBAT MECHANICS — apply these as firm rules in all combat and skill checks:
+STR ${str}: melee base damage=${meleeDmg} | heavy weapon bonus=+${heavyBonus} | shove/grapple=${shoveStatus}
+AGI ${agi}: dodge=${dodgePct}% | backstab damage=${backstabDmg} | stealth=${stealthStatus} | goes first if AGI > enemy AGI
+INT ${int_}: spell damage=~${spellDmg} | potions/scrolls=${potionEffect} | lore/puzzles=${loreStatus}${autoId}
+WIL ${wil}: divine strike/heal=${divineDmg} | magic resistance=${magicResist}% dmg reduction | fear=${fearStatus}${poisonNote}
+Do NOT invent different numbers — use these exact values when describing hits, dodges, spells, and checks.`;
+}
+
 /**
  * Build narrator system prompt — TypeScript port of server.js buildNarratorSystem()
  */
@@ -502,6 +530,8 @@ ${narrativeSkills.length > 0 ? `MASTERED SKILLS: ${narrativeSkills.join('; ')}` 
 ${travelMatrixStr ? travelMatrixStr : ''}
 ${worldEventsStr ? `WORLD EVENTS: ${worldEventsStr}\n` : ''}
 XEPHITA ROLL: ${Math.floor(Math.random() * 10) + 1}
+
+${buildStatRules(str, agi, int_, wil)}
 
 RULES:
 - Write vivid immersive fantasy prose, 2-3 paragraphs

@@ -189,7 +189,7 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
                   >
                     {data.desc}
                   </div>
-                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' as const, marginBottom: 8 }}>
+                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' as const, marginBottom: 4 }}>
                     {([['STR', data.str], ['AGI', data.agi], ['INT', data.int], ['WIL', data.wil]] as [string, number][]).map(([s, v]) => (
                       <span
                         key={s}
@@ -215,6 +215,13 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
                     >
                       HP {data.hp}
                     </span>
+                  </div>
+                  {/* Formula preview for primary stat */}
+                  <div style={{ fontSize: 10, color: T.textFaint ?? T.textMuted, marginBottom: 8, lineHeight: 1.5 }}>
+                    {cls === 'Warrior' && `Hits for ${5 + Math.floor(data.str / 2)} · Dodge ${Math.min(45, data.agi * 3)}%`}
+                    {cls === 'Rogue'   && `Backstab ${Math.floor(data.agi * 1.5)} dmg · Dodge ${Math.min(45, data.agi * 3)}%`}
+                    {cls === 'Mage'    && `Fireball ~${6 + Math.floor(data.int * 1.2)} dmg · Potions: bonus tick at INT 9`}
+                    {cls === 'Cleric'  && `Divine Strike/heal ${Math.floor(data.wil * 1.5)} · Magic resist ${Math.min(30, data.wil * 2)}%`}
                   </div>
                   <button
                     onClick={(e) => {

@@ -389,6 +389,84 @@ function GameContent() {
     );
   };
 
+  /** Compute tooltip lines for a given stat key + value */
+  const statTooltip = (key: string, val: number): string[] => {
+    const v = val || 0;
+    switch (key) {
+      case 'str': {
+        const dmg = 5 + Math.floor(v / 2);
+        const hw  = Math.floor(v / 3);
+        const shv = v >= 10 ? 'guaranteed' : v >= 6 ? 'reliable' : 'unlikely';
+        return [`Melee damage: ${dmg}`, `Heavy weapon: +${hw}`, `Shove/grapple: ${shv}`];
+      }
+      case 'agi': {
+        const dodge = Math.min(45, v * 3);
+        const bs    = Math.floor(v * 1.5);
+        const sth   = v >= 8 ? 'expert' : v >= 5 ? 'reliable' : 'risky';
+        return [`Dodge chance: ${dodge}%`, `Backstab: ${bs} dmg`, `Stealth: ${sth}`];
+      }
+      case 'int': {
+        const sp  = 6 + Math.floor(v * 1.2);
+        const pot = v >= 9 ? 'bonus tick' : v >= 4 ? 'full effect' : 'half effect';
+        const id  = v >= 7 ? 'auto' : 'manual';
+        return [`Spell damage: ~${sp}`, `Potions: ${pot}`, `Item identify: ${id}`];
+      }
+      case 'wil': {
+        const dv  = Math.floor(v * 1.5);
+        const mr  = Math.min(30, v * 2);
+        const fr  = v >= 8 ? 'immune' : v >= 5 ? 'resists basic' : 'susceptible';
+        return [`Divine/heal: ${dv}`, `Magic resist: ${mr}%`, `Fear: ${fr}`];
+      }
+      default: return [];
+    }
+  };
+
+  /** Stat pill with hover tooltip */
+  const StatPill = ({ label, statKey, value }: { label: string; statKey: string; value: number }) => {
+    const [hovered, setHovered] = React.useState(false);
+    const lines = statTooltip(statKey, value);
+    return (
+      <div
+        style={{ position: 'relative' as const, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.panel, padding: '3px 5px', border: `1px solid ${hovered ? T.accent : T.border}`, cursor: 'default', transition: 'border-color 0.15s' }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onTouchStart={() => setHovered(h => !h)}
+      >
+        <span style={{ fontSize: 10, color: T.textMuted }}>{label}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <span style={{ color: T.gold, fontSize: 12, ...tf }}>{value ?? '—'}</span>
+          {(player?.statPoints ?? 0) > 0 && (
+            <button
+              onClick={() => handleCommand('stat_point:' + statKey)}
+              style={{ background: T.accent + '33', border: `1px solid ${T.accent}`, color: T.accent, width: 16, height: 16, fontSize: 11, cursor: 'pointer', padding: 0, lineHeight: '1' }}
+            >+</button>
+          )}
+        </div>
+        {hovered && lines.length > 0 && (
+          <div style={{
+            position: 'absolute' as const,
+            bottom: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            marginBottom: 6,
+            background: '#0a0805',
+            border: `1px solid ${T.accent}`,
+            padding: '8px 10px',
+            zIndex: 100,
+            minWidth: 150,
+            pointerEvents: 'none' as const,
+            boxShadow: '0 4px 16px #00000088',
+          }}>
+            <div style={{ ...tf, color: T.accent, fontSize: 9, letterSpacing: 1.5, marginBottom: 5 }}>{label} MECHANICS</div>
+            {lines.map((line, i) => (
+              <div key={i} style={{ fontSize: 11, color: T.text, lineHeight: 1.6 }}>· {line}</div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const playerInfoPanel = player ? (
     <div style={{ background: T.panel, borderBottom: `1px solid ${T.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, maxHeight: '60%' }}>
       {/* Identity card — two column: left = icon/name/class, right = HP/XP/attributes */}
@@ -408,18 +486,7 @@ function GameContent() {
           <div style={{ fontSize: 10, color: T.textFaint, textAlign: 'right' as const, marginTop: 1, marginBottom: 6 }}>Next: {xpCeil} XP</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
             {([['STR', 'str'], ['AGI', 'agi'], ['INT', 'int'], ['WIL', 'wil']] as [string, string][]).map(([label, key]) => (
-              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.panel, padding: '3px 5px', border: `1px solid ${T.border}` }}>
-                <span style={{ fontSize: 10, color: T.textMuted }}>{label}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <span style={{ color: T.gold, fontSize: 12, ...tf }}>{(player as any)[key] ?? '—'}</span>
-                  {(player?.statPoints ?? 0) > 0 && (
-                    <button
-                      onClick={() => handleCommand('stat_point:' + key)}
-                      style={{ background: T.accent + '33', border: `1px solid ${T.accent}`, color: T.accent, width: 16, height: 16, fontSize: 11, cursor: 'pointer', padding: 0, lineHeight: '1' }}
-                    >+</button>
-                  )}
-                </div>
-              </div>
+              <StatPill key={key} label={label} statKey={key} value={(player as any)[key] ?? 0} />
             ))}
           </div>
           {(player?.statPoints ?? 0) > 0 && (
