@@ -331,6 +331,63 @@ export function useGameLoop(
           return { success: true };
         }
 
+        // ── fast_travel:<dest>:<method>:<cost> ──
+        if (command.startsWith('fast_travel:')) {
+          const parts = command.slice('fast_travel:'.length).split(':');
+          const dest = parts[0];
+          const method = parts[1] || 'foot';
+          const cost = parseInt(parts[2] || '0', 10);
+          if (!dest) return { success: false, error: 'No destination specified' };
+          if (updatedPlayer.location === dest) return { success: false, error: 'Already there' };
+          if ((updatedPlayer as any).combat?.inCombat) return { success: false, error: 'Cannot travel during combat' };
+          if (updatedPlayer.context === 'dungeon') return { success: false, error: 'Cannot travel from a dungeon' };
+          if ((updatedPlayer.gold ?? 0) < cost) return { success: false, error: 'Not enough gold' };
+
+          // Calculate travel hours from locationGrid coords
+          const lg: Record<string, any> = (updatedSeed.travelMatrix as any)?.locationGrid || {};
+          const fromNode = lg[updatedPlayer.location];
+          const toNode = lg[dest];
+          let travelHours = 8; // fallback
+          if (fromNode && toNode) {
+            const dx = (fromNode.x ?? 50) - (toNode.x ?? 50);
+            const dy = (fromNode.y ?? 50) - (toNode.y ?? 50);
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const footHours = dist * 1.5;
+            const SPEED: Record<string, number> = { foot: 1, horse: 2.5, hire_horse: 2.5, barge: 3, boat: 4 };
+            travelHours = Math.max(1, Math.round(footHours / (SPEED[method] ?? 1)));
+          }
+
+          // Advance game time
+          let newHour = (updatedPlayer.gameHour ?? 8) + travelHours;
+          let newDay = updatedPlayer.gameDay ?? 1;
+          while (newHour >= 24) { newHour -= 24; newDay++; }
+
+          // Build arrival narrative
+          const methodLabels: Record<string, string> = { foot: 'on foot', horse: 'on horseback', hire_horse: 'on a hired horse', barge: 'by river barge', boat: 'by sea' };
+          const methodLabel = methodLabels[method] ?? method;
+          const timeDesc = travelHours < 24 ? `${travelHours}h` : `${Math.floor(travelHours / 24)}d ${travelHours % 24 > 0 ? (travelHours % 24) + 'h' : ''}`.trim();
+          const msg = `After ${timeDesc} travelling ${methodLabel}, you arrive at ${dest}. The road-dust settles as you take in your surroundings.`;
+
+          const exploredSet = new Set(updatedPlayer.exploredLocations ?? [updatedPlayer.location]);
+          exploredSet.add(dest);
+
+          updatedPlayer = {
+            ...updatedPlayer,
+            gold: (updatedPlayer.gold ?? 0) - cost,
+            location: dest,
+            context: 'explore',
+            gameHour: newHour,
+            gameDay: newDay,
+            exploredLocations: Array.from(exploredSet),
+          };
+          gs.setPlayer(updatedPlayer);
+          gs.setNarrative(msg);
+          gs.addLogEntry('action', `fast_travel → ${dest} (${methodLabel})`);
+          gs.addLogEntry('response', msg.substring(0, 100));
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, msg, gs.log);
+          return { success: true };
+        }
+
         // 1. Add user message to conversation history
         const userMessages = [...gs.messages.slice(-19), { role: 'user', content: command }];
         gs.setMessages(userMessages);

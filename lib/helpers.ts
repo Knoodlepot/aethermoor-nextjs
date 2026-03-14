@@ -394,6 +394,7 @@ export function getItemSlotEx(name: string): string | null {
   if (!info) return null;
   if (info.type === 'Weapon') return 'weapon';
   if (info.type === 'Magic') return 'accessory';
+  if (info.type === 'Mount') return 'mount';
   return null;
 }
 

@@ -599,6 +599,7 @@ function GameContent() {
           player={gameState.player as any}
           worldSeed={gameState.worldSeed as any}
           onClose={() => ui.setMapOpen(false)}
+          onCommand={handleCommand}
         />
       </div>
     ) : null;

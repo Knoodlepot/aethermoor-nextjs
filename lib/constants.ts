@@ -239,6 +239,12 @@ export const ITEM_INFO = {
     type: "Tool",
     desc: "A curved harvesting blade for gathering grain and field produce quickly.",
   },
+  horse: {
+    icon: "🐴",
+    type: "Mount",
+    slot: "mount",
+    desc: "A sturdy road horse. Equip to your mount slot. Halves travel time on the road — no hire fee when fast-travelling.",
+  },
   map: {
     icon: "🗺️",
     type: "Document",
@@ -433,6 +439,7 @@ export const EQUIP_SLOTS = {
   body: { label: "Body", icon: "🥋", types: ["Armour"] },
   feet: { label: "Feet", icon: "👢", types: ["Armour"] },
   accessory: { label: "Accessory", icon: "🔯", types: ["Magic"] },
+  mount: { label: "Mount", icon: "🐴", types: ["Mount"] },
 } as const;
 
 // ============================================

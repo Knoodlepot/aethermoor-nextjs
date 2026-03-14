@@ -8,10 +8,28 @@ interface MapViewProps {
   worldSeed: WorldSeed;
   onClose?: () => void;
   inline?: boolean;
+  onCommand?: (cmd: string) => void;
 }
 
-export function MapView({ player, worldSeed, onClose, inline = false }: MapViewProps) {
+// ── Tier icons for location list ──
+const TIER_ICONS: Record<string, string> = {
+  capital: '🏰', city: '🏙️', town: '🏘️', village: '🏡', hamlet: '🛖',
+  farm_arable: '🌾', farm_livestock: '🐄', farm_mixed: '🐂',
+  poi_forest: '🌲', poi_cave: '🕳️', poi_ruins: '🏚️', poi_wood: '🌳', poi_shrine: '⛩️',
+  dungeon: '🗝️', poi: '⚠️', farm: '🌾',
+};
+
+function fmtHours(h: number): string {
+  if (h < 1) return '<1h';
+  if (h < 24) return `${Math.round(h)}h`;
+  const d = Math.floor(h / 24);
+  const rem = Math.round(h % 24);
+  return rem > 0 ? `${d}d ${rem}h` : `${d}d`;
+}
+
+export function MapView({ player, worldSeed, onClose, inline = false, onCommand }: MapViewProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [selectedDest, setSelectedDest] = React.useState<string | null>(null);
 
   const W = 920, H = 620;
   const MAP_W = 700, MAP_H = 580, MAP_X = 10, MAP_Y = 10;
@@ -307,6 +325,48 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
 
   }, [player, worldSeed]);
 
+  // ── Travel helpers ──
+  const lg: Record<string, any> = (worldSeed.travelMatrix as any)?.locationGrid || {};
+  const explored = React.useMemo(() => {
+    const set = new Set<string>(player.exploredLocations ?? [player.location]);
+    set.add(player.location);
+    return Array.from(set).filter(n => n && !n.startsWith('Dungeon'));
+  }, [player.exploredLocations, player.location]);
+
+  const hasMount = (player as any).equipped?.mount === 'Horse';
+
+  const travelOptions = React.useMemo(() => {
+    if (!selectedDest) return [];
+    const from = lg[player.location];
+    const to = lg[selectedDest];
+    const opts: { method: string; label: string; icon: string; hours: number; cost: number }[] = [];
+    let footHours = 8;
+    if (from && to) {
+      const dx = (from.x ?? 50) - (to.x ?? 50);
+      const dy = (from.y ?? 50) - (to.y ?? 50);
+      footHours = Math.max(1, Math.sqrt(dx * dx + dy * dy) * 1.5);
+    }
+    opts.push({ method: 'foot', label: 'On Foot', icon: '👣', hours: footHours, cost: 0 });
+    if (hasMount) {
+      opts.push({ method: 'horse', label: 'Your Horse', icon: '🐴', hours: footHours / 2.5, cost: 0 });
+    } else {
+      opts.push({ method: 'hire_horse', label: 'Hire Horse', icon: '🐴', hours: footHours / 2.5, cost: 15 });
+    }
+    // River barge: both nodes have river flag
+    const fromNode = lg[player.location];
+    const toNode = lg[selectedDest];
+    if (fromNode?.river && toNode?.river) {
+      opts.push({ method: 'barge', label: 'River Barge', icon: '⛵', hours: footHours / 3, cost: Math.round(8 + footHours * 0.3) });
+    }
+    // Sea boat: both have coast+harbour
+    if (fromNode?.coast && fromNode?.harbour && toNode?.coast && toNode?.harbour) {
+      opts.push({ method: 'boat', label: 'Sea Vessel', icon: '⚓', hours: footHours / 4, cost: Math.round(10 + footHours * 0.4) });
+    }
+    return opts.map(o => ({ ...o, hours: Math.max(1, Math.round(o.hours)) }));
+  }, [selectedDest, player.location, lg, hasMount]);
+
+  const destIcon = selectedDest ? (TIER_ICONS[(lg[selectedDest]?.type ?? 'poi')] ?? '📍') : '';
+
   if (inline) {
     return (
       <canvas
@@ -318,24 +378,109 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
     );
   }
 
+  // ── Panel styles ──
+  const panelBg = 'rgba(6,5,3,0.97)';
+  const borderCol = '#3a2810';
+  const goldCol = '#c9a84c';
+  const dimCol = '#806040';
+  const textCol = '#c8a870';
+
   return (
     <div
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.90)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      onClick={onClose}
+      onClick={() => { setSelectedDest(null); onClose?.(); }}
     >
-      <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
-        <canvas
-          ref={canvasRef}
-          width={W}
-          height={H}
-          style={{ display: 'block', maxWidth: '96vw', maxHeight: '92vh', borderRadius: 4 }}
-        />
-        <button
-          onClick={onClose}
-          style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(0,0,0,0.75)', border: '1px solid #c9a84c', color: '#c9a84c', padding: '4px 10px', cursor: 'pointer', fontFamily: 'Cinzel,serif', fontSize: 10, borderRadius: 2, letterSpacing: 1 }}
-        >
-          ✕ Close
-        </button>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }} onClick={(e) => e.stopPropagation()}>
+
+        {/* ── Left panel: explored locations ── */}
+        <div style={{ width: 200, height: H, background: panelBg, border: `1px solid ${borderCol}`, borderRadius: 4, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '10px 12px 8px', borderBottom: `1px solid ${borderCol}`, fontFamily: 'Cinzel,serif', color: goldCol, fontSize: 10, letterSpacing: 1 }}>
+            FAST TRAVEL
+          </div>
+          <div style={{ padding: '6px 10px', borderBottom: `1px solid ${borderCol}`, color: dimCol, fontSize: 9, fontFamily: 'Cinzel,serif' }}>
+            {player.location}
+          </div>
+          <div style={{ overflowY: 'auto', flex: 1, padding: '4px 0' }}>
+            {explored.filter(n => n !== player.location).map(name => {
+              const node = lg[name];
+              const icon = TIER_ICONS[(node?.type ?? 'poi')] ?? '📍';
+              const isSel = name === selectedDest;
+              return (
+                <button
+                  key={name}
+                  onClick={() => setSelectedDest(isSel ? null : name)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '6px 10px', background: isSel ? 'rgba(201,168,76,0.12)' : 'transparent',
+                    border: 'none', borderBottom: `1px solid ${borderCol}22`, cursor: 'pointer',
+                    color: isSel ? goldCol : textCol, textAlign: 'left', fontFamily: 'Cinzel,serif', fontSize: 9,
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>{icon}</span>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+                </button>
+              );
+            })}
+            {explored.filter(n => n !== player.location).length === 0 && (
+              <div style={{ color: dimCol, fontSize: 9, fontFamily: 'Cinzel,serif', padding: '12px 10px', textAlign: 'center' }}>
+                Explore locations to unlock fast travel.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Map canvas + travel popup ── */}
+        <div style={{ position: 'relative' }}>
+          <canvas ref={canvasRef} width={W} height={H} style={{ display: 'block', borderRadius: 4 }} />
+          <button
+            onClick={() => { setSelectedDest(null); onClose?.(); }}
+            style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(0,0,0,0.75)', border: `1px solid ${goldCol}`, color: goldCol, padding: '4px 10px', cursor: 'pointer', fontFamily: 'Cinzel,serif', fontSize: 10, borderRadius: 2, letterSpacing: 1 }}
+          >
+            ✕ Close
+          </button>
+
+          {/* Travel popup */}
+          {selectedDest && (
+            <div style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', background: panelBg, border: `1px solid ${goldCol}55`, borderRadius: 6, padding: '14px 18px', minWidth: 320, zIndex: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>
+              <div style={{ fontFamily: 'Cinzel,serif', color: goldCol, fontSize: 13, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>{destIcon}</span>
+                <span>Travel to {selectedDest}</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {travelOptions.map(opt => {
+                  const canAfford = (player.gold ?? 0) >= opt.cost;
+                  return (
+                    <div key={opt.method} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 4, border: `1px solid ${borderCol}` }}>
+                      <span style={{ fontSize: 16 }}>{opt.icon}</span>
+                      <span style={{ flex: 1, fontFamily: 'Cinzel,serif', color: textCol, fontSize: 10 }}>{opt.label}</span>
+                      <span style={{ fontFamily: 'Cinzel,serif', color: dimCol, fontSize: 9, marginRight: 8 }}>⏱ {fmtHours(opt.hours)}</span>
+                      <span style={{ fontFamily: 'Cinzel,serif', color: opt.cost === 0 ? '#70a860' : textCol, fontSize: 10, marginRight: 10 }}>
+                        {opt.cost === 0 ? 'Free' : `${opt.cost}g`}
+                      </span>
+                      <button
+                        disabled={!canAfford || !onCommand}
+                        onClick={() => {
+                          onCommand?.(`fast_travel:${selectedDest}:${opt.method}:${opt.cost}`);
+                          setSelectedDest(null);
+                          onClose?.();
+                        }}
+                        style={{ background: canAfford ? '#2a1a08' : '#111', border: `1px solid ${canAfford ? goldCol : '#333'}`, color: canAfford ? goldCol : '#555', padding: '4px 10px', cursor: canAfford ? 'pointer' : 'not-allowed', fontFamily: 'Cinzel,serif', fontSize: 9, borderRadius: 3, letterSpacing: 0.5 }}
+                      >
+                        Go
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setSelectedDest(null)}
+                style={{ marginTop: 10, background: 'transparent', border: 'none', color: dimCol, cursor: 'pointer', fontFamily: 'Cinzel,serif', fontSize: 9, padding: 0 }}
+              >
+                ✕ Cancel
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
