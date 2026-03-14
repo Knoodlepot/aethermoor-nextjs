@@ -33,40 +33,15 @@ AI-powered browser RPG built on Next.js.
 ## User Preferences
 
 
-## Latest Session Updates (2026-03-13)
-- **Automation/CI**: Added a single `verify:all` script for full local verification in one command.
-- **CI/CD**: GitHub Actions workflow now runs lint and all verification checks on every push, blocking regressions before deploy.
-- **Email gating**: Email sending in dev is now gated: only one warning is logged if the Resend key is missing, keeping logs clean.
-- **Production narrator smoke test passed (5/5)**: Verified full hosted flow against `https://aethermoor-nextjs.vercel.app` (ephemeral register, cloud save write, narrator turn, response shape, cleanup delete).
-- **Narrator verification scripts added**: Added `npm run verify:narrator` (local) and `npm run verify:narrator:prod` (hosted) shortcuts for repeatable end-to-end narrator checks.
-| Session | Work Done |
-|---------|-----------|
-| 2026-03-13 | Added verify:all script, GitHub Actions for CI, and email gating in dev |
-- **DB schema migrations applied**: Applied all missing columns to live Railway DB across 5 tables (`accounts`, `players`, `dungeon_progress`, `game_saves`, `moderation_incidents`). All 9 column additions confirmed OK.
-- **`migrateDb()` hardened**: `lib/db.ts` now runs idempotent `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` on every startup for all known columns — no more silent schema drift after deploys.
-- **Extra moderation columns confirmed legacy**: `accounts.moderation_yellow_count/red_card/last_reason/updated_at` and `moderation_incidents.level` are dormant legacy columns from the 2026-03-11 card system; left in place (harmless, unused by current code).
-- **Temp migration scripts removed**: `migratePlayersTable.cjs`, `dbCleanAndAudit.cjs`, `schemaMigration.cjs` deleted after use.
-- **3 test accounts deleted**: Ephemeral runtime-check and prod-check accounts removed from live Railway DB.
-- **Full 8/8 verification passed**: All runtime security checks pass against live Railway DB — auth, save ownership, cookie session, and ephemeral real-login flow are all confirmed.
-- **DB schema patched**: `players` table on Railway was missing `account_id` column (created before migration was added); column added via one-time migration script.
-- **Verifier flow hardened**: Runtime verifier now uses real cookie sessions for tamper-save checks and reports DB connectivity/setup issues as blocked checks with actionable hints.
-- **Verifier usability improved**: Runtime verifier now auto-loads `.env.local` and can test a real cookie-backed session with ephemeral account registration when `TEST_EMAIL`/`TEST_PASSWORD` are not set.
-- **Env template aligned**: `.env.example` now reflects the actual variables used by the current Next.js app, including `NEXT_PUBLIC_URL` and `DISCORD_REDIRECT_URI`, with minimum-vs-optional sections.
-- **Verification tooling added**: Added a reusable server-side narration state helper plus manual verification scripts for local runtime auth checks and mock narrator-state testing without Anthropic/Postgres.
-- **Local checklist added**: Added a minimal `.env.local` runtime checklist and npm shortcuts for `verify:runtime` and `verify:mock-state`.
-- **Cookie session migration**: Auth flows now set/clear HttpOnly auth cookies and protected API routes accept cookie-backed sessions by default.
-- **Client token storage removed from active flow**: Frontend auth hooks and account modals now use cookie-authenticated requests instead of localStorage bearer tokens.
-- **Server-side tag authority**: `/api/claude` now parses tags, applies state transitions server-side, and persists canonical progression state before returning results.
-- **Server-authoritative narrator context**: `/api/claude` now prefers canonical player/world state from cloud save when building narrator system prompts, reducing client-side state tampering impact.
-- **Cloud save ownership validation**: `/api/save` now validates JSON payloads and enforces that saved `playerId` matches the authenticated account.
-- **Admin auth hardening**: Admin routes now support header-based secrets (`x-admin-secret` or bearer token) and treat URL/body secrets as legacy compatibility paths.
-- **Docs alignment pass**: Cross-checked MEMORY.md, CLAUDE.md, and CHANGELOG.md to keep architecture notes consistent.
-- **Legacy filename status clarified**: Confirmed no root `index.html`/`index.hmtl` or `server.js` files exist in this Next.js workspace.
-- **Memory baseline migrated**: Removed legacy architecture guidance that still described the deprecated monolithic frontend/backend file layout and replaced it with a Next.js-first project overview.
-- **URL corrected**: Primary game URL updated to `https://aethermoor-nextjs.vercel.app/`.
-- **Legacy references purged**: Removed old line-number maps and instruction blocks tied to the retired legacy file structure.
-- **Workflow preference updated**: Replaced the old no-auto-commit rule with an auto-commit preference for Next.js changes (when a git repo is present).
-- **Readability pass**: Added a short Quick Start section to speed up handoff and reduce repeated context parsing.
+## Latest Session Updates (current)
+- **Skill tree fixes (P0)**: Fixed three Tier III skill IDs that the narrator route checks for but were misnamed in the UI: Warrior `last_stand` → `unbreakable`; Rogue `phantom` → `ghost_walk`; Cleric `avatar` → `avatar_divine`. Players who unlock these now receive the correct narrator responses.
+- **Canonical factions (P1)**: Replaced 8 placeholder factions (`warriors_guild`, `thieves_guild`, etc.) with the 10 canonical factions from the legacy game (`iron_conclave`, `shadowmere_guild`, `ember_circle`, `silver_hand`, `thornwood_druids`, `merchants_compact`, `crowns_watch`, `the_forgotten`, `arcane_academy`, `sea_wolves`). FACTIONS and FACTION_JOIN_OFFERS now exported from `lib/constants.ts` and shared between `StandingsScreen.tsx` and `FactionOfferModal.tsx`.
+- **Faction join offers (P1)**: Full narrative pitch text for all 10 factions ported from legacy, including The Forgotten's special alternate pitch after 2+ other declines. Rival warnings now show faction-specific explanatory text.
+- **Tiered gear (P2)**: Added `TIERED_GEAR` constant (13 items, tier 2–4, levels 5/10/15) to `lib/constants.ts`. Updated `generateShopStock` in `lib/helpers.ts` to inject level-appropriate gear into shop stock based on player level and location tier.
+- **Faction gear sets (P3)**: Added `FACTION_SETS` (10 faction sets with 2-piece and 3-piece bonuses), `FACTION_RANK_GEAR` (rank 3/4 gear rewards per faction), `CONCEALED_ITEMS`, and `PROTECTED_ITEMS` to `lib/constants.ts`.
+
+### Previous Session (2026-03-13)
+- Added verify:all script, GitHub Actions for CI, and email gating in dev; production narrator smoke pass complete (5/5)
 
 ### Previous Session (2026-03-12)
 - World Geography and Location Grid, Keeper of the Kiln, `goldChange` tag, Theft RULE, time refinement, max_tokens fix, screener fix, admin panel updates, Email -> Resend, suggestions truncation fix, Player ID button, `repChange` tag.
@@ -119,6 +94,7 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
+| current | Legacy comparison pass: fixed 3 skill IDs (unbreakable/ghost_walk/avatar_divine), ported 10 canonical factions with rich join offers, added tiered gear shop system, faction gear sets, rank gear, protected/concealed item lists |
 | 2026-03-13 | Production narrator smoke pass complete (5/5) and new `verify:narrator` / `verify:narrator:prod` scripts added |
 | 2026-03-13 | DB schema migrations applied (9 missing columns across 5 tables); migrateDb() now self-heals on startup; temp scripts removed |
 | 2026-03-13 | Full 8/8 runtime verification passed against live Railway DB; patched missing account_id column on players table |

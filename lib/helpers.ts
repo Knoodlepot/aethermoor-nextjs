@@ -13,7 +13,7 @@ export function clamp(val: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, val));
 }
 import type { Player, NPC, WorldSeed } from './types';
-import { ITEM_INFO, CONSUMABLE_EFFECTS, DISGUISED_ITEMS, ITEM_STAT_BONUSES, EQUIP_SLOTS, LOCATION_TIERS } from './constants';
+import { ITEM_INFO, CONSUMABLE_EFFECTS, DISGUISED_ITEMS, ITEM_STAT_BONUSES, EQUIP_SLOTS, LOCATION_TIERS, TIERED_GEAR } from './constants';
 
 /**
  * Advance game time by hours, handling day wraparound
@@ -586,11 +586,26 @@ const SHOP_STOCK_BY_TIER: Record<string, { name: string; price: number }[]> = {
 /**
  * Generate shop stock for a given location and player.
  * Returns an array of { name, price, icon, type, desc }.
+ * Includes tiered gear based on player level and location tier.
  */
 export function generateShopStock(location: string, _player: any): { name: string; price: number; icon: string; type: string; desc: string }[] {
   const tier = (LOCATION_TIERS[location] || 'town').toLowerCase();
   const stock = SHOP_STOCK_BY_TIER[tier] || SHOP_STOCK_BY_TIER.town;
-  return stock.map((item) => {
+  const playerLevel: number = _player?.level || 1;
+
+  // Determine which location tiers allow higher-level gear
+  const isCity = ['city', 'capital'].includes(tier);
+  const isCapital = tier === 'capital';
+
+  // Filter tiered gear eligible for this player level and location
+  const tieredItems = TIERED_GEAR.filter((g) => {
+    if (playerLevel < g.minLevel) return false;
+    if (g.gearTier >= 4 && !isCapital) return false;
+    if (g.gearTier >= 3 && !isCity) return false;
+    return true;
+  });
+
+  const baseStock = stock.map((item) => {
     const info = getItemInfo(item.name);
     return {
       name: item.name,
@@ -600,6 +615,19 @@ export function generateShopStock(location: string, _player: any): { name: strin
       desc: info?.desc || '',
     };
   });
+
+  const tieredStock = tieredItems.map((g) => ({
+    name: g.name,
+    price: g.price,
+    icon: g.icon,
+    type: 'Gear',
+    desc: g.desc,
+  }));
+
+  // Merge, deduplicating by name
+  const seen = new Set(baseStock.map((i) => i.name));
+  const extra = tieredStock.filter((i) => !seen.has(i.name));
+  return [...baseStock, ...extra];
 }
 
 /**

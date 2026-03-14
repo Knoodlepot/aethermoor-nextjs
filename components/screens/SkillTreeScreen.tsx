@@ -51,8 +51,8 @@ const SKILL_TREES: Record<string, ClassSkillTree> = {
         id: 3, label: 'Tier III', threshold: 20,
         skills: [
           { id: 'berserker_rage', name: 'Berserker Rage', icon: '🔥', desc: 'Below 30% HP, deal triple damage. The narrator notices.', cost: 1 },
-          { id: 'last_stand', name: 'Last Stand', icon: '🏔️', desc: 'Survive one killing blow per dungeon with 1 HP.', cost: 1 },
-          { id: 'warlords_presence', name: "Warlord's Presence", icon: '👑', desc: 'Weaker enemies may flee before combat begins.', cost: 1 },
+          { id: 'unbreakable', name: 'Unbreakable', icon: '🏔️', desc: 'Survive one killing blow per dungeon with 1 HP. The narrator notices.', cost: 1 },
+          { id: 'warlords_presence', name: "Warlord's Presence", icon: '👑', desc: 'Weaker enemies may flee before combat begins. The narrator notices.', cost: 1 },
         ],
       },
     ],
@@ -79,9 +79,9 @@ const SKILL_TREES: Record<string, ClassSkillTree> = {
       {
         id: 3, label: 'Tier III', threshold: 20,
         skills: [
-          { id: 'master_thief', name: 'Master Thief', icon: '🏴', desc: 'Doubles all gold earned from combat and theft.', cost: 1 },
+          { id: 'master_thief', name: 'Master Thief', icon: '🏴', desc: 'Doubles all gold earned from combat and theft. The narrator notices.', cost: 1 },
           { id: 'assassinate', name: 'Assassinate', icon: '☠️', desc: 'One-hit-kill chance on weakened targets.', cost: 1 },
-          { id: 'phantom', name: 'Phantom', icon: '👻', desc: 'You leave no trace. Even bosses struggle to track you.', cost: 1 },
+          { id: 'ghost_walk', name: 'Ghost Walk', icon: '👻', desc: '25% chance to negate an incoming attack completely. The narrator notices.', cost: 1 },
         ],
       },
     ],
@@ -139,7 +139,7 @@ const SKILL_TREES: Record<string, ClassSkillTree> = {
         skills: [
           { id: 'resurrection_light', name: 'Resurrection Light', icon: '💫', desc: 'Survive death once per dungeon with 50% HP. The narrator notices.', cost: 1 },
           { id: 'holy_storm', name: 'Holy Storm', icon: '⛈️', desc: 'Massive WIL-based holy damage hits all enemies present.', cost: 1 },
-          { id: 'avatar', name: 'Avatar of Light', icon: '☀️', desc: 'For 3 turns, all attacks heal you for 50% of damage dealt.', cost: 1 },
+          { id: 'avatar_divine', name: 'Avatar of Light', icon: '☀️', desc: 'For 3 turns, all attacks heal you for 50% of damage dealt. The narrator notices.', cost: 1 },
         ],
       },
     ],

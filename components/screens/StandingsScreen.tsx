@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import type { Player } from '@/lib/types';
-import { LOCATION_TIERS, NG_PLUS_PERKS } from '@/lib/constants';
+import { LOCATION_TIERS, NG_PLUS_PERKS, FACTIONS } from '@/lib/constants';
 import * as helpers from '@/lib/helpers';
 
 // ── Helpers not yet in helpers.ts ──
@@ -24,98 +24,6 @@ const FACTION_RANKS: FactionRankDef[] = [
 ];
 
 const FACTION_XP_NEEDED = [100, 300, 600, 1000, 1500, 2100];
-
-interface LocalFactionDef {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-  group: 'class' | 'world';
-  forClass?: string;
-  desc: string;
-  rankAbilities: Record<number, string>;
-}
-
-const FACTIONS: LocalFactionDef[] = [
-  // Class factions
-  {
-    id: 'warriors_guild',
-    name: "Warriors' Guild",
-    icon: '⚔️',
-    color: '#c03030',
-    group: 'class',
-    forClass: 'Warrior',
-    desc: 'Brotherhood of fighters who uphold might and honour.',
-    rankAbilities: { 2: 'War Cry', 4: 'Iron Wall', 6: 'Champion Strike' },
-  },
-  {
-    id: 'thieves_guild',
-    name: "Thieves' Guild",
-    icon: '🗡️',
-    color: '#606060',
-    group: 'class',
-    forClass: 'Rogue',
-    desc: 'A shadow network of cutpurses, spies, and assassins.',
-    rankAbilities: { 2: 'Shadow Network', 4: 'Fence Bonus', 6: 'Ghost Contract' },
-  },
-  {
-    id: 'mages_circle',
-    name: "Mages' Circle",
-    icon: '🔮',
-    color: '#6030c0',
-    group: 'class',
-    forClass: 'Mage',
-    desc: 'The ancient order of scholarly spellcasters.',
-    rankAbilities: { 2: 'Arcane Repository', 4: 'Spell Surge', 6: 'Archmage Rite' },
-  },
-  {
-    id: 'order_of_light',
-    name: 'Order of Light',
-    icon: '✨',
-    color: '#c0a030',
-    group: 'class',
-    forClass: 'Cleric',
-    desc: 'A holy fellowship devoted to justice and healing.',
-    rankAbilities: { 2: 'Lay on Hands', 4: 'Holy Seal', 6: 'Divine Mandate' },
-  },
-  // World factions
-  {
-    id: 'merchants_league',
-    name: 'Merchants League',
-    icon: '🏦',
-    color: '#c0a030',
-    group: 'world',
-    desc: 'The powerful trading syndicate that controls commerce across the continent.',
-    rankAbilities: { 2: 'Trade Discount', 4: 'Guild Warehouse', 6: 'Merchant Prince' },
-  },
-  {
-    id: 'crown_guard',
-    name: 'Crown Guard',
-    icon: '🪖',
-    color: '#3090c0',
-    group: 'world',
-    desc: 'Elite soldiers sworn to protect the realm and its rulers.',
-    rankAbilities: { 2: 'Guard Passage', 4: 'Royal Commission', 6: 'Crown Authority' },
-  },
-  {
-    id: 'shadow_court',
-    name: 'Shadow Court',
-    icon: '🌑',
-    color: '#602060',
-    group: 'world',
-    desc: 'A clandestine council that pulls strings behind thrones and guilds.',
-    rankAbilities: { 2: 'Secret Routes', 4: 'Blackmail Dossier', 6: 'Shadow Mandate' },
-  },
-  {
-    id: 'wild_rangers',
-    name: 'Wild Rangers',
-    icon: '🐺',
-    color: '#406030',
-    group: 'world',
-    desc: 'Wardens of the wilderness who protect the untamed lands.',
-    rankAbilities: { 2: 'Wilderness Guide', 4: 'Beast Tamer', 6: 'Ranger Commander' },
-  },
-];
 
 interface LocationRankDef { label: string; color: string; minXp: number; }
 const LOCATION_RANKS: LocationRankDef[] = [
@@ -208,7 +116,7 @@ export function StandingsScreen({ player, onClose }: StandingsScreenProps) {
   }
 
   function FactionCard({ fid }: { fid: string }) {
-    const faction = FACTIONS.find((f) => f.id === fid);
+    const faction = Object.values(FACTIONS).find((f) => f.id === fid);
     const xp: number = (player.factionStandings || {})[fid] || 0;
     const rankIdx = getFactionRankLocal(xp);
     const rankDef = FACTION_RANKS[rankIdx] || FACTION_RANKS[0];
@@ -328,8 +236,8 @@ export function StandingsScreen({ player, onClose }: StandingsScreenProps) {
 
   // ── Data prep ──
   const repTier = getRepTierLocal(player.reputation || 0);
-  const classFactions = FACTIONS.filter((f) => f.group === 'class' && f.forClass === player.class);
-  const worldFactions = FACTIONS.filter((f) => f.group === 'world');
+  const classFactions = Object.values(FACTIONS).filter((f) => f.group === 'class' && f.forClass === player.class);
+  const worldFactions = Object.values(FACTIONS).filter((f) => f.group === 'world');
   const locationKeys = Object.keys(player.locationStandings || {}).filter(
     (k) => (player.locationStandings![k] || 0) > 0
   );

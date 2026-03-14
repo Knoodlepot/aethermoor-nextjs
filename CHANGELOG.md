@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Ten canonical factions now appear in the Standings screen with full lore, rank abilities, and rival relationships: The Iron Conclave, The Shadowmere Guild, The Ember Circle, The Silver Hand, The Thornwood Druids, The Merchant's Compact, The Crown's Watch, The Forgotten, The Arcane Academy, and The Sea Wolves.
+- Faction join offers now feature rich narrative pitches unique to each faction, including special dialogue for The Forgotten when you have already refused other factions.
+- Faction gear sets: equipping two or three matching faction pieces now unlocks powerful set bonuses and faction abilities.
+- Faction rank rewards: reaching rank 3 or 4 with a faction now unlocks exclusive gear tied to that faction.
+- Level-gated shop gear: shops now stock tiered equipment based on your character level. Steel-tier items appear at level 5, Enchanted-tier at level 10 (in cities), and Masterwork-tier at level 15 (in capital cities).
+- Skill tree updates: several Tier III skills now explicitly let the narrator notice and respond to your mastery — Unbreakable, Ghost Walk, Avatar of Light, Warlord's Presence, Resurrection Light, and Berserker Rage.
+
+### Fixed
+- Warrior Tier III skill corrected to **Unbreakable** — the narrator now reacts to this milestone as intended.
+- Rogue Tier III skill corrected to **Ghost Walk** — the narrator's 25% attack-negation narrative now triggers correctly.
+- Cleric Tier III skill corrected to **Avatar of Light** (id: avatar_divine) — the narrator's divine-avatar narrative now triggers correctly.
+- Faction data consolidated: both the Standings screen and faction offer pop-up now use the same canonical faction list, eliminating mismatches where a faction offer could appear with wrong or missing information.
+
 ### Changed
 - Added a single `verify:all` script to run all verification checks in one command.
 - Automated verification and linting now run on every push via GitHub Actions, catching regressions before deploy.

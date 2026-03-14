@@ -44,6 +44,32 @@ export function useGameLoop(
         let updatedPlayer = gs.player;
         let updatedSeed = gs.worldSeed;
 
+        // ── Deterministic short-circuits (no narrator call needed) ──
+        if (command.startsWith('unlock_skill:')) {
+          const skillId = command.slice('unlock_skill:'.length);
+          const currentSkills: string[] = Array.isArray((updatedPlayer as any).unlockedSkills)
+            ? (updatedPlayer as any).unlockedSkills
+            : [];
+          const currentPoints: number = (updatedPlayer as any).skillPoints ?? 0;
+
+          if (currentSkills.includes(skillId)) {
+            return { success: false, error: 'Already unlocked' };
+          }
+          if (currentPoints < 1) {
+            return { success: false, error: 'No skill points available' };
+          }
+
+          updatedPlayer = {
+            ...updatedPlayer,
+            unlockedSkills: [...currentSkills, skillId],
+            skillPoints: currentPoints - 1,
+          } as typeof updatedPlayer;
+
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          return { success: true };
+        }
+
         // 1. Add user message to conversation history
         const userMessages = [...gs.messages.slice(-19), { role: 'user', content: command }];
         gs.setMessages(userMessages);

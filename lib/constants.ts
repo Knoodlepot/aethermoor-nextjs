@@ -814,6 +814,450 @@ export const PATCH_NOTES_SECTIONS: PatchNotesSection[] = [
   },
 ];
 
+// ============================================
+// FACTION DEFINITIONS
+// ============================================
+export interface FactionDef {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  group: 'class' | 'world';
+  forClass?: string;
+  desc: string;
+  rankAbilities: Record<number, string>;
+  rankRewards: Record<number, string>;
+}
+
+export const FACTIONS: Record<string, FactionDef> = {
+  iron_conclave: {
+    id: 'iron_conclave',
+    name: 'The Iron Conclave',
+    icon: '⚔️',
+    color: '#b06030',
+    group: 'class',
+    forClass: 'Warrior',
+    desc: 'A brotherhood of elite mercenaries and battle-hardened knights. Honour, strength and coin drive them.',
+    rankAbilities: { 2: 'War Cry', 5: 'Unbreakable' },
+    rankRewards: { 1: 'Discounted weapon repairs', 3: 'Access to Conclave armourers', 4: 'Elite contract missions' },
+  },
+  shadowmere_guild: {
+    id: 'shadowmere_guild',
+    name: 'The Shadowmere Guild',
+    icon: '🗡️',
+    color: '#6040a0',
+    group: 'class',
+    forClass: 'Rogue',
+    desc: 'A web of spies, thieves and assassins operating from the shadows. Information is their true currency.',
+    rankAbilities: { 2: 'Shadow Step', 5: 'Death Mark' },
+    rankRewards: { 1: 'Access to black market', 3: 'Safe house network', 4: 'Guild contract assassinations' },
+  },
+  ember_circle: {
+    id: 'ember_circle',
+    name: 'The Ember Circle',
+    icon: '🔥',
+    color: '#c04020',
+    group: 'class',
+    forClass: 'Mage',
+    desc: 'Scholars of destructive arcane fire. They seek power through knowledge and will burn anything in their way.',
+    rankAbilities: { 2: 'Flame Shield', 5: 'Meteor' },
+    rankRewards: { 1: 'Discounted spell scrolls', 3: "Circle's arcane library", 4: 'Experimental fire rituals' },
+  },
+  silver_hand: {
+    id: 'silver_hand',
+    name: 'The Silver Hand',
+    icon: '✨',
+    color: '#d0c060',
+    group: 'class',
+    forClass: 'Cleric',
+    desc: 'A holy order of paladins and healers devoted to justice and the light. Their mercy has limits.',
+    rankAbilities: { 2: 'Holy Aura', 5: 'Resurrection' },
+    rankRewards: { 1: 'Free healing at temples', 3: 'Holy relics access', 4: 'Paladin escort missions' },
+  },
+  thornwood_druids: {
+    id: 'thornwood_druids',
+    name: 'The Thornwood Druids',
+    icon: '🌿',
+    color: '#3a8040',
+    group: 'world',
+    desc: 'Ancient guardians of forest and wild places. They speak to nature and remember things long forgotten.',
+    rankAbilities: { 2: "Nature's Veil", 5: 'Call of the Wild' },
+    rankRewards: { 1: 'Forest safe passage', 3: 'Ancient nature lore', 4: 'Druidic shapeshifting secrets' },
+  },
+  merchants_compact: {
+    id: 'merchants_compact',
+    name: "The Merchant's Compact",
+    icon: '🪙',
+    color: '#c0a030',
+    group: 'world',
+    desc: 'A powerful guild of traders and bankers. They own information and infrastructure across Aethermoor.',
+    rankAbilities: { 2: 'Silver Tongue', 5: 'Trade Empire' },
+    rankRewards: { 1: '10% shop discount', 3: 'Trade route intelligence', 4: 'Private banking & loans' },
+  },
+  crowns_watch: {
+    id: 'crowns_watch',
+    name: "The Crown's Watch",
+    icon: '👑',
+    color: '#8080d0',
+    group: 'world',
+    desc: 'Agents of the Capital throne — law enforcers, tax collectors, and spies for the ruling power.',
+    rankAbilities: { 2: 'Authority', 5: 'Royal Decree' },
+    rankRewards: { 1: 'Legal immunity in towns', 3: 'Crown intelligence briefings', 4: 'Noble title recognition' },
+  },
+  the_forgotten: {
+    id: 'the_forgotten',
+    name: 'The Forgotten',
+    icon: '💀',
+    color: '#706060',
+    group: 'world',
+    desc: 'Rebels, outcasts and those the system abandoned. They fight from the margins and know every secret way.',
+    rankAbilities: { 2: 'Street Smarts', 5: 'Ghost' },
+    rankRewards: { 1: 'Underground network access', 3: 'Rebel safe routes', 4: 'Off-books contracts' },
+  },
+  arcane_academy: {
+    id: 'arcane_academy',
+    name: 'The Arcane Academy',
+    icon: '📚',
+    color: '#5070c0',
+    group: 'world',
+    desc: 'The oldest seat of magical learning on the continent. They hoard knowledge and trade in secrets.',
+    rankAbilities: { 2: 'Arcane Insight', 5: 'Forbidden Knowledge' },
+    rankRewards: { 1: "Access to Academy library", 3: 'Rare spell components', 4: 'Experimental magic rituals' },
+  },
+  sea_wolves: {
+    id: 'sea_wolves',
+    name: 'The Sea Wolves',
+    icon: '🌊',
+    color: '#3080a0',
+    group: 'world',
+    desc: 'A brotherhood of sailors, smugglers and coastal raiders. They know every port and every tide.',
+    rankAbilities: { 2: 'Sea Legs', 5: "Corsair's Gambit" },
+    rankRewards: { 1: 'Coastal fast travel', 3: 'Smuggler routes', 4: 'Privateer ship access' },
+  },
+};
+
+// ============================================
+// FACTION JOIN OFFERS
+// ============================================
+export interface FactionJoinOffer {
+  title: string;
+  icon: string;
+  pitch: string;
+  pitchDeclined?: string;
+  gift: string;
+  giftDesc: string;
+  rival?: string;
+  rivalNote?: string;
+}
+
+export const FACTION_JOIN_OFFERS: Record<string, FactionJoinOffer> = {
+  iron_conclave: {
+    title: 'The Iron Conclave Calls',
+    icon: '⚔️',
+    pitch: "You have fought with distinction. The Iron Conclave does not invite weaklings — we invite those who bleed well and keep standing. Swear your blade to the brotherhood and you will never fight alone again. Coin, steel, and honour await those who earn their place.",
+    gift: 'Iron Conclave Signet',
+    giftDesc: "A heavy iron ring bearing the Conclave's crest. Merchants offer you credit. Guards step aside.",
+    rival: 'shadowmere_guild',
+    rivalNote: 'The Shadowmere Guild will view you with contempt — they despise those who fight in the open.',
+  },
+  shadowmere_guild: {
+    title: 'A Shadow Extends Its Hand',
+    icon: '🗡️',
+    pitch: "You move well. Notice things others miss. The Guild has been watching — we watch everyone, but we watch you with interest. There are no oaths here, no brotherhood speeches. Just work, coin, and the understanding that what you know stays known only to us.",
+    gift: 'Shadowmere Calling Card',
+    giftDesc: 'A black card with no markings. Show it in any dark corner of Aethermoor and doors open.',
+    rival: 'crowns_watch',
+    rivalNote: "The Crown's Watch will regard you as a criminal organisation's asset.",
+  },
+  ember_circle: {
+    title: 'The Circle Opens',
+    icon: '🔥',
+    pitch: "Power is not given. It is taken, earned, burned for. The Ember Circle does not recruit the timid — we take those who already have fire in them and teach them to make it obey. Join us and you will touch the kind of power that frightens other mages.",
+    gift: "Ember Initiate's Focus",
+    giftDesc: "A shard of the Circle's eternal flame sealed in glass. INT +1 while carried.",
+    rival: 'silver_hand',
+    rivalNote: 'The Silver Hand considers the Ember Circle dangerously reckless with arcane power.',
+  },
+  silver_hand: {
+    title: 'The Light Calls You',
+    icon: '✨',
+    pitch: "We have seen what you carry — not a weapon, but a purpose. The Silver Hand does not seek power for its own sake. We seek those willing to stand between the innocent and the dark. It is a harder road than most choose. But you are not most.",
+    gift: 'Silver Hand Medallion',
+    giftDesc: 'A small silver disc blessed by the Order. Grants free healing at any Silver Hand temple.',
+    rival: 'ember_circle',
+    rivalNote: 'The Ember Circle considers the Silver Hand naive and dangerously pious.',
+  },
+  thornwood_druids: {
+    title: 'The Forest Speaks Your Name',
+    icon: '🌿',
+    pitch: "The trees have been whispering about you. Not all who walk the wild are welcome — the forest chooses. You have been chosen. We ask nothing but that you listen, protect, and remember. The old ways ask for patience, not oaths. Will you hear them?",
+    gift: 'Thornwood Seedling',
+    giftDesc: 'A living seedling from the sacred grove. It grows wherever you plant it and marks you as a friend of the wild.',
+    rival: 'arcane_academy',
+    rivalNote: 'The Arcane Academy sees the Druids as superstitious obstacles to magical progress.',
+  },
+  merchants_compact: {
+    title: 'A Profitable Arrangement',
+    icon: '🪙',
+    pitch: "We are direct people, so here it is directly: you are useful to us and we are useful to you. The Compact does not ask for loyalty — we ask for business. Join our network and every merchant in Aethermoor becomes your ally. Doors open. Prices drop. Information flows. Shall we deal?",
+    gift: 'Compact Letter of Credit',
+    giftDesc: 'A sealed letter worth 50 gold at any Compact-affiliated merchant. Also grants a permanent 10% discount.',
+    rival: 'the_forgotten',
+    rivalNote: 'The Forgotten see the Compact as exploiters of the poor.',
+  },
+  crowns_watch: {
+    title: "The Crown Sees Your Value",
+    icon: '👑',
+    pitch: "Order is not glamorous work. It is thankless, dangerous, and essential. The Crown's Watch needs agents who can handle the grey areas — the situations where the law needs a sharp mind rather than just a sharp sword. We offer authority, access, and the full weight of the Crown behind you.",
+    gift: "Crown's Watch Warrant Card",
+    giftDesc: "An official warrant granting legal authority throughout Aethermoor's settlements.",
+    rival: 'shadowmere_guild',
+    rivalNote: 'The Shadowmere Guild will consider you a direct threat to their operations.',
+  },
+  the_forgotten: {
+    title: "You've Been Found by the Lost",
+    icon: '💀',
+    pitch: "No speeches here. No ceremony. You know what it's like to be outside the walls looking in — otherwise you wouldn't be talking to us. The Forgotten don't ask for your name or your past. Just your answer: are you with the ones who got left behind, or are you with the ones who did the leaving?",
+    pitchDeclined: "You've said no to the ones with titles and banners. Interesting. The Forgotten don't ask for your name or your past — just whether you're done pretending the system has a place for you.",
+    gift: "Forgotten's Mark",
+    giftDesc: 'A scratched symbol on your wrist. Beggars share their food. Outcasts share their secrets. The underground opens.',
+    rival: 'crowns_watch',
+    rivalNote: "The Crown's Watch will flag you as a known associate of subversive elements.",
+  },
+  arcane_academy: {
+    title: 'The Academy Extends Consideration',
+    icon: '📚',
+    pitch: "We do not recruit — we accept applications. You have, through your actions, demonstrated sufficient aptitude that the Academy is willing to consider formal affiliation. This is not an honour we bestow lightly. In return for access to our archives, you will contribute to the advancement of knowledge. Is that agreeable?",
+    gift: 'Academy Research Pass',
+    giftDesc: "A stamped pass granting access to the Academy's public archives. Scholars treat you as a peer.",
+    rival: 'thornwood_druids',
+    rivalNote: 'The Thornwood Druids distrust the Academy\'s approach to natural magic.',
+  },
+  sea_wolves: {
+    title: 'The Wolves Circle',
+    icon: '🌊',
+    pitch: "We don't recruit on land — bad omen. But you're here, and the sea hasn't killed you yet, so maybe you're worth something. The Wolves don't want followers. We want crew. Pull your weight, keep your mouth shut about what you see, and you'll never want for a berth or a blade-at-your-back again. What do you say?",
+    gift: 'Sea Wolves Token',
+    giftDesc: "A carved wolf's tooth on a cord. Shows at any port for free passage, cheap lodging, and crew solidarity.",
+    rival: 'merchants_compact',
+    rivalNote: "The Merchant's Compact views the Sea Wolves as pirates undercutting legitimate trade.",
+  },
+};
+
+// ============================================
+// TIERED GEAR (level-gated shop items)
+// ============================================
+export interface TieredGearItem {
+  id: string;
+  name: string;
+  icon: string;
+  shopTier: string;
+  price: number;
+  minLevel: number;
+  gearTier: number;
+  slot: string;
+  desc: string;
+}
+
+export const TIERED_GEAR: TieredGearItem[] = [
+  // ── Tier 2 Steel (level 5+) ──
+  { id: 'steel_shield',    name: 'Steel Shield',    icon: '🛡️', shopTier: 'uncommon', price: 140, minLevel: 5,  gearTier: 2, slot: 'offhand', desc: 'Reinforced steel shield. Solid protection for the road-hardened adventurer.' },
+  { id: 'hunting_bow',     name: 'Hunting Bow',     icon: '🏹', shopTier: 'uncommon', price: 90,  minLevel: 5,  gearTier: 2, slot: 'weapon',  desc: 'A well-crafted hunting bow. AGI-based ranged combat.' },
+  { id: 'war_hammer',      name: 'War Hammer',      icon: '🔨', shopTier: 'uncommon', price: 110, minLevel: 5,  gearTier: 2, slot: 'weapon',  desc: 'A heavy hammer favoured by warriors and clerics alike.' },
+  { id: 'silver_amulet',   name: 'Silver Amulet',   icon: '📿', shopTier: 'uncommon', price: 80,  minLevel: 5,  gearTier: 2, slot: 'accessory', desc: 'A finely worked silver amulet. Modest magical protection.' },
+  // ── Tier 3 Enchanted (level 10+, city+) ──
+  { id: 'enchanted_blade', name: 'Enchanted Blade', icon: '⚔️', shopTier: 'rare',     price: 280, minLevel: 10, gearTier: 3, slot: 'weapon',  desc: 'A blade humming with arcane energy. Strikes true against magical creatures.' },
+  { id: 'mage_robes',      name: 'Mage Robes',      icon: '👘', shopTier: 'rare',     price: 220, minLevel: 10, gearTier: 3, slot: 'body',    desc: 'Robes woven with protective sigils. Boosts INT and spell resistance.' },
+  { id: 'tower_shield',    name: 'Tower Shield',    icon: '🛡️', shopTier: 'rare',     price: 260, minLevel: 10, gearTier: 3, slot: 'offhand', desc: 'A massive tower shield. Near-impenetrable physical defence.' },
+  { id: 'enchanted_ring',  name: 'Ring of Power',   icon: '💍', shopTier: 'rare',     price: 200, minLevel: 10, gearTier: 3, slot: 'accessory', desc: 'A ring crackling with contained magic. Significant stat boost.' },
+  { id: 'battle_axe',      name: 'Battle Axe',      icon: '🪓', shopTier: 'rare',     price: 240, minLevel: 10, gearTier: 3, slot: 'weapon',  desc: 'A two-handed axe of exceptional quality. Devastating STR-based damage.' },
+  // ── Tier 4 Masterwork (level 15+, capital+) ──
+  { id: 'masterwork_sword',  name: 'Masterwork Sword',  icon: '⚔️', shopTier: 'legendary', price: 450, minLevel: 15, gearTier: 4, slot: 'weapon',  desc: 'A blade of unparalleled craftsmanship. The finest non-magical weapon made.' },
+  { id: 'voidsteel_armour',  name: 'Voidsteel Armour',  icon: '⛓',  shopTier: 'legendary', price: 600, minLevel: 15, gearTier: 4, slot: 'body',    desc: 'Armour forged from fallen star metal. Light as leather, strong as stone.' },
+  { id: 'archmage_staff',    name: 'Archmage Staff',    icon: '🪄', shopTier: 'legendary', price: 520, minLevel: 15, gearTier: 4, slot: 'weapon',  desc: 'A staff of tremendous power. Greatly amplifies all magical ability.' },
+  { id: 'obsidian_shield',   name: 'Obsidian Shield',   icon: '🛡️', shopTier: 'legendary', price: 480, minLevel: 15, gearTier: 4, slot: 'offhand', desc: 'Shield carved from volcanic glass. Absorbs and reflects magic.' },
+];
+
+// ============================================
+// FACTION GEAR SETS
+// ============================================
+export interface FactionSetDef {
+  name: string;
+  faction: string;
+  pieces: string[];
+  slots: string[];
+  icons: string[];
+  bonus2: Record<string, number>;
+  bonus2label: string;
+  bonus3: Record<string, number>;
+  bonus3label: string;
+  ability3: string;
+}
+
+export const FACTION_SETS: Record<string, FactionSetDef> = {
+  iron_conclave: {
+    name: "Warlord's Regalia",
+    faction: 'The Iron Conclave',
+    pieces: ["War Helm", "Warlord's Plate", "Champion's Pauldrons"],
+    slots: ['head', 'body', 'offhand'],
+    icons: ['⛑️', '🛡️', '💪'],
+    bonus2: { str: 6 },
+    bonus2label: '+6 STR',
+    bonus3: { str: 12 },
+    bonus3label: '+12 STR, War Hardened (−20% damage)',
+    ability3: 'War Hardened',
+  },
+  shadowmere_guild: {
+    name: "Shadowmere's Embrace",
+    faction: 'The Shadowmere Guild',
+    pieces: ['Shadow Hood', 'Shadowmere Cloak', 'Shadow Boots'],
+    slots: ['head', 'body', 'feet'],
+    icons: ['🪖', '🧥', '👢'],
+    bonus2: { agi: 6 },
+    bonus2label: '+6 AGI',
+    bonus3: { agi: 12 },
+    bonus3label: '+12 AGI, Ghost Step (first strike always crits)',
+    ability3: 'Ghost Step',
+  },
+  ember_circle: {
+    name: 'Emberweave Regalia',
+    faction: 'The Ember Circle',
+    pieces: ['Ember Staff', 'Ember Robes', "Ember Focus"],
+    slots: ['weapon', 'body', 'accessory'],
+    icons: ['🔥', '👘', '🔮'],
+    bonus2: { int: 6 },
+    bonus2label: '+6 INT',
+    bonus3: { int: 12, wil: 4 },
+    bonus3label: '+12 INT +4 WIL, Arcane Surge (spells never miss)',
+    ability3: 'Arcane Surge',
+  },
+  silver_hand: {
+    name: "Paladin's Blessing",
+    faction: 'The Silver Hand',
+    pieces: ['Holy Mace', 'Vestments of Light', 'Sigil of the Hand'],
+    slots: ['weapon', 'body', 'accessory'],
+    icons: ['🔨', '✨', '🌟'],
+    bonus2: { wil: 6 },
+    bonus2label: '+6 WIL',
+    bonus3: { wil: 12, str: 4 },
+    bonus3label: '+12 WIL +4 STR, Divine Grace (+5 HP each turn)',
+    ability3: 'Divine Grace',
+  },
+  thornwood_druids: {
+    name: 'Thornwood Garb',
+    faction: 'The Thornwood Druids',
+    pieces: ['Antler Crown', 'Thornwood Leathers', 'Root Boots'],
+    slots: ['head', 'body', 'feet'],
+    icons: ['🦌', '🌿', '👡'],
+    bonus2: { agi: 4, wil: 3 },
+    bonus2label: '+4 AGI +3 WIL',
+    bonus3: { agi: 10, wil: 6 },
+    bonus3label: "+10 AGI +6 WIL, Nature's Wrath (beasts never attack)",
+    ability3: "Nature's Wrath",
+  },
+  merchants_compact: {
+    name: "Magnate's Finery",
+    faction: "The Merchant's Compact",
+    pieces: ["Merchant's Ring", 'Compact Coat', 'Gold-Threaded Boots'],
+    slots: ['accessory', 'body', 'feet'],
+    icons: ['💍', '🧥', '👢'],
+    bonus2: { str: 2, agi: 2, int: 2, wil: 2 },
+    bonus2label: '+2 all stats',
+    bonus3: { str: 8, agi: 8, int: 8, wil: 8 },
+    bonus3label: '+8 all stats, Trade Empire (buy anything at half price)',
+    ability3: 'Trade Empire',
+  },
+  crowns_watch: {
+    name: 'Regalia of the Crown',
+    faction: "The Crown's Watch",
+    pieces: ['Crown Sword', 'Royal Armour', "Warden's Badge"],
+    slots: ['weapon', 'body', 'accessory'],
+    icons: ['⚔️', '🛡️', '👑'],
+    bonus2: { str: 4, wil: 4 },
+    bonus2label: '+4 STR +4 WIL',
+    bonus3: { str: 8, wil: 8 },
+    bonus3label: '+8 STR +8 WIL, Royal Decree (all guards are allies)',
+    ability3: 'Royal Decree',
+  },
+  the_forgotten: {
+    name: "Outcast's Edge",
+    faction: 'The Forgotten',
+    pieces: ['Rebel Blade', 'Ragged Cloak', 'Broken Crown'],
+    slots: ['weapon', 'body', 'head'],
+    icons: ['🗡️', '🧥', '👑'],
+    bonus2: { agi: 4, str: 4 },
+    bonus2label: '+4 AGI +4 STR',
+    bonus3: { agi: 10, str: 8 },
+    bonus3label: '+10 AGI +8 STR, Ghost (cannot be tracked or ambushed)',
+    ability3: 'Ghost',
+  },
+  arcane_academy: {
+    name: "Archon's Vestments",
+    faction: 'The Arcane Academy',
+    pieces: ["Archon's Staff", 'Robes of the Academy', "Scholar's Ring"],
+    slots: ['weapon', 'body', 'accessory'],
+    icons: ['🪄', '📚', '💍'],
+    bonus2: { int: 6, wil: 3 },
+    bonus2label: '+6 INT +3 WIL',
+    bonus3: { int: 14, wil: 6 },
+    bonus3label: '+14 INT +6 WIL, Forbidden Knowledge (auto-identify items)',
+    ability3: 'Forbidden Knowledge',
+  },
+  sea_wolves: {
+    name: "Corsair's Regalia",
+    faction: 'The Sea Wolves',
+    pieces: ["Corsair's Cutlass", 'Wolf Coat', "Navigator's Compass"],
+    slots: ['weapon', 'body', 'accessory'],
+    icons: ['⚔️', '🧥', '🧭'],
+    bonus2: { agi: 4, str: 4 },
+    bonus2label: '+4 AGI +4 STR',
+    bonus3: { agi: 10, str: 6 },
+    bonus3label: '+10 AGI +6 STR, Sea Legs (never ambushed travelling)',
+    ability3: 'Sea Legs',
+  },
+};
+
+// ============================================
+// FACTION RANK GEAR (gear unlocked by rank)
+// ============================================
+export const FACTION_RANK_GEAR: Record<string, Record<number, string>> = {
+  iron_conclave:    { 3: "Champion's Pauldrons", 4: 'War Helm' },
+  shadowmere_guild: { 3: 'Shadow Boots',         4: 'Shadow Hood' },
+  ember_circle:     { 3: 'Ember Focus',           4: 'Ember Robes' },
+  silver_hand:      { 3: 'Sigil of the Hand',     4: 'Vestments of Light' },
+  thornwood_druids: { 3: 'Root Boots',            4: 'Antler Crown' },
+  merchants_compact:{ 3: 'Gold-Threaded Boots',   4: "Merchant's Ring" },
+  crowns_watch:     { 3: "Warden's Badge",        4: 'Royal Armour' },
+  the_forgotten:    { 3: 'Broken Crown',           4: 'Ragged Cloak' },
+  arcane_academy:   { 3: "Scholar's Ring",         4: 'Robes of the Academy' },
+  sea_wolves:       { 3: "Navigator's Compass",    4: 'Wolf Coat' },
+};
+
+// ============================================
+// CONCEALED & PROTECTED ITEMS
+// ============================================
+
+// Items that cannot be detected or pickpocketed
+export const CONCEALED_ITEMS: ReadonlySet<string> = new Set([
+  'Iron Conclave Signet', 'Shadowmere Calling Card', "Ember Initiate's Focus",
+  'Silver Hand Medallion', 'Thornwood Seedling', 'Compact Letter of Credit',
+  "Crown's Watch Warrant Card", "Forgotten's Mark", 'Academy Research Pass', 'Sea Wolves Token',
+  'Shadowmere Cloak',
+]);
+
+// Items that can never be dropped (faction gifts, rank gear, quest tokens)
+export const PROTECTED_ITEMS: ReadonlySet<string> = new Set([
+  'Iron Conclave Signet', 'Shadowmere Calling Card', "Ember Initiate's Focus",
+  'Silver Hand Medallion', 'Thornwood Seedling', 'Compact Letter of Credit',
+  "Crown's Watch Warrant Card", "Forgotten's Mark", 'Academy Research Pass', 'Sea Wolves Token',
+  "Champion's Pauldrons", 'War Helm', 'Shadow Boots', 'Shadow Hood',
+  'Ember Focus', 'Ember Robes', 'Sigil of the Hand', 'Vestments of Light',
+  'Root Boots', 'Antler Crown', 'Gold-Threaded Boots', "Merchant's Ring",
+  "Warden's Badge", 'Royal Armour', 'Broken Crown', 'Ragged Cloak',
+  "Scholar's Ring", 'Robes of the Academy', "Navigator's Compass", 'Wolf Coat',
+  'Shadowmere Cloak',
+]);
+
 export const CMD_MESSAGES: Record<string, string> = {
   go_north: 'I head north.',
   go_south: 'I head south.',
