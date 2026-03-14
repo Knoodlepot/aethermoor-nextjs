@@ -25,7 +25,7 @@ export function SideQuestPanel({ quests, onOpenQuest, onToggleTrack, onAbandon, 
   const [confirmAbandonId, setConfirmAbandonId] = React.useState<string | null>(null);
 
   // Only show active, non-main quests that are tracked (tracked defaults to true)
-  const active = quests.filter((q) => (q.status as string) === 'active' && q.type !== 'main' && (q.tracked ?? true));
+  const active = quests.filter((q) => (q.status as string) === 'active' && q.type !== 'main' && !!q.type && (q.tracked ?? true));
   const visible = active.slice(-MAX_VISIBLE);
   const overflow = active.length - visible.length;
 

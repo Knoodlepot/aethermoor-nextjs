@@ -89,6 +89,7 @@ function GameContent() {
         title: seed.questTitle,
         objective: 'Investigate the growing darkness across Aethermoor',
         status: 'active',
+        type: 'main',
         isMain: true,
         templateIcon: seed.templateIcon,
       };
