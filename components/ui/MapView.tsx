@@ -73,8 +73,10 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
     // Set up double resolution for sharpness
     canvas.width = W * DPR;
     canvas.height = H * DPR;
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
+    if (!inline) {
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+    }
     g.setTransform(1, 0, 0, 1, 0, 0);
     g.scale(1, 1);
 
@@ -225,7 +227,7 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
       g.fillText(item.label, legendX + 32 * DPR, y);
     });
     g.restore();
-  }, [player, worldSeed, T, tf]);
+  }, [player, worldSeed, T, tf, inline]);
 
   if (inline) {
     return (
@@ -233,7 +235,7 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
         ref={canvasRef}
         width={W}
         height={H}
-        style={{ border: `2px solid ${COLORS.border}`, borderRadius: 4 }}
+        style={{ width: '100%', height: '100%', objectFit: 'contain', border: `2px solid ${COLORS.border}`, borderRadius: 4, display: 'block' }}
       />
     );
   }

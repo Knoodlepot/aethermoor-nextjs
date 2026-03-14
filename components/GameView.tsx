@@ -512,7 +512,7 @@ function GameContent() {
       </div>
 
       {/* Middle: map (always visible) */}
-      <div style={{ flex: 2, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderLeft: `1px solid ${T.border}` }}>
+      <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderLeft: `1px solid ${T.border}` }}>
         {player && gameState.worldSeed ? (
           <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' as const }}>
             <MapView player={gameState.player!} worldSeed={gameState.worldSeed} inline />
