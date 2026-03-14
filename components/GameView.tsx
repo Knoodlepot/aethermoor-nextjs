@@ -329,6 +329,7 @@ function GameContent() {
       {['town', 'npc'].includes(player?.context) && tbBtn('🛒 Shop', () => ui.toggleModal('shop'))}
       {tbBtn('🎒 Gear', () => ui.toggleModal('inventory'))}
       {tbBtn('⭐ Rep', () => ui.toggleModal('standings'))}
+      {tbBtn('🗺️ Map', () => ui.toggleModal('map'))}
       {badgeBtn('📖 Bestiary', () => ui.toggleModal('bestiary'), { count: bestiaryCount, color: '#c04040' })}
       {tbBtn('⚒️ Craft', () => ui.toggleModal('crafting'))}
       {tbBtn('📝 Patch', () => ui.openModal('patchNotes'))}
@@ -461,8 +462,8 @@ function GameContent() {
 
   const desktopLayout = (
     <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-      {/* Left: story + suggestions/input bar */}
-      <div style={{ flex: 3, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Left: story + suggestions/input bar (fills all space) */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <NarrativePanel
           narrative={gameState.narrative}
           log={gameState.log}
@@ -509,19 +510,6 @@ function GameContent() {
             />
           </div>
         </div>
-      </div>
-
-      {/* Middle: map (always visible) */}
-      <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderLeft: `1px solid ${T.border}` }}>
-        {player && gameState.worldSeed ? (
-          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' as const }}>
-            <MapView player={gameState.player!} worldSeed={gameState.worldSeed} inline />
-          </div>
-        ) : (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textMuted, fontFamily: "'Cinzel',serif", fontSize: 12 }}>
-            Map unavailable
-          </div>
-        )}
       </div>
 
       {rightColumn}

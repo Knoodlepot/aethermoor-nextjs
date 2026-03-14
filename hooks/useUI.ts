@@ -149,6 +149,7 @@ export function useUI(): UIContext {
       factionOffer: setShowFactionOffer,
       ngPlus: setShowNGPlusScreen,
       dungeonWarning: setShowDungeonWarning,
+      map: setMapOpen,
     };
 
     if (map[modalName]) {
@@ -174,6 +175,7 @@ export function useUI(): UIContext {
       factionOffer: setShowFactionOffer,
       ngPlus: setShowNGPlusScreen,
       dungeonWarning: setShowDungeonWarning,
+      map: setMapOpen,
     };
 
     if (map[modalName]) {
@@ -199,6 +201,7 @@ export function useUI(): UIContext {
       factionOffer: [showFactionOffer, setShowFactionOffer],
       ngPlus: [showNGPlusScreen, setShowNGPlusScreen],
       dungeonWarning: [showDungeonWarning, setShowDungeonWarning],
+      map: [mapOpen, setMapOpen],
     };
 
     if (map[modalName]) {
@@ -219,6 +222,7 @@ export function useUI(): UIContext {
     showFactionOffer,
     showNGPlusScreen,
     showDungeonWarning,
+    mapOpen,
   ]);
 
   /**
