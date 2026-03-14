@@ -426,7 +426,6 @@ function GameContent() {
 
   const actionButtons = player && (
     <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}`, padding: '6px 8px', gap: 4, flexWrap: 'wrap' as const, justifyContent: 'center', background: T.panelAlt }}>
-      {tbBtn('📝 Patch', () => ui.openModal('patchNotes'))}
       <button
         onClick={() => dungeonAvailable ? handleCommand('enter_dungeon') : !atCapital ? showDungeonHint() : undefined}
         title={atCapital ? (inDungeon ? 'Already in the dungeon' : 'Enter the Dungeon of Echoes') : 'Travel to Aethermoor Capital to access the Dungeon of Echoes'}
