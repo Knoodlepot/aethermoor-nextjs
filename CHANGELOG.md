@@ -18,7 +18,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Dismissing a quest from the quest log now removes it.**
 
 ### Added
-- Ten canonical factions now appear in the Standings screen with full lore, rank abilities, and rival relationships: The Iron Conclave, The Shadowmere Guild, The Ember Circle, The Silver Hand, The Thornwood Druids, The Merchant's Compact, The Crown's Watch, The Forgotten, The Arcane Academy, and The Sea Wolves.
+- **⚔ AETHERMOOR header** now appears at the top of the game screen with the game title, game clock, New Game, and Logout buttons — matching the classic layout.
+- **Action buttons moved to the bottom of the right panel**, matching the original game layout. Buttons now include Quests, Shop (context-sensitive), Gear, Rep, Bestiary, Craft, Patch Notes, Skills, and Guide.
+- **Colorblind themes are now fully distinct** from the default theme. Deuteranopia uses a blue-tinted palette, Protanopia uses a blue-yellow palette, and Tritanopia uses a red-grey palette — each with unique background, text, and accent colours.
+- **Dyslexia-friendly theme is now a light cream mode** (warm off-white background, dark text) instead of dark — making it genuinely easier to read for players with dyslexia.
+
+### Fixed
+- Removed developer debug breakpoints and log spam that were firing in the browser on every session load.
 - Faction join offers now feature rich narrative pitches unique to each faction, including special dialogue for The Forgotten when you have already refused other factions.
 - Faction gear sets: equipping two or three matching faction pieces now unlocks powerful set bonuses and faction abilities.
 - Faction rank rewards: reaching rank 3 or 4 with a faction now unlocks exclusive gear tied to that faction.

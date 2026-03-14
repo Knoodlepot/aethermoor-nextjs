@@ -34,10 +34,17 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
-- **ShopScreen sell fixes**: Protected items (faction gifts, rank gear, quest keys) filtered from the sell tab — cannot be sold. Sell prices for tiered gear now use canonical prices (Enchanted Blade 280g → 140g sell) instead of 10g fallback. Shop stock now re-evaluates on level-up so tiered gear appears without travelling.
-- **Sell handler protection**: `sell:` short-circuit in `useGameLoop.ts` now rejects protected items before removing from inventory.
-- **Deterministic command handlers**: Added short-circuit handlers in `hooks/useGameLoop.ts` for all UI-driven commands that previously sent to narrator but never changed state: `join_faction:`, `decline_faction:`, `rival_faction:`, `buy:`, `sell:`, `equip:`, `unequip:`, `drop:`, `craft:`, `dismiss_quest:`. These now apply state changes immediately without a narrator call.
-- **Equip slot fix**: Replaced `getItemSlotEx` in `lib/helpers.ts` with a proper implementation using a static item-to-slot map, TIERED_GEAR lookup, and type-based fallback. Previously all Armour-type items incorrectly resolved to the "offhand" slot; now body armour, helmets, and boots resolve to their correct slots.
+- **Visual UI match to legacy index.html**: Restructured `GameView.tsx` to match the legacy layout.
+  - Header row: "⚔ AETHERMOOR" title left, clock + New Game + Logout right (spans full width).
+  - Right column narrowed from 380px → 280px (legacy canonical width).
+  - Action buttons moved from top toolbar to bottom of right column (legacy position).
+  - Buttons: Quests, Shop (context-sensitive: town/npc only), Gear, Rep, Bestiary, Craft, Patch Notes, Skills, Guide.
+- **Colorblind theme overhaul**: All 4 non-standard themes replaced with legacy exact palettes.
+  - Deuteranopia: blue-tinted (bg #080c12, accent #5b9bd5, gold #e8d44d).
+  - Protanopia: blue-yellow (bg #06080e, accent #4db8e8, gold #f5e642).
+  - Tritanopia: red-grey (bg #0e0808, accent #e85c8a, gold #f0f0f0).
+  - Dyslexia: LIGHT CREAM mode (bg #f5f0e8, text #1a1208) — now genuinely dyslexia-friendly.
+- **E2E debug cleanup**: Removed `debugger;` statements and `console.log('[E2E DEBUG]')` spam from GameView.tsx.
 - **Faction join**: Joining a faction now grants the correct gift item, applies +50 starting XP to the joined faction, -30 XP to the rival faction, and clears any pending offer.
 - **Faction decline**: Declining 2+ factions now correctly triggers The Forgotten's offer. Rival-faction rejections apply a -50 standing penalty.
 - **Craft handler**: Validates crafting level, consumes all required ingredients (case-insensitive), produces results, and awards crafting XP.
