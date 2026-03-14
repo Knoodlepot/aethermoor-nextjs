@@ -133,16 +133,17 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
     // Draw settlements/POIs
     if (worldSeed.locationGrid) {
       Object.entries(worldSeed.locationGrid).forEach(([name, loc]: [string, any]) => {
-        const { x, y, type } = loc;
+        const { x, y, type } = loc as { x: number; y: number; type: string };
         const screen = toScreen(x, y);
-        let color = COLORS[type] || COLORS.village;
-        let icon = TYPE_ICON[type] || '•';
+        // Type guard for COLORS and TYPE_ICON
+        const color = (typeof type === 'string' && type in COLORS ? COLORS[type as keyof typeof COLORS] : COLORS.village);
+        const icon = (typeof type === 'string' && type in TYPE_ICON ? TYPE_ICON[type as keyof typeof TYPE_ICON] : '•');
         let size = 7 * DPR;
         if (type === 'capital') size = 13 * DPR;
         else if (type === 'city') size = 11 * DPR;
         else if (type === 'town') size = 9 * DPR;
-        else if (type.startsWith('poi')) size = 10 * DPR;
-        else if (type.startsWith('farm')) size = 7 * DPR;
+        else if (type && typeof type === 'string' && type.startsWith('poi')) size = 10 * DPR;
+        else if (type && typeof type === 'string' && type.startsWith('farm')) size = 7 * DPR;
         else if (type === 'hamlet') size = 6 * DPR;
 
         // Draw icon (emoji)
@@ -155,7 +156,7 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
         g.fillText(icon, screen.x, screen.y);
 
         // Optionally: draw name (for capitals/cities/POIs)
-        if (type === 'capital' || type === 'city' || type.startsWith('poi')) {
+        if (type === 'capital' || type === 'city' || (typeof type === 'string' && type.startsWith('poi'))) {
           g.font = `bold ${11 * DPR}px ${tf.fontFamily}`;
           g.shadowBlur = 0;
           g.fillStyle = COLORS.legendText;
