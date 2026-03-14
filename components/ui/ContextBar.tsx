@@ -22,7 +22,7 @@ const TIER_ICONS: Record<string, string> = {
   dungeon:        '🗝️',
   farm_arable:    '🌾',
   farm_livestock: '🐄',
-  farm_mixed:     '🚜',
+  farm_mixed:     '🐂',
 };
 
 function locationIcon(locationName: string | undefined, locationGrid?: Record<string, any>): string {

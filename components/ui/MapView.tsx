@@ -50,7 +50,7 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
     hamlet: '🛖',
     farm_arable: '🌾',
     farm_livestock: '🐄',
-    farm_mixed: '🚜',
+    farm_mixed: '🐂',
     poi_forest: '🌲',
     poi_cave: '🕳️',
     poi_ruins: '🏚️',
