@@ -43,6 +43,14 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Token System UI**: Ported the full token system UI from legacy to Next.js.
+  - Toolbar now shows a live 🪙 token balance with 4-tier color coding (green → gold → orange → red) and a pulse animation when critically low (≤10). Clicking it opens the Token Shop.
+  - New `TokenShopScreen` — 6 purchase packages (Starter 100/£1 → Immortal 8500/£49.99). Calls `/api/tokens/buy`, redirects to Stripe Checkout. Shows payment success banner on return (`?payment=success`).
+  - New `OutOfTokensScreen` — fullscreen takeover when tokens run out ("YOUR TOKENS ARE SPENT"). Buy Tokens button opens shop; Return to Title sends back to home.
+  - `useGameLoop` now detects `no_tokens` error from `/api/claude` and triggers `ui.setScreen('out_of_tokens')` automatically.
+  - `useUI` gains `showTokenShop` modal flag.
+  - Files added: `components/screens/OutOfTokensScreen.tsx`, `components/screens/TokenShopScreen.tsx`. Files modified: `hooks/useUI.ts`, `hooks/useGameLoop.ts`, `components/GameView.tsx`.
+
 - **Mini Map**: New `MiniMap` component in right sidebar, below Side Quest Panel, filling the previously empty space.
   - Renders the world map as a compact ~178px tall canvas (uses existing `MapView inline` prop — no side panels, no zoom controls, no travel popup).
   - Gold "WORLD MAP" label above; subtle hover border/glow.

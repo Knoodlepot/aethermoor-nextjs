@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Token balance display**: Your current token count now shows in the top toolbar next to the clock. The number glows green when you have plenty, turns gold when running low, orange when getting scarce, and flashes red when critically low (10 or fewer). Click it at any time to open the Token Shop.
+- **Token Shop**: A new Token Shop lets you top up your tokens any time. Six packages are available, from a small Starter top-up to the Immortal bundle. Purchases go through secure Stripe checkout and tokens appear in your account immediately on return.
+- **Out of Tokens screen**: If you run out of tokens mid-adventure the narrator pauses gracefully and a dedicated screen appears. From there you can head straight to the Token Shop or return to the title.
+
+### Added
 - **Side Quest tracker**: A new panel sits below the Main Quest box on the right side of the screen. It shows up to 5 side, faction, and contract quests you are currently tracking. Each quest shows a track toggle (eye icon) to pin or hide it from the panel, and a give-up button (✕) so you can abandon quests you no longer want. Clicking a quest title jumps straight to that quest in the Quest Log.
 - **Quest Log — Main Quest tab**: The Quest Log now opens on a dedicated **Main Quest** tab that shows a chapter-by-chapter timeline of everything you have uncovered so far. Each completed act shows what happened; your current act shows what to focus on next. Villain and ally details are revealed as you progress through the story.
 - **Quest Log — Faction tab**: Active faction quests now have their own **Faction** tab in the Quest Log, organised by faction. Each entry has the same track toggle and give-up button as side quests.
