@@ -374,7 +374,6 @@ function GameContent() {
           {tbBtn('Map', () => ui.setMapOpen(!ui.mapOpen), ui.mapOpen)}
           {tbBtn('Guide', () => ui.openModal('howToPlay'))}
           {tbBtn('Patch Notes', () => ui.openModal('patchNotes'))}
-          <ThemeToggle />
           {/* Account button removed from in-game UI as requested */}
           {tbBtn('Home', () => router.push('/'))}
           {auth.token && tbBtn('Logout', () => void auth.logout())}
