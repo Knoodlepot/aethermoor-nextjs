@@ -1,14 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
 import { PatchNotesScreen } from '@/components/screens/PatchNotesScreen';
+import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 import { THEMES, type ThemeKey } from '@/components/providers/ThemeProvider';
 
 export default function Home() {
   const [showGuide, setShowGuide] = useState(false);
   const [showPatches, setShowPatches] = useState(false);
+  const [showTokenShop, setShowTokenShop] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('standard');
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/tokens/balance', { credentials: 'include' })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.balance != null) setTokenBalance(d.balance); })
+      .catch(() => {});
+
+    if (window.location.search.includes('payment=success')) {
+      setPaymentSuccess(true);
+      window.history.replaceState({}, '', window.location.pathname);
+      setTimeout(() => setPaymentSuccess(false), 8000);
+    }
+  }, []);
+
+  const tokenColor = (t: number) =>
+    t > 50 ? '#80c060' : t > 20 ? '#c9a84c' : t > 10 ? '#e08030' : '#e04040';
+  const tokenBorderColor = (t: number) =>
+    t > 50 ? '#80c06044' : t > 20 ? '#c9a84c44' : t > 10 ? '#e0803066' : '#e0404066';
 
   const buttonStyle = {
     padding: '0.85rem 1.5rem',
@@ -114,6 +136,35 @@ export default function Home() {
             Account
           </a>
 
+          {tokenBalance !== null && (
+            <div
+              onClick={() => setShowTokenShop(true)}
+              title="Buy more tokens"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                cursor: 'pointer',
+                padding: '0.5rem 0.85rem',
+                border: `1px solid ${tokenBorderColor(tokenBalance)}`,
+                borderRadius: 4,
+                background: tokenBalance <= 10 ? '#e0404022' : 'transparent',
+                transition: 'all 0.2s',
+              }}
+            >
+              <span>🪙</span>
+              <span style={{
+                fontSize: '0.9rem',
+                color: tokenColor(tokenBalance),
+                fontWeight: tokenBalance <= 20 ? 'bold' : 'normal',
+                fontFamily: 'Georgia, serif',
+                animation: tokenBalance <= 10 ? 'pulse 1s infinite' : 'none',
+              }}>
+                {tokenBalance}
+              </span>
+            </div>
+          )}
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <label style={{ fontSize: '0.9rem', color: '#b8925a' }}>Theme:</label>
             <select
@@ -156,6 +207,13 @@ export default function Home() {
       {/* Modals */}
       {showGuide && <HowToPlayModal onClose={() => setShowGuide(false)} />}
       {showPatches && <PatchNotesScreen onClose={() => setShowPatches(false)} />}
+      {showTokenShop && (
+        <TokenShopScreen
+          tokenBalance={tokenBalance ?? 0}
+          paymentSuccess={paymentSuccess}
+          onClose={() => setShowTokenShop(false)}
+        />
+      )}
     </div>
   );
 }
