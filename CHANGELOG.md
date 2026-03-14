@@ -7,7 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- **Character creation**: Starting a New Game now takes you to a "Forge Your Hero" screen. Enter your character's name, choose a class from a 2×2 card grid (Warrior, Rogue, Mage, or Cleric) showing their key stats at a glance, and hit "Enter Aethermoor." The narrator then paints your opening scene based on a freshly generated world.
+- **Side Quest tracker**: A new panel sits below the Main Quest box on the right side of the screen. It shows up to 5 side, faction, and contract quests you are currently tracking. Each quest shows a track toggle (eye icon) to pin or hide it from the panel, and a give-up button (✕) so you can abandon quests you no longer want. Clicking a quest title jumps straight to that quest in the Quest Log.
+- **Quest Log — Main Quest tab**: The Quest Log now opens on a dedicated **Main Quest** tab that shows a chapter-by-chapter timeline of everything you have uncovered so far. Each completed act shows what happened; your current act shows what to focus on next. Villain and ally details are revealed as you progress through the story.
+- **Quest Log — Faction tab**: Active faction quests now have their own **Faction** tab in the Quest Log, organised by faction. Each entry has the same track toggle and give-up button as side quests.
+- **Track toggle**: Any active side, faction, or contract quest can be tracked or untracked. Tracked quests appear in the sidebar panel; untracked quests stay in the Quest Log but are hidden from the panel. New quests start tracked by default.
+- **Give Up**: You can now abandon any active side or faction quest directly from the sidebar panel or the Quest Log. A confirmation step prevents accidental clicks. Abandoned quests move to the Failed tab.Enter your character's name, choose a class from a 2×2 card grid (Warrior, Rogue, Mage, or Cleric) showing their key stats at a glance, and hit "Enter Aethermoor." The narrator then paints your opening scene based on a freshly generated world.
 - **Fast Travel**: Open the world map and click any location you've previously visited in the new left panel.A popup appears showing your travel options:
   - **On Foot** — always free, full journey time.
   - **Your Horse** — if you own and have equipped a horse, travel is free and takes 60% less time.

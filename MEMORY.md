@@ -43,6 +43,27 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Side Quest Panel**: New `SideQuestPanel` component sits below `MainQuestPanel` in the right sidebar.
+  - Shows up to 5 tracked active quests (side, faction, contract types all included).
+  - Empty state displays flavour text: "No roads taken yet, wanderer..."
+  - Each row: truncated title (click → opens Quest Log pre-expanded on that quest), track toggle (👁 eye icon), give-up button (✕ with confirm step).
+  - If >5 tracked quests, shows "+N more — view all" link to open the log.
+- **Quest Log: Main Quest tab**: First tab in QuestLogScreen shows an act-by-act narrative timeline.
+  - Acts I–V with dot/line visual, completed/in-progress/locked states.
+  - Each completed act shows a summary sentence; current act shows objective hint.
+  - Villain revealed at Act II+, ally revealed when `allyRevealed`, betrayal noted.
+  - Victory banner at completion.
+  - Data sourced entirely from `worldSeed` — no new storage needed.
+- **Quest Log: Faction tab**: Dedicated tab listing active faction quests grouped by faction name.
+  - Same track toggle and give-up button as Side tab.
+  - Side tab now shows only `side`/`contract` quests; faction quests moved to Faction tab.
+- **Track toggle system**: New `tracked?: boolean` field on `Quest` (defaults true for backward compat).
+  - Toggled via deterministic `toggle_quest_track:<id>` handler in `useGameLoop.ts`.
+  - Untracked quests stay in Quest Log but vanish from the sidebar panel.
+- **Abandon quest**: Deterministic `abandon_quest:<id>` handler sets quest to `failed` status with no narrator call. Confirm step prevents accidental clicks.
+- **Quest Log deep-link**: `useUI` now has `questLogInitialId`, `openQuestLogAt(id)`, `clearQuestLogInitialId()` so the sidebar can open the log pre-scrolled to a specific quest.
+
+### Previous Session
 - **Character creation screen**: Pressing New Game now shows a "Forge Your Hero" screen before entering the world.
   - Players enter their name, select a class (Warrior, Rogue, Mage, Cleric) from a 2×2 grid with stats displayed.
   - A "ℹ Class Details" button opens ClassInfoModal for full class info.
@@ -119,7 +140,7 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
-| current | Deterministic command handlers for buy/sell/equip/unequip/drop/craft/join-faction/decline-faction/dismiss-quest; equip slot map fix for body armour, helmets, and boots |
+| current | Side Quest Panel in right sidebar; Main Quest tab in Quest Log (act timeline); Faction quest tab; track toggle on all quests; abandon quest with confirm |
 | current-prev | Legacy comparison pass: fixed 3 skill IDs (unbreakable/ghost_walk/avatar_divine), ported 10 canonical factions with rich join offers, added tiered gear shop system, faction gear sets, rank gear, protected/concealed item lists |
 | 2026-03-13 | Production narrator smoke pass complete (5/5) and new `verify:narrator` / `verify:narrator:prod` scripts added |
 | 2026-03-13 | DB schema migrations applied (9 missing columns across 5 tables); migrateDb() now self-heals on startup; temp scripts removed |
