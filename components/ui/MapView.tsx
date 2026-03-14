@@ -96,29 +96,37 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
     g.lineWidth = 4 * DPR;
     g.strokeRect(MAP_X * DPR, MAP_Y * DPR, MAP_W * DPR, MAP_H * DPR);
 
-    // Draw roads (if available)
-    if (worldSeed.roads) {
-      worldSeed.roads.forEach((road: any) => {
-        const from = worldSeed.locationGrid?.[road.from];
-        const to = worldSeed.locationGrid?.[road.to];
-        if (!from || !to) return;
-        const a = toScreen(from.x, from.y);
-        const b = toScreen(to.x, to.y);
-        let color = COLORS.road;
-        let width = 4 * DPR;
-        if (road.roadType === 'dirt') { color = COLORS.dirt; width = 3 * DPR; }
-        if (road.roadType === 'trail') { color = COLORS.trail; width = 2 * DPR; }
-        if (road.roadType === 'track') { color = COLORS.track; width = 2 * DPR; }
-        g.save();
-        g.strokeStyle = color;
-        g.shadowColor = '#000';
-        g.shadowBlur = 4 * DPR;
-        g.lineWidth = width;
-        g.beginPath();
-        g.moveTo(a.x, a.y);
-        g.lineTo(b.x, b.y);
-        g.stroke();
-        g.restore();
+    // Draw roads from travelMatrix (if available)
+    if (worldSeed.travelMatrix) {
+      // travelMatrix: Record<string, Record<string, number>>
+      // We'll treat any connection as a road; if terrain info is needed, adjust here.
+      const drawn = new Set<string>();
+      Object.entries(worldSeed.travelMatrix).forEach(([fromKey, dests]) => {
+        Object.entries(dests).forEach(([toKey, val]) => {
+          // Avoid drawing both A→B and B→A
+          const key = [fromKey, toKey].sort().join('→');
+          if (drawn.has(key)) return;
+          drawn.add(key);
+          const from = worldSeed.locationGrid?.[fromKey];
+          const to = worldSeed.locationGrid?.[toKey];
+          if (!from || !to) return;
+          const a = toScreen(from.x, from.y);
+          const b = toScreen(to.x, to.y);
+          // Optionally: use val to determine road type (if available)
+          let color = COLORS.road;
+          let width = 4 * DPR;
+          // If you have terrain info, set color/width here
+          g.save();
+          g.strokeStyle = color;
+          g.shadowColor = '#000';
+          g.shadowBlur = 4 * DPR;
+          g.lineWidth = width;
+          g.beginPath();
+          g.moveTo(a.x, a.y);
+          g.lineTo(b.x, b.y);
+          g.stroke();
+          g.restore();
+        });
       });
     }
 
