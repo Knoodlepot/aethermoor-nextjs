@@ -34,6 +34,8 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **enter_dungeon handler**: Deterministic — validates player is at Aethermoor Capital, sets `dungeon.floor = 1`, updates location to `Dungeon of Echoes - Floor 1`, sets context to `dungeon`, tracks `deepestFloor`, shows an entry message, saves. No narrator call.
+- **inDungeon fix**: `GameView.tsx` `inDungeon` check was always truthy (dungeon object always present); now correctly checks `dungeon.floor > 0`.
 - **Full visual match to legacy index.html** — all UI elements now match the original:
   - Player info panel: class icon (emoji), centered name, class·Lv, game clock, HP bar, XP bar with "Next: N XP", attributes grid (STR/AGI/INT/WIL) with + allocation buttons, Rations/Rep/Gold/Location resource row
   - Story/Map tab toggle: 📖 Story / 🗺️ Map buttons above the input bar in the left column (same as legacy `leftTab` state)

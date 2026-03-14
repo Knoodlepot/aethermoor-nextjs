@@ -7,7 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
-- **Buying items from shops now actually adds them to your inventory** and deducts gold. Previously, shop purchases sent the action to the narrator but never updated your character's gold or inventory.
+- **Entering the Dungeon of Echoes now works correctly.** Clicking the Dungeon button at Aethermoor Capital now immediately places you on Floor 1 with a scene-setting message — no more routing through the narrator.
+- **The Dungeon button no longer appears permanently disabled.** A bug caused the button to always read as "already in dungeon" even when you hadn't entered. This is now fixed.
+- **Buying items from shops now actually adds them to your inventory**and deducts gold. Previously, shop purchases sent the action to the narrator but never updated your character's gold or inventory.
 - **Selling items now correctly removes them from your inventory** and credits your gold.
 - **Equipping items now properly moves them to the correct equipment slot.** A long-standing bug caused body armour, helmets, and boots to be placed in the wrong slot (off-hand) when equipped. This is now resolved — armour goes to the body slot, helms to the head slot, and boots to the feet slot.
 - **Unequipping an item now correctly returns it to your inventory.**
