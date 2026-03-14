@@ -47,7 +47,7 @@ import { UserProfileModal } from '@/components/modals/UserProfileModal';
 import { SaveSlotModal } from '@/components/modals/SaveSlotModal';
 import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 
-import { CLASSES } from '@/lib/constants';
+import { CLASSES, STATUS_EFFECTS } from '@/lib/constants';
 import { countItem } from '@/lib/helpers';
 import { generateWorldSeed, INIT_PLAYER } from '@/lib/worldgen';
 
@@ -492,6 +492,30 @@ function GameContent() {
           {(player?.statPoints ?? 0) > 0 && (
             <div style={{ color: T.gold, fontSize: 11, textAlign: 'center' as const, marginTop: 4, animation: 'pulse 1.5s infinite' }}>
               ⬆ {player.statPoints} stat points!
+            </div>
+          )}
+          {(player?.statusEffects?.length ?? 0) > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+              {player!.statusEffects!.map((eff: string) => {
+                const info = STATUS_EFFECTS[eff];
+                return (
+                  <span
+                    key={eff}
+                    title={info ? `${info.label}: ${info.description} | Cure: ${info.cure}` : eff}
+                    style={{
+                      fontSize: 10,
+                      padding: '2px 6px',
+                      borderRadius: 3,
+                      border: '1px solid #c0603066',
+                      color: '#c06030',
+                      cursor: 'help',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {info?.icon ?? '❓'} {info?.label ?? eff}
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>
