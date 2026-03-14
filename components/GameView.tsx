@@ -27,6 +27,7 @@
       {auth.token && tbBtn('Logout', () => void auth.logout())}
     </div>
   );
+
 'use client';
 // [E2E DEBUG] GameView.tsx loaded (top-level)
 if (typeof window !== 'undefined') {
