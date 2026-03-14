@@ -23,6 +23,7 @@ import { NarrativePanel } from '@/components/ui/NarrativePanel';
 import { MapView } from '@/components/ui/MapView';
 import { MiniMap } from '@/components/ui/MiniMap';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { AgeGate } from '@/components/ui/AgeGate';
 
 // Screens
 import { CharacterCreationScreen } from '@/components/screens/CharacterCreationScreen';
@@ -76,6 +77,17 @@ function GameContent() {
   const [newGameLoading, setNewGameLoading] = useState(false);
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
   const [showSaveSlot, setShowSaveSlot] = useState(false);
+
+  // Age gate — persisted in localStorage so it only shows once per browser
+  const [ageVerified, setAgeVerified] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('aethermoor_age_verified') === '1';
+  });
+
+  const handleAgeConfirm = () => {
+    localStorage.setItem('aethermoor_age_verified', '1');
+    setAgeVerified(true);
+  };
 
   // Token balance
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
@@ -212,6 +224,10 @@ function GameContent() {
   }, [gameState.isLoaded, gameState.player, gameState]);
 
   // ── Auth / loading gates ────────────────────────────────────────────────────
+
+  if (!ageVerified) {
+    return <AgeGate onConfirm={handleAgeConfirm} />;
+  }
 
   if (auth.authStatus === 'loading') {
     return (
