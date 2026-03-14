@@ -21,6 +21,7 @@ import { SideQuestPanel } from '@/components/panels/SideQuestPanel';
 // UI
 import { NarrativePanel } from '@/components/ui/NarrativePanel';
 import { MapView } from '@/components/ui/MapView';
+import { MiniMap } from '@/components/ui/MiniMap';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 // Screens
@@ -497,6 +498,13 @@ function GameContent() {
           onAbandon={(questId) => handleCommand('abandon_quest:' + questId)}
           onOpenLog={() => ui.openModal('questLog')}
         />
+        {player && worldSeed && (
+          <MiniMap
+            player={player}
+            worldSeed={worldSeed}
+            onOpenMap={() => ui.setMapOpen(true)}
+          />
+        )}
       </div>
 
       {/* Action buttons at bottom of right column (legacy style) */}
