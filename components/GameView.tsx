@@ -1,13 +1,4 @@
 "use client";
-// ...existing code...
-// [E2E DEBUG] GameView.tsx loaded (top-level)
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line no-console
-  console.log('[E2E DEBUG] GameView.tsx loaded (top-level)');
-  // E2E: force a breakpoint for test
-  debugger;
-  // window.alert('[E2E DEBUG] GameView.tsx loaded (top-level)');
-}
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -103,17 +94,9 @@ function GameContent() {
     void gameLoop.executeCommand(trimmed, gameState);
   };
 
-  // Debug: Log loaded player/gameState after load (for E2E diagnosis)
+  // Debug: expose gameState for E2E tests
   useEffect(() => {
-    // [E2E DEBUG] useEffect for gameState.isLoaded fired
-    // eslint-disable-next-line no-console
-    console.log('[E2E DEBUG] useEffect fired, isLoaded:', gameState.isLoaded);
     if (gameState.isLoaded) {
-      // eslint-disable-next-line no-console
-      console.log('[E2E DEBUG] Loaded player:', gameState.player);
-      // eslint-disable-next-line no-console
-      console.log('[E2E DEBUG] Full gameState:', gameState);
-      // Expose gameState for E2E extraction
       // @ts-ignore
       window.gameState = gameState;
     }
@@ -208,23 +191,23 @@ function GameContent() {
   const clockStr = `Day ${clockDay} · ${h12}${ampm}`;
   const clockColor = isDay ? '#c8a040' : '#7080b8';
 
-  // ── Toolbar button helper ──────────────────────────────────────────────────
+  // ── Header button helper (legacy style) ───────────────────────────────────
 
-  const tbBtn = (label: string, onClick: () => void, active = false) => (
+  const tbBtn = (label: string, onClick: () => void, active = false, extra?: React.CSSProperties) => (
     <button
       onClick={onClick}
       style={{
-        background: active ? T.accent + '22' : 'transparent',
-        border: `1px solid ${active ? T.accent : T.border}`,
-        color: active ? T.gold : T.textMuted,
-        padding: '4px 8px',
+        background: 'transparent',
+        border: `1px solid ${active ? T.accent : T.accent}`,
+        color: T.gold,
+        padding: '4px 10px',
         cursor: 'pointer',
         fontSize: 11,
         fontFamily: "'Cinzel','Palatino Linotype',serif",
-        letterSpacing: 0.8,
-        whiteSpace: 'nowrap' as const,
-        borderRadius: 2,
+        letterSpacing: 1,
+        position: 'relative' as const,
         transition: 'all 0.15s',
+        ...extra,
       }}
     >
       {label}
@@ -348,12 +331,27 @@ function GameContent() {
     </div>
   );
 
+  // ── Bottom action buttons (right column, legacy style) ─────────────────────
+  const actionButtons = player && (
+    <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}`, padding: '6px 8px', gap: 4, flexWrap: 'wrap' as const, justifyContent: 'flex-start', background: T.panelAlt }}>
+      {tbBtn('📜 Quests', () => ui.toggleModal('questLog'))}
+      {['town', 'npc'].includes(player?.context) && tbBtn('🛒 Shop', () => ui.toggleModal('shop'))}
+      {tbBtn('🎒 Gear', () => ui.toggleModal('inventory'))}
+      {tbBtn('⭐ Rep', () => ui.toggleModal('standings'))}
+      {tbBtn('📖 Bestiary', () => ui.toggleModal('bestiary'))}
+      {tbBtn('⚒️ Craft', () => ui.toggleModal('crafting'))}
+      {tbBtn('📝 Patch', () => ui.openModal('patchNotes'))}
+      {tbBtn('🌿 Skills', () => ui.toggleModal('skillTree'))}
+      {tbBtn('❓ Guide', () => ui.openModal('howToPlay'))}
+    </div>
+  );
+
   // ── Right column (combat + quest + command buttons) ─────────────────────────
 
   const rightColumn = (
     <div
       style={{
-        width: 380,
+        width: 280,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -387,52 +385,53 @@ function GameContent() {
         )}
       </div>
 
-      {/* Command panel — fixed to the bottom of the right column */}
-      <CommandPanel
-        player={gameState.player}
-        onCommand={handleCommand}
-        isLoading={gameLoop.isLoading}
-        isDyslexic={isDyslexic}
-      />
+      {/* Action buttons at bottom of right column (legacy style) */}
+      {actionButtons}
     </div>
   );
 
   // ── Desktop layout ──────────────────────────────────────────────────────────
 
-  // ── Toolbar (restored as top bar) ─────────────────────────────────────────
+  // ── Legacy-style top header ────────────────────────────────────────────────
   const toolbar = (
     <div
       style={{
-        background: T.panel,
+        background: T.panelAlt,
         borderBottom: `1px solid ${T.border}`,
-        padding: '6px 14px',
+        padding: '10px 20px',
         display: 'flex',
-        gap: 4,
-        flexWrap: 'wrap',
         alignItems: 'center',
-        userSelect: 'none' as const,
         justifyContent: 'space-between',
+        flexShrink: 0,
+        userSelect: 'none' as const,
       }}
     >
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-        {tbBtn('Inventory', () => ui.toggleModal('inventory'), ui.showInventory)}
-        {tbBtn('Shop', () => ui.toggleModal('shop'), ui.showShop)}
-        {tbBtn('Quests', () => ui.toggleModal('questLog'), ui.showQuestLog)}
-        {tbBtn('Bestiary', () => ui.toggleModal('bestiary'), ui.showBestiary)}
-        {tbBtn('Skills', () => ui.toggleModal('skillTree'), ui.showSkillTree)}
-        {tbBtn('Standings', () => ui.toggleModal('standings'), ui.showStandings)}
-        {tbBtn('Crafting', () => ui.toggleModal('crafting'), ui.showCrafting)}
-        {tbBtn('Map', () => ui.setMapOpen(!ui.mapOpen), ui.mapOpen)}
-        {tbBtn('Guide', () => ui.openModal('howToPlay'))}
-        {tbBtn('Patch Notes', () => ui.openModal('patchNotes'))}
-        {tbBtn('Home', () => router.push('/'))}
-        {auth.token && tbBtn('Logout', () => void auth.logout())}
-      </div>
-      <div style={{ marginLeft: 'auto', fontFamily: tf.fontFamily, color: clockColor, fontSize: 13, letterSpacing: 1, minWidth: 90, textAlign: 'right' }}>
-        {clockStr}
+      <div style={{ ...tf, color: T.gold, fontSize: 18, letterSpacing: 3 }}>⚔ AETHERMOOR</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {ui.levelUpMsg && (
+          <div style={{ color: '#ffffff', fontSize: 13, animation: 'pulse 1s infinite', ...tf, textShadow: `0 0 12px ${T.gold}` }}>
+            {ui.levelUpMsg}
+          </div>
+        )}
+        <div style={{ ...tf, color: clockColor, fontSize: 12, letterSpacing: 1 }}>{clockStr}</div>
+        <button
+          onClick={() => router.push('/')}
+          style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+        >
+          New Game
+        </button>
+        {auth.token && (
+          <button
+            onClick={() => void auth.logout()}
+            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+          >
+            Logout
+          </button>
+        )}
       </div>
     </div>
   );
+
 
   const desktopLayout = (
     <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
