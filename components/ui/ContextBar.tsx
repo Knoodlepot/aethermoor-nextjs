@@ -13,7 +13,8 @@ interface ContextBarProps {
   onShop?: () => void;
   onSkills?: () => void;
   onQuests?: () => void;
-  onMap?: () => void;
+  onDungeon?: () => void;
+  dungeonAvailable?: boolean;
   onCraft?: () => void;
   onGear?: () => void;
   onBestiary?: () => void;
@@ -47,7 +48,7 @@ function locationIcon(locationName: string | undefined, locationGrid?: Record<st
   return TIER_ICONS[tier] ?? '🌲';
 }
 
-export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop, onSkills, onQuests, onMap, onCraft, onGear, onBestiary, activeQuestCount = 0, skillPts = 0, bestiaryCount = 0 }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop, onSkills, onQuests, onDungeon, dungeonAvailable, onCraft, onGear, onBestiary, activeQuestCount = 0, skillPts = 0, bestiaryCount = 0 }: ContextBarProps) {
   const { T } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -102,7 +103,7 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
       </div>
 
       {/* Right: buttons */}
-      {(onShop || onSkills || onQuests || onMap || onCraft || onGear || onBestiary) && (
+      {(onShop || onSkills || onQuests || onDungeon || onCraft || onGear || onBestiary) && (
         <div style={{ borderLeft: `1px solid ${T.border}`, padding: '4px', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             {onBestiary && (
@@ -168,9 +169,20 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
                 )}
               </button>
             )}
-            {onMap && (
-              <button onClick={onMap} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const }}>
-                🗺️ Map
+            {onDungeon && (
+              <button
+                onClick={onDungeon}
+                style={{
+                  background: dungeonAvailable ? 'rgba(100,20,20,0.35)' : 'transparent',
+                  border: `1px solid ${dungeonAvailable ? '#c03030' : T.accent}`,
+                  color: dungeonAvailable ? '#e06060' : T.gold,
+                  padding: '2px 6px', fontSize: 9, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
+                  whiteSpace: 'nowrap' as const,
+                  animation: dungeonAvailable ? 'pulse 1.2s infinite' : 'none',
+                }}
+              >
+                🕳️ Dungeon
               </button>
             )}
           </div>

@@ -426,21 +426,6 @@ function GameContent() {
 
   const actionButtons = player && (
     <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}`, padding: '6px 8px', gap: 4, flexWrap: 'wrap' as const, justifyContent: 'center', background: T.panelAlt }}>
-      <button
-        onClick={() => dungeonAvailable ? handleCommand('enter_dungeon') : !atCapital ? showDungeonHint() : undefined}
-        title={atCapital ? (inDungeon ? 'Already in the dungeon' : 'Enter the Dungeon of Echoes') : 'Travel to Aethermoor Capital to access the Dungeon of Echoes'}
-        style={{
-          background: dungeonAvailable ? 'rgba(100,20,20,0.35)' : 'transparent',
-          border: `1px solid ${dungeonAvailable ? '#c03030' : T.border}`,
-          color: dungeonAvailable ? '#e06060' : '#444',
-          padding: '4px 10px', fontSize: 11,
-          cursor: dungeonAvailable ? 'pointer' : 'not-allowed',
-          fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1,
-          animation: dungeonAvailable ? 'pulse 1.2s infinite' : 'none',
-          opacity: atCapital ? 1 : 0.35,
-          transition: 'all 0.3s',
-        }}
-      >🕳️ Dungeon</button>
       {/* Dungeon hint toast */}
       {dungeonHint && (
         <div style={{
@@ -481,7 +466,8 @@ function GameContent() {
         onShop={() => ui.toggleModal('shop')}
         onSkills={() => ui.toggleModal('skillTree')}
         onQuests={() => ui.toggleModal('questLog')}
-        onMap={() => ui.toggleModal('map')}
+        onDungeon={() => dungeonAvailable ? handleCommand('enter_dungeon') : !atCapital ? showDungeonHint() : undefined}
+        dungeonAvailable={dungeonAvailable}
         onCraft={() => ui.toggleModal('crafting')}
         onGear={() => ui.toggleModal('inventory')}
         onBestiary={() => ui.toggleModal('bestiary')}
@@ -489,7 +475,6 @@ function GameContent() {
         skillPts={skillPts}
         bestiaryCount={bestiaryCount}
       />
-      {/* Scrollable info area */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {ui.currentEnemy && (
           <CombatPanel
@@ -655,7 +640,8 @@ function GameContent() {
         onShop={() => ui.toggleModal('shop')}
         onSkills={() => ui.toggleModal('skillTree')}
         onQuests={() => ui.toggleModal('questLog')}
-        onMap={() => ui.toggleModal('map')}
+        onDungeon={() => dungeonAvailable ? handleCommand('enter_dungeon') : !atCapital ? showDungeonHint() : undefined}
+        dungeonAvailable={dungeonAvailable}
         onCraft={() => ui.toggleModal('crafting')}
         onGear={() => ui.toggleModal('inventory')}
         onBestiary={() => ui.toggleModal('bestiary')}
