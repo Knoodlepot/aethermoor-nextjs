@@ -29,7 +29,7 @@
   );
 
 
-'use client';
+"use client";
 // [E2E DEBUG] GameView.tsx loaded (top-level)
 if (typeof window !== 'undefined') {
   // eslint-disable-next-line no-console
