@@ -43,24 +43,18 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
-- **enter_dungeon handler**: Deterministic — validates player is at Aethermoor Capital, sets `dungeon.floor = 1`, updates location to `Dungeon of Echoes - Floor 1`, sets context to `dungeon`, tracks `deepestFloor`, shows an entry message, saves. No narrator call.
-- **inDungeon fix**: `GameView.tsx` `inDungeon` check was always truthy (dungeon object always present); now correctly checks `dungeon.floor > 0`.
-- **Full visual match to legacy index.html** — all UI elements now match the original:
-  - Player info panel: class icon (emoji), centered name, class·Lv, game clock, HP bar, XP bar with "Next: N XP", attributes grid (STR/AGI/INT/WIL) with + allocation buttons, Rations/Rep/Gold/Location resource row
-  - Story/Map tab toggle: 📖 Story / 🗺️ Map buttons above the input bar in the left column (same as legacy `leftTab` state)
-  - Action button badges: Quests shows active quest count (gold), Bestiary shows entry count (red), Skills shows available skill points (green)
-  - Dungeon button: pulses red when at Aethermoor Capital and not in dungeon; greyed/disabled otherwise
-  - Save button (💾) added to header bar
-  - All E2E debug artifacts fully removed from GameView.tsx
-- **stat_point: handler** added to `useGameLoop.ts` — clicking + on a stat applies the point immediately without narrator call
-- **Header**: ⚔ AETHERMOOR + clock + New Game + Save + Logout (matching legacy gridColumn 1/-1 header)
-- **Faction join**: Joining a faction now grants the correct gift item, applies +50 starting XP to the joined faction, -30 XP to the rival faction, and clears any pending offer.
-- **Faction decline**: Declining 2+ factions now correctly triggers The Forgotten's offer. Rival-faction rejections apply a -50 standing penalty.
-- **Craft handler**: Validates crafting level, consumes all required ingredients (case-insensitive), produces results, and awards crafting XP.
-- **Skill tree fixes (P0)**: Fixed three Tier III skill IDs: Warrior `last_stand` → `unbreakable`; Rogue `phantom` → `ghost_walk`; Cleric `avatar` → `avatar_divine`.
-- **Canonical factions (P1)**: Replaced 8 placeholder factions with 10 canonical factions. FACTIONS and FACTION_JOIN_OFFERS exported from `lib/constants.ts`.
-- **Tiered gear (P2)**: Added `TIERED_GEAR` constant (13 items, tier 2–4) to `lib/constants.ts`. Updated `generateShopStock` with level-based injection.
-- **Faction gear sets (P3)**: Added `FACTION_SETS`, `FACTION_RANK_GEAR`, `CONCEALED_ITEMS`, `PROTECTED_ITEMS` to `lib/constants.ts`.
+- **Fast travel system**: Players can open the map and click any previously-visited location in the left panel to fast-travel there.
+  - Travel popup shows method options: On Foot (free), Your Horse (free if mounted) / Hire Horse (15g), River Barge (if both nodes have river access), Sea Vessel (if both have harbour).
+  - Travel time is calculated from locationGrid coordinates (distance × 1.5h foot; horse 2.5× faster, barge 3×, boat 4×).
+  - `fast_travel:<dest>:<method>:<cost>` is a deterministic command handler in `useGameLoop.ts` — no narrator call.
+  - Validates: enough gold, not in combat/dungeon, not already at destination.
+  - Deducts gold, advances `gameHour`/`gameDay` by calculated hours, sets `location`, adds to `exploredLocations`, sets `context = 'explore'`, saves.
+- **Mount slot**: New `mount` equip slot added to `EQUIP_SLOTS`. `Horse` item added to `ITEM_INFO` (type: Mount).
+  - `getItemSlotEx` in `helpers.ts` now handles `Mount` type → `mount` slot.
+  - InventoryScreen auto-renders the mount slot (reads from `EQUIP_SLOTS`).
+  - Narrator HORSE RULE: when player buys/acquires a horse, emit `{"grant":{"item":"Horse"}}`.
+- **MapView left panel**: Modal map view now shows a 200px scrollable left panel listing explored locations; click → travel popup below the canvas.
+- **Farm POI system**, **legacy map style**, **ContextBar travel/dungeon/poi/farm contexts**, **player card two-column layout** all completed in prior sub-sessions.
 
 ### Previous Session (2026-03-13)
 - Added verify:all script, GitHub Actions for CI, and email gating in dev; production narrator smoke pass complete (5/5)

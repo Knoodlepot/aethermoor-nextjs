@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Fast Travel**: Open the world map and click any location you've previously visited in the new left panel. A popup appears showing your travel options:
+  - **On Foot** — always free, full journey time.
+  - **Your Horse** — if you own and have equipped a horse, travel is free and takes 60% less time.
+  - **Hire a Horse** — 15 gold, same speed as owning one.
+  - **River Barge** — available when both locations have river access. Faster and costs a small fee.
+  - **Sea Vessel** — available when both locations have a harbour. Fastest option for coastal routes.
+  - Time advances by the actual travel duration, so arriving by horse late at night means it's late at night in-game.
+- **Mount slot**: A new **Mount** equipment slot has been added to your gear screen. If you buy or are given a horse, you can equip it there — it will then be available for free fast travel.
+
 ### Fixed
 - **Entering the Dungeon of Echoes now works correctly.** Clicking the Dungeon button at Aethermoor Capital now immediately places you on Floor 1 with a scene-setting message — no more routing through the narrator.
 - **The Dungeon button no longer appears permanently disabled.** A bug caused the button to always read as "already in dungeon" even when you hadn't entered. This is now fixed.
