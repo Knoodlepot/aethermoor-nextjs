@@ -46,7 +46,6 @@ export function ContextBar({ player, isLoading, isDyslexic }: ContextBarProps) {
         {ctxData.label.toUpperCase()}
       </span>
       <div style={{ width: 1, height: 12, background: T.border, margin: '0 2px', flexShrink: 0 }} />
-      <span style={{ fontSize: 13 }}>📍</span>
       <span style={{ ...tf, color: T.gold, fontSize: 10, letterSpacing: 1 }}>{player?.location}</span>
       {isLoading && (
         <span style={{ color: T.textFaint, fontSize: 10, fontStyle: 'italic', marginLeft: 'auto', fontFamily: 'Crimson Text,serif' }}>
