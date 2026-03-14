@@ -1,3 +1,32 @@
+  // ── Toolbar (restored as top bar) ─────────────────────────────────────────
+
+  const toolbar = (
+    <div
+      style={{
+        background: T.panel,
+        borderBottom: `1px solid ${T.border}`,
+        padding: '6px 14px',
+        display: 'flex',
+        gap: 4,
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        userSelect: 'none' as const,
+      }}
+    >
+      {tbBtn('Inventory', () => ui.toggleModal('inventory'), ui.showInventory)}
+      {tbBtn('Shop', () => ui.toggleModal('shop'), ui.showShop)}
+      {tbBtn('Quests', () => ui.toggleModal('questLog'), ui.showQuestLog)}
+      {tbBtn('Bestiary', () => ui.toggleModal('bestiary'), ui.showBestiary)}
+      {tbBtn('Skills', () => ui.toggleModal('skillTree'), ui.showSkillTree)}
+      {tbBtn('Standings', () => ui.toggleModal('standings'), ui.showStandings)}
+      {tbBtn('Crafting', () => ui.toggleModal('crafting'), ui.showCrafting)}
+      {tbBtn('Map', () => ui.setMapOpen(!ui.mapOpen), ui.mapOpen)}
+      {tbBtn('Guide', () => ui.openModal('howToPlay'))}
+      {tbBtn('Patch Notes', () => ui.openModal('patchNotes'))}
+      {tbBtn('Home', () => router.push('/'))}
+      {auth.token && tbBtn('Logout', () => void auth.logout())}
+    </div>
+  );
 'use client';
 // [E2E DEBUG] GameView.tsx loaded (top-level)
 if (typeof window !== 'undefined') {
@@ -510,7 +539,7 @@ function GameContent() {
         color: T.text,
       }}
     >
-      {/* header removed: player info now in right panel */}
+      {toolbar}
 
       {/* Level-up banner */}
       {ui.levelUpMsg && (
