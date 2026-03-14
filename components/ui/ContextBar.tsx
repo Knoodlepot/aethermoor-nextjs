@@ -76,38 +76,41 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
     <div
       style={{
         display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '6px 16px',
         borderBottom: `1px solid ${T.border}`,
         background: ctxData.color + '18',
-        flexWrap: 'wrap',
       }}
     >
-      <span style={{ fontSize: 14 }}>{ctxData.icon}</span>
-      <span style={{ ...tf, color: ctxData.color, fontSize: 10, letterSpacing: 2 }}>
-        {ctxData.label.toUpperCase()}
-      </span>
-      <div style={{ width: 1, height: 12, background: T.border, margin: '0 2px', flexShrink: 0 }} />
-      <span style={{ fontSize: 13 }}>{locIcon}</span>
-      <span style={{ ...tf, color: T.gold, fontSize: 10, letterSpacing: 1 }}>
-        {ctx === 'travel' && dest ? `${player?.location} → ${dest}` : player?.location}
-      </span>
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+      {/* Left: context + location */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '6px 12px', gap: 4, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 14 }}>{ctxData.icon}</span>
+          <span style={{ ...tf, color: ctxData.color, fontSize: 10, letterSpacing: 2 }}>
+            {ctxData.label.toUpperCase()}
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontSize: 12 }}>{locIcon}</span>
+          <span style={{ ...tf, color: T.gold, fontSize: 10, letterSpacing: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+            {ctx === 'travel' && dest ? `${player?.location} → ${dest}` : player?.location}
+          </span>
+        </div>
         {isLoading && (
-          <span style={{ color: T.textFaint, fontSize: 10, fontStyle: 'italic', fontFamily: 'Crimson Text,serif', marginRight: 4 }}>
+          <span style={{ color: T.textFaint, fontSize: 9, fontStyle: 'italic', fontFamily: 'Crimson Text,serif' }}>
             weaving story...
           </span>
         )}
-        {(onShop || onSkills || onQuests || onMap || onCraft || onGear || onBestiary) && (
+      </div>
+
+      {/* Right: buttons */}
+      {(onShop || onSkills || onQuests || onMap || onCraft || onGear || onBestiary) && (
+        <div style={{ borderLeft: `1px solid ${T.border}`, padding: '4px', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             {onBestiary && (
               <button
                 onClick={onBestiary}
                 style={{
                   gridColumn: '1 / -1',
-                  background: 'transparent',
-                  border: `1px solid ${T.accent}`,
+                  background: 'transparent', border: `1px solid ${T.accent}`,
                   color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
                   fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
                   position: 'relative' as const, whiteSpace: 'nowrap' as const, textAlign: 'center' as const,
@@ -122,26 +125,14 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
               </button>
             )}
             {onCraft && (
-              <button
-                onClick={onCraft}
-                style={{
-                  background: 'transparent', border: `1px solid ${T.accent}`,
-                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
-                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
-                  whiteSpace: 'nowrap' as const,
-                }}
-              >⚒️ Craft</button>
+              <button onClick={onCraft} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const }}>
+                ⚒️ Craft
+              </button>
             )}
             {onGear && (
-              <button
-                onClick={onGear}
-                style={{
-                  background: 'transparent', border: `1px solid ${T.accent}`,
-                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
-                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
-                  whiteSpace: 'nowrap' as const,
-                }}
-              >🎒 Gear</button>
+              <button onClick={onGear} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const }}>
+                🎒 Gear
+              </button>
             )}
             {onShop && (
               <button
@@ -153,21 +144,12 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
                   color: ['town', 'npc'].includes(ctx) ? T.gold : T.textFaint,
                   padding: '2px 6px', fontSize: 9, cursor: ['town', 'npc'].includes(ctx) ? 'pointer' : 'not-allowed',
                   fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
-                  opacity: ['town', 'npc'].includes(ctx) ? 1 : 0.4,
-                  whiteSpace: 'nowrap' as const,
+                  opacity: ['town', 'npc'].includes(ctx) ? 1 : 0.4, whiteSpace: 'nowrap' as const,
                 }}
               >🛒 Shop</button>
             )}
             {onSkills && (
-              <button
-                onClick={onSkills}
-                style={{
-                  background: 'transparent', border: `1px solid ${T.accent}`,
-                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
-                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
-                  position: 'relative' as const, whiteSpace: 'nowrap' as const,
-                }}
-              >
+              <button onClick={onSkills} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, position: 'relative' as const, whiteSpace: 'nowrap' as const }}>
                 🌿 Skills
                 {skillPts > 0 && (
                   <span style={{ position: 'absolute', top: -3, right: -3, background: '#60a060', color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -177,15 +159,7 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
               </button>
             )}
             {onQuests && (
-              <button
-                onClick={onQuests}
-                style={{
-                  background: 'transparent', border: `1px solid ${T.accent}`,
-                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
-                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
-                  position: 'relative' as const, whiteSpace: 'nowrap' as const,
-                }}
-              >
+              <button onClick={onQuests} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, position: 'relative' as const, whiteSpace: 'nowrap' as const }}>
                 📜 Quests
                 {activeQuestCount > 0 && (
                   <span style={{ position: 'absolute', top: -3, right: -3, background: T.accent, color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -195,19 +169,13 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
               </button>
             )}
             {onMap && (
-              <button
-                onClick={onMap}
-                style={{
-                  background: 'transparent', border: `1px solid ${T.accent}`,
-                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
-                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
-                  whiteSpace: 'nowrap' as const,
-                }}
-              >🗺️ Map</button>
+              <button onClick={onMap} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const }}>
+                🗺️ Map
+              </button>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
