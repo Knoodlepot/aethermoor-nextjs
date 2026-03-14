@@ -212,9 +212,9 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
 
     // ── Key panel ──
     g.fillStyle = '#08090e';
-    g.fillRect(KEY_X, KEY_Y, W - KEY_X - 8, H - KEY_Y - 8);
+    g.fillRect(KEY_X, KEY_Y, W - KEY_X - 8, MAP_Y + MAP_H - KEY_Y);
     g.strokeStyle = '#c9a84c44'; g.lineWidth = 1;
-    g.strokeRect(KEY_X, KEY_Y, W - KEY_X - 8, H - KEY_Y - 8);
+    g.strokeRect(KEY_X, KEY_Y, W - KEY_X - 8, MAP_Y + MAP_H - KEY_Y);
 
     g.font = 'bold 9px Cinzel,serif'; g.fillStyle = '#c9a84c';
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
