@@ -228,19 +228,19 @@ function GameContent() {
     </button>
   );
 
-  // ── Header ─────────────────────────────────────────────────────────────────
+  // ── Player Info Panel (for right column) ───────────────────────────────────
 
-  const header = (
+  const playerInfoPanel = (
     <div
       style={{
         background: T.panel,
         borderBottom: `2px solid ${T.border}`,
         padding: '8px 14px',
-        flexShrink: 0,
         userSelect: 'none' as const,
+        marginBottom: 12,
       }}
     >
-      {/* Row 1: Name / class / level + clock */}
+      {/* Name / class / level */}
       <div
         style={{
           display: 'flex',
@@ -268,19 +268,8 @@ function GameContent() {
         <span style={{ ...tf, color: T.accent, fontSize: 11, letterSpacing: 1 }}>
           {player?.class || '—'}&nbsp;Lv.{player?.level ?? 1}
         </span>
-
-        <div style={{ flex: 1 }} />
-
-        <span style={{ ...tf, fontSize: 11, color: clockColor, letterSpacing: 1, whiteSpace: 'nowrap' as const }}>
-          {isDay ? '☀' : '🌙'} {clockStr}
-        </span>
-
-        {storage.isSyncingCloud && (
-          <span style={{ color: T.textFaint, fontSize: 10, fontStyle: 'italic' }}>syncing…</span>
-        )}
       </div>
-
-      {/* Row 2: Stats + HP + gold + toolbar */}
+      {/* Stats + HP + gold */}
       <div
         style={{
           display: 'flex',
@@ -352,32 +341,6 @@ function GameContent() {
         <div style={{ ...tf, color: T.gold, fontSize: 13, whiteSpace: 'nowrap' as const }}>
           {player?.gold ?? 0} gp
         </div>
-
-        <div style={{ flex: 1 }} />
-
-        {/* Toolbar buttons */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 4,
-            flexWrap: 'wrap' as const,
-            alignItems: 'center',
-          }}
-        >
-          {tbBtn('Inventory', () => ui.toggleModal('inventory'), ui.showInventory)}
-          {tbBtn('Shop', () => ui.toggleModal('shop'), ui.showShop)}
-          {tbBtn('Quests', () => ui.toggleModal('questLog'), ui.showQuestLog)}
-          {tbBtn('Bestiary', () => ui.toggleModal('bestiary'), ui.showBestiary)}
-          {tbBtn('Skills', () => ui.toggleModal('skillTree'), ui.showSkillTree)}
-          {tbBtn('Standings', () => ui.toggleModal('standings'), ui.showStandings)}
-          {tbBtn('Crafting', () => ui.toggleModal('crafting'), ui.showCrafting)}
-          {tbBtn('Map', () => ui.setMapOpen(!ui.mapOpen), ui.mapOpen)}
-          {tbBtn('Guide', () => ui.openModal('howToPlay'))}
-          {tbBtn('Patch Notes', () => ui.openModal('patchNotes'))}
-          {/* Account button removed from in-game UI as requested */}
-          {tbBtn('Home', () => router.push('/'))}
-          {auth.token && tbBtn('Logout', () => void auth.logout())}
-        </div>
       </div>
     </div>
   );
@@ -395,6 +358,8 @@ function GameContent() {
         borderLeft: `1px solid ${T.border}`,
       }}
     >
+      {/* Player info panel at the top */}
+      {playerInfoPanel}
       {/* Scrollable info area */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
         {ui.currentEnemy && (
@@ -545,7 +510,7 @@ function GameContent() {
         color: T.text,
       }}
     >
-      {header}
+      {/* header removed: player info now in right panel */}
 
       {/* Level-up banner */}
       {ui.levelUpMsg && (
