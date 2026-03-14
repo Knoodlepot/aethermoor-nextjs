@@ -85,7 +85,7 @@ export default function Home() {
           flexWrap: 'wrap',
           marginBottom: '2rem',
         }}>
-          <a href="/game" style={buttonStyle}>
+          <a href="/game?new=1" style={buttonStyle}>
             New Game
           </a>
           <a href="/game" style={buttonStyle}>

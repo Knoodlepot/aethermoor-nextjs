@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ThemeProvider, useTheme } from '@/components/providers/ThemeProvider';
 import { useAuth } from '@/hooks/useAuth';
 import { useStorage } from '@/hooks/useStorage';
@@ -55,6 +55,8 @@ function xpForNextLevel(level: number): number {
 
 function GameContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isNewGame = searchParams.get('new') === '1';
   const { T, tf, isDyslexic } = useTheme();
 
   // All hooks in dependency order
@@ -249,12 +251,16 @@ function GameContent() {
     );
   }
 
-  // ── Character creation — no save found ──────────────────────────────────────
+  // ── Character creation — no save found OR ?new=1 ─────────────────────────────
 
-  if (gameState.isLoaded && !gameState.player) {
+  if (gameState.isLoaded && (!gameState.player || isNewGame)) {
     return (
       <CharacterCreationScreen
-        onStart={handleStartNewGame}
+        onStart={async (name, cls) => {
+          // After starting, clear the ?new=1 param so refreshing doesn't re-trigger
+          await handleStartNewGame(name, cls);
+          router.replace('/game');
+        }}
         isLoading={newGameLoading}
         gravestones={[]}
       />
@@ -885,7 +891,9 @@ function GameContent() {
 export function GameView() {
   return (
     <ThemeProvider>
-      <GameContent />
+      <Suspense fallback={null}>
+        <GameContent />
+      </Suspense>
     </ThemeProvider>
   );
 }
