@@ -361,7 +361,7 @@ function GameContent() {
       {/* Player info panel at the top */}
       {playerInfoPanel}
       {/* Scrollable info area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
         {ui.currentEnemy && (
           <CombatPanel
             enemy={ui.currentEnemy}
