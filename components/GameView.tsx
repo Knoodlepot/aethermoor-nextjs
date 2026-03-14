@@ -290,9 +290,9 @@ function GameContent() {
       </div>
       {/* Resources row */}
       <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 12, display: 'flex', justifyContent: 'space-around' }}>
-        {([['🪙', player.gold, 'Gold'], ['🎒', rations, 'Rations'], ['⭐', player.reputation ?? 0, 'Rep'], ['📍', player.location, 'Here']] as [string, any, string][]).map(([icon, val, lbl]) => (
+        {([['🪙', player.gold, 'Gold'], ['🎒', rations, 'Rations'], ['⭐', player.reputation ?? 0, 'Rep']] as [string, any, string][]).map(([icon, val, lbl]) => (
           <div key={lbl} style={{ textAlign: 'center' as const }}>
-            <div style={{ color: lbl === 'Rations' ? (val > 0 ? '#80a060' : '#c05050') : lbl === 'Here' ? T.accent : T.gold, fontSize: lbl === 'Here' ? 8 : 17, lineHeight: '1.2', ...tf }}>{val}</div>
+            <div style={{ color: lbl === 'Rations' ? (val > 0 ? '#80a060' : '#c05050') : T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{val}</div>
             <div style={{ color: T.textMuted, fontSize: 10 }}>{icon} {lbl}</div>
           </div>
         ))}
