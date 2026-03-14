@@ -5,87 +5,273 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aethermoor - Legal</title>
   <style>
-    body {
-      margin: 0;
-      background: #0d0a06;
-      color: #d4b896;
-      font-family: Georgia, serif;
-      line-height: 1.6;
-    }
-    .wrap {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 24px 16px 48px;
-    }
-    h1, h2 {
-      color: #f0c060;
-      font-family: "Cinzel", Georgia, serif;
-      letter-spacing: 1px;
-    }
-    .nav {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: #13100a;
-      border: 1px solid #2e2010;
-      padding: 10px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .nav a {
-      color: #f0c060;
-      text-decoration: none;
-      border: 1px solid #c4873a55;
-      padding: 6px 10px;
-      font-size: 14px;
-    }
-    .nav a:hover { background: #c4873a22; }
-    .section {
-      background: #13100a;
-      border: 1px solid #2e2010;
-      padding: 16px;
-      margin-bottom: 12px;
-      scroll-margin-top: 72px;
-    }
-    .muted { color: #8a6f4b; font-size: 13px; }
+    body { margin:0; background:#0d0a06; color:#d4b896; font-family:Georgia,serif; line-height:1.6; }
+    .wrap { max-width:900px; margin:0 auto; padding:24px 16px 48px; }
+    h1 { color:#f0c060; font-family:"Cinzel",Georgia,serif; letter-spacing:1px; }
+    h2 { color:#f0c060; font-family:"Cinzel",Georgia,serif; letter-spacing:1px; margin-top:0; }
+    h3 { color:#c4873a; font-family:"Cinzel",Georgia,serif; font-size:.95rem; letter-spacing:.5px; border-bottom:1px solid #2e2010; padding-bottom:5px; margin-top:28px; }
+    h4 { color:#d4b896; font-size:.88rem; margin-bottom:3px; margin-top:16px; text-decoration:underline; text-decoration-color:#2e2010; text-underline-offset:3px; }
+    a { color:#f0c060; }
+    .nav { position:sticky; top:0; z-index:10; background:#13100a; border:1px solid #2e2010; padding:10px; display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; margin-top:14px; }
+    .nav button { color:#f0c060; background:none; border:1px solid #c4873a55; padding:6px 14px; font-size:14px; cursor:pointer; font-family:Georgia,serif; transition:background .15s,color .15s; }
+    .nav button.active { color:#0d0a06; background:#f0c060; }
+    .nav button:hover:not(.active) { background:#c4873a22; }
+    .nav a { color:#f0c060; text-decoration:none; border:1px solid #c4873a55; padding:6px 14px; font-size:14px; display:inline-flex; align-items:center; }
+    .nav a:hover { background:#c4873a22; }
+    .section { background:#13100a; border:1px solid #2e2010; padding:24px 28px; margin-bottom:12px; display:none; }
+    .section.active { display:block; }
+    .muted { color:#8a6f4b; font-size:13px; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Aethermoor Legal</h1>
-    <div class="muted">Last updated: 2026-03-11</div>
+    <div class="muted">Last updated: 2026-03-14</div>
 
     <nav class="nav" aria-label="Legal sections">
-      <a href="#terms">Terms of Service</a>
-      <a href="#privacy">Privacy Policy</a>
-      <a href="#refund">Refund Policy</a>
+      <button onclick="showTab('terms')" id="btn-terms" class="active">Terms of Service</button>
+      <button onclick="showTab('privacy')" id="btn-privacy">Privacy Policy</button>
+      <button onclick="showTab('refund')" id="btn-refund">Refund Policy</button>
       <a href="index.html">Back to Game</a>
     </nav>
 
-    <section id="terms" class="section">
+    <!-- ═══════════════ TERMS OF SERVICE ═══════════════ -->
+    <section id="terms" class="section active">
       <h2>Terms of Service</h2>
-      <p>Aethermoor is a fantasy roleplaying game for players aged 18+. By using the game, you agree not to misuse the service, attempt fraud, or abuse staff/community channels.</p>
-      <p>Accounts, virtual currency/tokens, and progression systems may be adjusted for balance, bug fixes, safety, or policy compliance.</p>
+      <p class="muted">Last updated: 2026-03-14 · Operator: Aethermoor (UK-based independent developer)</p>
+      <p>By accessing or using Aethermoor you agree to these Terms of Service in full. If you do not agree, do not use the service. These terms apply worldwide; jurisdiction-specific provisions are listed below and take precedence where required by local law.</p>
+
+      <h3>1. Eligibility</h3>
+      <p>Aethermoor is intended for players aged 18 and over. By using the service you confirm you meet the minimum age requirement. We do not knowingly permit users under 18 to create accounts or make purchases. Where local law sets a higher age of digital consent, that higher age applies.</p>
+
+      <h3>2. Account Registration &amp; Security</h3>
+      <p>You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. You may not share, sell, or transfer accounts. We reserve the right to suspend or permanently terminate accounts that violate these terms, engage in fraud, or exploit game systems. You will be given reasonable notice before termination except where immediate action is required for security or legal reasons.</p>
+
+      <h3>3. Virtual Currency &amp; In-Game Tokens</h3>
+      <p>Aether Tokens are virtual in-game currency with no real-world monetary value, are not redeemable for cash, and are non-transferable between accounts. Token balances, pricing, and availability may be adjusted at any time for operational, balance, or compliance reasons. In the event of service discontinuation we will handle outstanding token balances in accordance with applicable consumer law.</p>
+
+      <h3>4. Acceptable Use</h3>
+      <p>You agree not to: use the service for fraudulent or illegal purposes; attempt to reverse-engineer, hack, or exploit game systems; harass, threaten, or abuse other users or staff; use automated bots or scripts to gain unfair advantage; impersonate other users or staff; or share content that is unlawful or infringes third-party rights.</p>
+
+      <h3>5. Intellectual Property</h3>
+      <p>All content within Aethermoor is owned by or licensed to the operator. You are granted a limited, non-exclusive, non-transferable, revocable licence to access and play the game for personal, non-commercial use only. You may not reproduce, distribute, or create derivative works without prior written consent.</p>
+
+      <h3>6. Service Availability &amp; Changes</h3>
+      <p>We make no guarantee of uninterrupted service. We reserve the right to modify, suspend, or discontinue any feature at any time, with reasonable notice where possible. We will not be liable for loss resulting from events outside our reasonable control.</p>
+
+      <h3>7. Limitation of Liability</h3>
+      <p>To the maximum extent permitted by applicable law, the operator shall not be liable for indirect, incidental, special, or consequential damages. Our total aggregate liability for any claim shall not exceed the greater of (a) the amount you paid in the 12 months preceding the claim or (b) £50 GBP. Nothing in these terms excludes liability for death, personal injury, fraud, or any other liability that cannot be excluded by law.</p>
+
+      <h3>8. Governing Law</h3>
+      <p>These terms are governed by the laws of England and Wales, except where mandatory consumer law in your country of residence applies.</p>
+
+      <h3>Jurisdiction-Specific Provisions</h3>
+
+      <h4>United Kingdom</h4>
+      <p>Under the <strong>Consumer Rights Act 2015</strong> you have statutory rights regarding digital content (satisfactory quality, fit for purpose, as described). The <strong>Consumer Contracts Regulations 2013</strong> may apply to your purchases. We comply with the <strong>Online Safety Act 2023</strong> and <strong>Equality Act 2010</strong>.</p>
+
+      <h4>European Union</h4>
+      <p>Mandatory consumer rights under the <strong>EU Consumer Rights Directive (2011/83/EU)</strong>, <strong>Digital Content Directive (2019/770/EU)</strong>, and <strong>Digital Services Act (2022/2065)</strong> apply in full. Disputes may be referred to the EU ODR platform at <strong>ec.europa.eu/consumers/odr</strong>.</p>
+
+      <h4>United States</h4>
+      <p>We comply with <strong>COPPA</strong> (no data collected from under-13s) and the <strong>CFAA</strong>. California residents retain rights under the <strong>CCPA/CPRA</strong> and <strong>CLRA</strong>. Other US state consumer protection laws apply where applicable.</p>
+
+      <h4>Canada</h4>
+      <p>Provincial consumer protection laws apply. Quebec residents have additional rights under the <strong>LPCQ</strong>. We comply with <strong>CASL</strong> and <strong>PIPEDA / Quebec Law 25</strong>.</p>
+
+      <h4>Australia &amp; New Zealand</h4>
+      <p>The <strong>Australian Consumer Law (ACL)</strong> applies with statutory consumer guarantees that cannot be excluded. New Zealand consumers have rights under the <strong>Consumer Guarantees Act 1993</strong> and <strong>Fair Trading Act 1986</strong>.</p>
+
+      <h4>Brazil &amp; Latin America</h4>
+      <p>Brazilian consumers are protected by the <strong>CDC (Law 8.078/1990)</strong> and <strong>Marco Civil da Internet</strong>. Disputes may be referred to PROCON. Argentina (<strong>Law 24.240</strong>), Mexico (<strong>PROFECO</strong>), Colombia (<strong>Law 1480</strong>), and Chile (<strong>Law 19.496</strong>) — local law applies.</p>
+
+      <h4>Asia-Pacific</h4>
+      <p>Japan (<strong>Act on Specified Commercial Transactions, Consumer Contract Act</strong>); South Korea (<strong>Act on Consumer Protection in Electronic Commerce</strong>); China (<strong>Cybersecurity Law, Data Security Law, PIPL</strong>); Singapore (<strong>CPFTA</strong>); India (<strong>Consumer Protection Act 2019</strong>); Thailand (<strong>Consumer Protection Act</strong>). We comply with applicable law throughout APAC including Malaysia, Philippines, Indonesia, and Vietnam.</p>
+
+      <h4>Africa</h4>
+      <p>South Africa (<strong>ECT Act, CPA 68/2008, POPIA</strong>); Kenya (<strong>Consumer Protection Act 2012, Data Protection Act 2019</strong>); Nigeria (<strong>FCCPA 2018, NDPA 2023</strong>); Ghana (<strong>Consumer Protection Agency Act 2022</strong>). Applicable local legislation takes precedence in all other African jurisdictions.</p>
+
+      <p class="muted" style="margin-top:24px;">These Terms are provided in good faith. For legal advice specific to your situation, consult a qualified legal professional.</p>
     </section>
 
+    <!-- ═══════════════ PRIVACY POLICY ═══════════════ -->
     <section id="privacy" class="section">
       <h2>Privacy Policy</h2>
-      <p>The game uses local storage for save data and may store account-related data on backend services when signed in. Payment processing is handled by third-party providers.</p>
-      <p>We do not sell personal data. Contact support for data access or removal requests where applicable.</p>
+      <p class="muted">Last updated: 2026-03-14 · Data Controller: Aethermoor (UK-based independent developer)</p>
+      <p>This Privacy Policy explains how we collect, use, store, and share personal data when you use Aethermoor. We are committed to protecting your privacy and complying with applicable data protection laws worldwide.</p>
+
+      <h3>1. Who We Are</h3>
+      <p>Aethermoor is operated by an independent developer based in the United Kingdom. We are the <strong>data controller</strong> for UK data protection law purposes. Contact: <a href="mailto:support.aethermoor@gmail.com">support.aethermoor@gmail.com</a></p>
+
+      <h3>2. What Data We Collect</h3>
+      <p><strong>Account data:</strong> Email address, username, hashed password.<br>
+      <strong>Game data:</strong> Save state, character progression, inventory, quest status, session logs.<br>
+      <strong>Technical data:</strong> Browser type, IP address (briefly, for rate-limiting/fraud), session tokens.<br>
+      <strong>Payment data:</strong> We do not store card details — payment processing is handled entirely by third-party providers (e.g. Stripe).<br>
+      <strong>Support communications:</strong> Messages you send to our support email.<br>
+      <strong>Consent records:</strong> Records of any consents given or withdrawn.</p>
+
+      <h3>3. How We Use Your Data</h3>
+      <p>— Providing and improving the service (<em>contract performance</em>)<br>
+      — Authentication and security (<em>legitimate interests / contract</em>)<br>
+      — Fraud prevention (<em>legitimate interests</em>)<br>
+      — Legal compliance (<em>legal obligation</em>)<br>
+      — Service communications (<em>contract / legitimate interests</em>)<br>
+      — Marketing — <strong>only with your explicit opt-in consent</strong>, withdrawable at any time</p>
+
+      <h3>4. Third-Party Processors</h3>
+      <p>All processors are subject to data processing agreements:<br>
+      — Cloud hosting (Vercel, Railway PostgreSQL)<br>
+      — Payment processing (third-party provider)<br>
+      — AI API (Anthropic) — only anonymised in-session game context is sent; no personal identifiers<br>
+      — Email delivery (Resend)<br>
+      — Error monitoring tools</p>
+      <p>We do <strong>not</strong> sell, rent, or trade your personal data for marketing purposes.</p>
+
+      <h3>5. Data Retention</h3>
+      <p>Account and game data is retained while your account is active, plus a reasonable period for legal compliance and dispute resolution. You may request deletion at any time. Financial records may be retained longer where required by law.</p>
+
+      <h3>6. International Data Transfers</h3>
+      <p>Our infrastructure is hosted in the United States and EU. Transfers outside the UK/EEA use appropriate safeguards — Standard Contractual Clauses (SCCs) approved by the UK ICO and/or European Commission, or adequacy decisions.</p>
+
+      <h3>7. Cookies &amp; Local Storage</h3>
+      <p>We use browser <strong>local storage</strong> to save game progress — functionally necessary, does not track you across websites. <strong>Session cookies</strong> are used strictly for authentication. We do not use advertising or analytics cookies.</p>
+
+      <h3>8. Security</h3>
+      <p>Appropriate technical and organisational measures are in place to protect your data. Passwords are stored as hashed values. Despite best efforts, no internet transmission is completely secure.</p>
+
+      <h3>9. Your Rights</h3>
+      <p>Regardless of location you may: access your data; request correction; request erasure; restrict processing; receive portable data; object to processing; withdraw consent; and lodge a complaint with your local data protection authority.</p>
+
+      <h3>Jurisdiction-Specific Rights</h3>
+
+      <h4>United Kingdom — UK GDPR &amp; DPA 2018</h4>
+      <p>We comply fully with <strong>UK GDPR</strong> and the <strong>Data Protection Act 2018</strong>. Subject Access Requests fulfilled within <strong>one month</strong>. Complaints to the <strong>ICO</strong>: ico.org.uk / 0303 123 1113.</p>
+
+      <h4>European Union — GDPR (Regulation 2016/679)</h4>
+      <p>All GDPR rights apply in full. A valid legal basis exists for every processing activity. Complaints to your national <strong>Data Protection Authority (DPA)</strong>. No data collected from individuals under 16 (or lower member-state age of digital consent).</p>
+
+      <h4>United States</h4>
+      <p><strong>California (CCPA/CPRA):</strong> Rights to know, delete, correct, opt out of sale/sharing (we do not sell data), and non-discrimination. Requests fulfilled within <strong>45 days</strong>.<br>
+      <strong>Other state laws:</strong> We honour rights requests from residents of Virginia, Colorado, Connecticut, Texas, Oregon, Montana, and all other states with enacted privacy legislation.<br>
+      <strong>COPPA:</strong> No data knowingly collected from under-13s.<br>
+      <strong>CAN-SPAM:</strong> All commercial emails include an unsubscribe mechanism.</p>
+
+      <h4>Canada — PIPEDA &amp; Quebec Law 25</h4>
+      <p>We comply with <strong>PIPEDA</strong> and provincial legislation. Quebec residents have enhanced rights under <strong>Law 25</strong> including portability and objection to automated decision-making. Complaints to the <strong>OPC</strong> at priv.gc.ca.</p>
+
+      <h4>Australia — Privacy Act 1988 &amp; APPs</h4>
+      <p>We comply with the <strong>Privacy Act 1988</strong> and all 13 <strong>Australian Privacy Principles (APPs)</strong>. Complaints to the <strong>OAIC</strong> at oaic.gov.au. Cross-border disclosures comply with <strong>APP 8</strong>.</p>
+
+      <h4>Brazil — LGPD (Law 13.709/2018)</h4>
+      <p>Brazilian residents have full LGPD rights including access, correction, deletion, portability, and withdrawal of consent. Complaints to the <strong>ANPD</strong> at gov.br/anpd.</p>
+
+      <h4>Asia-Pacific</h4>
+      <p><strong>Japan (APPI):</strong> Rights to disclosure, correction, deletion, and suspension of use. PPC oversees compliance.<br>
+      <strong>South Korea (PIPA):</strong> Rights to access, correction, deletion, and suspension. PIPC oversees compliance.<br>
+      <strong>China (PIPL):</strong> Rights to access, copy, correct, delete, and transfer personal information. Cross-border transfers comply with PIPL requirements.<br>
+      <strong>Singapore (PDPA):</strong> Rights to access and correct personal data. PDPC handles complaints.<br>
+      <strong>India (DPDP Act 2023):</strong> Rights to access, correction, erasure, and grievance redressal.<br>
+      <strong>Thailand (PDPA):</strong> Rights equivalent to GDPR — access, rectification, erasure, restriction, portability, objection.<br>
+      <strong>Other APAC:</strong> We observe applicable laws in New Zealand, Malaysia, Philippines, Indonesia, and Vietnam.</p>
+
+      <h4>Africa</h4>
+      <p><strong>South Africa (POPIA):</strong> Rights to access, correction, deletion, and objection. Complaints to the <strong>Information Regulator</strong> at inforegulator.org.za.<br>
+      <strong>Kenya (DPA 2019):</strong> Rights to access, correction, and deletion. ODPC oversees compliance.<br>
+      <strong>Nigeria (NDPA 2023):</strong> NDPC oversees compliance.<br>
+      <strong>Ghana (Act 843):</strong> Data Protection Commission oversees compliance.<br>
+      <strong>Other African jurisdictions:</strong> We comply with applicable local data protection legislation.</p>
+
+      <h3>10. Contact &amp; Data Requests</h3>
+      <p>Email: <a href="mailto:support.aethermoor@gmail.com">support.aethermoor@gmail.com</a><br>
+      Subject: "Privacy Request — [type of request]"<br>
+      We respond within the timeframe required by applicable law (typically 30 days for UK/EU; 45 days for California).</p>
+
+      <p class="muted" style="margin-top:24px;">This Privacy Policy is provided in good faith. For legal advice specific to your situation, consult a qualified data protection professional.</p>
     </section>
 
+    <!-- ═══════════════ REFUND POLICY ═══════════════ -->
     <section id="refund" class="section">
       <h2>Refund Policy</h2>
-      <p>Token purchases are generally non-refundable once delivered. If you experience a billing error, duplicate charge, or failed delivery, contact support with transaction details.</p>
-      <p>Support contact:
-        <a href="mailto:support.aethermoor@gmail.com" onclick="openSupportEmail(event)" style="color:#f0c060;text-decoration:underline;text-underline-offset:2px;">support.aethermoor@gmail.com</a>
-      </p>
-      <p><button type="button" onclick="openSupportEmail(event)" style="background:#13100a;color:#f0c060;border:1px solid #c4873a55;padding:6px 10px;cursor:pointer;">Open Email App</button></p>
+      <p class="muted">Last updated: 2026-03-14 · Operator: Aethermoor (UK-based independent developer)</p>
+      <p>This Refund Policy explains your rights when purchasing Aether Tokens. Where applicable law grants you rights beyond those described here, those legal rights take precedence and we will honour them.</p>
+
+      <h3>1. General Policy</h3>
+      <p>Aether Tokens are virtual in-game currency with no real-world cash value. As a general rule, token purchases are <strong>final and non-refundable</strong> once credited to your account, because digital content is made immediately available at the point of purchase. Exceptions and statutory rights are detailed below.</p>
+
+      <h3>2. When We Will Issue a Refund</h3>
+      <p>Regardless of jurisdiction, we will process a full refund if:<br>
+      — <strong>Billing error:</strong> You were charged an incorrect amount<br>
+      — <strong>Duplicate charge:</strong> You were charged more than once for the same transaction<br>
+      — <strong>Failed delivery:</strong> Payment taken but tokens not credited within 24 hours<br>
+      — <strong>Fraudulent transaction:</strong> Your payment method was used without your authorisation<br>
+      — <strong>Service unavailability:</strong> We are permanently unable to provide the service you paid for</p>
+
+      <h3>3. How to Request a Refund</h3>
+      <p>Email <a href="mailto:support.aethermoor@gmail.com" onclick="openSupportEmail(event)">support.aethermoor@gmail.com</a> with subject <strong>"Refund Request"</strong>. Include: account username or email, transaction ID, date of purchase, and description of the issue. We aim to acknowledge within 2 business days and resolve within 10 business days.</p>
+
+      <h3>4. Chargebacks</h3>
+      <p>If you initiate a chargeback without first contacting us, we reserve the right to suspend your account pending investigation. We honour legitimate chargeback outcomes. Fraudulent chargebacks may result in permanent account termination.</p>
+
+      <h3>Jurisdiction-Specific Statutory Rights</h3>
+
+      <h4>United Kingdom</h4>
+      <p>Under the <strong>Consumer Contracts Regulations 2013</strong> you normally have a <strong>14-day right to cancel</strong> digital content purchases. This right is lost if you expressly consent to immediate delivery and acknowledge the loss of cancellation rights at checkout — we will request this. The <strong>Consumer Rights Act 2015</strong> statutory guarantees (satisfactory quality, fit for purpose, as described) remain unaffected. Disputes may be referred to an <strong>ADR provider</strong> or the courts of England and Wales.</p>
+
+      <h4>European Union</h4>
+      <p>Under the <strong>EU Consumer Rights Directive (2011/83/EU)</strong> and <strong>Digital Content Directive (2019/770/EU)</strong>, EU consumers have a <strong>14-day right of withdrawal</strong>. This may be waived with your express acknowledgement at checkout. Non-conforming digital content entitles you to repair, replacement, price reduction, or full refund. These rights apply for a minimum of <strong>two years</strong>. Disputes via <strong>ec.europa.eu/consumers/odr</strong>.</p>
+
+      <h4>United States</h4>
+      <p>No universal federal cooling-off period. <strong>California (CLRA, B&amp;P Code §17200):</strong> refund rights for misrepresented or defective products. Chargebacks honoured. File complaints with the <strong>FTC</strong> at reportfraud.ftc.gov or your state Attorney General.</p>
+
+      <h4>Canada</h4>
+      <p>Consumer protection varies by province. <strong>Quebec (LPCQ):</strong> rights regarding unfair practices and contract cancellation. <strong>Ontario (CPA 2002)</strong>, <strong>BC (BPCPA)</strong>, and <strong>Alberta (FTA)</strong> apply in their respective provinces. Contact your provincial consumer protection office for assistance.</p>
+
+      <h4>Australia</h4>
+      <p>The <strong>Australian Consumer Law (ACL)</strong> provides statutory consumer guarantees that cannot be excluded. For a <strong>major failure</strong> you are entitled to choose a <strong>full refund</strong> or replacement. For minor failures: repair, replacement, or price reduction. Contact the <strong>ACCC</strong> at accc.gov.au or your state consumer protection office.</p>
+
+      <h4>New Zealand</h4>
+      <p>The <strong>Consumer Guarantees Act 1993</strong> and <strong>Fair Trading Act 1986</strong> apply. Services and digital products must be fit for purpose, of acceptable quality, and as described. Contact the <strong>Commerce Commission NZ</strong> at comcom.govt.nz.</p>
+
+      <h4>Brazil &amp; Latin America</h4>
+      <p><strong>Brazil (CDC):</strong> Statutory <strong>7-day cooling-off period</strong> for all online purchases regardless of whether digital content has been accessed. Notify us within 7 calendar days for a full refund. Complaints via PROCON or Consumidor.gov.br.<br>
+      <strong>Argentina (Law 24.240):</strong> 10-day right of repentance for distance contracts.<br>
+      <strong>Mexico (PROFECO):</strong> consumer rights law applies.<br>
+      <strong>Colombia (Law 1480):</strong> 5-business-day withdrawal right for distance contracts.<br>
+      <strong>Chile (Law 19.496):</strong> consumer protection law applies.</p>
+
+      <h4>Asia-Pacific</h4>
+      <p><strong>Japan:</strong> Act on Specified Commercial Transactions and Consumer Contract Act apply. Disputes via the Consumer Affairs Agency (CAA).<br>
+      <strong>South Korea:</strong> <strong>7-day right of withdrawal</strong> for online purchases (may be excluded for immediately accessible digital content with notice). Korea Consumer Agency handles disputes.<br>
+      <strong>China:</strong> <strong>7-day no-questions-asked right of return</strong> under E-Commerce Law. Ministry of Culture regulations govern virtual goods. Contact local Market Supervision Administration.<br>
+      <strong>Singapore:</strong> CPFTA applies for unfair practices. CASE assists with disputes.<br>
+      <strong>India:</strong> Consumer Protection Act 2019 and E-Commerce Rules 2020 apply. Complaints via National Consumer Helpline or consumer forums.<br>
+      <strong>Thailand:</strong> Consumer Protection Act applies. OCPB handles complaints.<br>
+      <strong>Other APAC:</strong> We comply with applicable consumer law in Malaysia, Philippines, Indonesia, and Vietnam.</p>
+
+      <h4>Africa</h4>
+      <p><strong>South Africa (CPA 68/2008):</strong> Implied warranty of quality; right to return defective goods within <strong>6 months</strong>. NCC, National Consumer Tribunal, and CGSO handle disputes.<br>
+      <strong>Kenya (Consumer Protection Act 2012):</strong> Protections against unfair trade practices. Competition Authority of Kenya oversees compliance.<br>
+      <strong>Nigeria (FCCPA 2018):</strong> FCCPC handles complaints.<br>
+      <strong>Ghana (Consumer Protection Agency Act 2022):</strong> Remedies for misrepresented or defective products.<br>
+      <strong>Other African jurisdictions:</strong> Local consumer protection legislation takes precedence.</p>
+
+      <h3>Contact</h3>
+      <p>Email: <a href="mailto:support.aethermoor@gmail.com" onclick="openSupportEmail(event)">support.aethermoor@gmail.com</a><br>
+      Subject: <strong>Refund Request — [your username]</strong><br>
+      Include: Transaction ID, purchase date, account email, and description of the issue.<br>
+      <button type="button" onclick="openSupportEmail()" style="margin-top:8px;background:#13100a;color:#f0c060;border:1px solid #c4873a55;padding:6px 12px;cursor:pointer;">Open Email App</button></p>
+
+      <p class="muted" style="margin-top:24px;">This Refund Policy is provided for informational purposes. Where applicable law grants you greater rights, those rights take precedence. For specific legal advice, consult a qualified legal professional in your jurisdiction.</p>
     </section>
   </div>
   <script>
+    function showTab(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.getElementById('btn-' + id).classList.add('active');
+    }
     function openSupportEmail(e) {
       if (e) e.preventDefault();
       const email = 'support.aethermoor@gmail.com';
