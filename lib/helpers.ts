@@ -1,3 +1,17 @@
+/**
+ * Capitalize the first letter of a string
+ */
+export function capitalize(str: string): string {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Clamp a number between min and max
+ */
+export function clamp(val: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, val));
+}
 import type { Player, NPC, WorldSeed } from './types';
 import { ITEM_INFO, CONSUMABLE_EFFECTS, DISGUISED_ITEMS, ITEM_STAT_BONUSES, EQUIP_SLOTS, LOCATION_TIERS } from './constants';
 

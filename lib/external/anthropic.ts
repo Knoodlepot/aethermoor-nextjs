@@ -1,4 +1,5 @@
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+let warnedMissingAnthropicKey = false;
 const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 const SONNET_MODEL = 'claude-sonnet-4-6';
 const HAIKU_PCT = Math.min(
@@ -17,6 +18,10 @@ export const SERVER_SYSTEM_PROMPTS: Record<string, string> = {
  * Call Anthropic Claude API
  */
 export async function callAnthropic(body: any): Promise<{ status: number; data: any }> {
+  if (!ANTHROPIC_KEY && !warnedMissingAnthropicKey) {
+    console.warn('[ANTHROPIC] API key missing: requests will fail.');
+    warnedMissingAnthropicKey = true;
+  }
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

@@ -70,12 +70,18 @@ export async function oauthFindOrCreate(email: string): Promise<OAuthAccount | n
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+let warnedMissingGoogleOAuth = false;
+let warnedMissingDiscordOAuth = false;
 
 /**
  * Get Google OAuth URL
  */
 export function getGoogleOAuthUrl(state: string, redirectUri?: string): string {
   if (!GOOGLE_CLIENT_ID) {
+    if (!warnedMissingGoogleOAuth) {
+      console.warn('[OAUTH] Google OAuth not configured: login will not work.');
+      warnedMissingGoogleOAuth = true;
+    }
     throw new Error('Google OAuth not configured');
   }
 
@@ -159,6 +165,10 @@ const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI;
  */
 export function getDiscordOAuthUrl(state: string, redirectUri?: string): string {
   if (!DISCORD_CLIENT_ID) {
+    if (!warnedMissingDiscordOAuth) {
+      console.warn('[OAUTH] Discord OAuth not configured: login will not work.');
+      warnedMissingDiscordOAuth = true;
+    }
     throw new Error('Discord OAuth not configured');
   }
 

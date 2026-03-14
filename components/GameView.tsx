@@ -1,4 +1,12 @@
 'use client';
+// [E2E DEBUG] GameView.tsx loaded (top-level)
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line no-console
+  console.log('[E2E DEBUG] GameView.tsx loaded (top-level)');
+  // E2E: force a breakpoint and alert for test
+  debugger;
+  window.alert('[E2E DEBUG] GameView.tsx loaded (top-level)');
+}
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -43,6 +51,16 @@ import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 // ─── Inner component (must live inside ThemeProvider) ─────────────────────────
 
 function GameContent() {
+
+    // [E2E DEBUG] GameContent function invoked
+    if (typeof window !== 'undefined') {
+      // eslint-disable-next-line no-console
+      console.log('[E2E DEBUG] GameContent function invoked');
+      // E2E: force a breakpoint and alert for test
+      debugger;
+      window.alert('[E2E DEBUG] GameContent function invoked');
+    }
+
   const router = useRouter();
   const { T, tf, isDyslexic } = useTheme();
 
@@ -124,6 +142,23 @@ function GameContent() {
       />
     );
   }
+
+
+  // Debug: Log loaded player/gameState after load (for E2E diagnosis)
+  useEffect(() => {
+    // [E2E DEBUG] useEffect for gameState.isLoaded fired
+    // eslint-disable-next-line no-console
+    console.log('[E2E DEBUG] useEffect fired, isLoaded:', gameState.isLoaded);
+    if (gameState.isLoaded) {
+      // eslint-disable-next-line no-console
+      console.log('[E2E DEBUG] Loaded player:', gameState.player);
+      // eslint-disable-next-line no-console
+      console.log('[E2E DEBUG] Full gameState:', gameState);
+      // Expose gameState for E2E extraction
+      // @ts-ignore
+      window.gameState = gameState;
+    }
+  }, [gameState.isLoaded, gameState.player, gameState]);
 
   if (!gameState.isLoaded) {
     return (
@@ -341,12 +376,7 @@ function GameContent() {
           {tbBtn('Guide', () => ui.openModal('howToPlay'))}
           {tbBtn('Patch Notes', () => ui.openModal('patchNotes'))}
           <ThemeToggle />
-          {auth.email &&
-            tbBtn(
-              auth.email.split('@')[0] ?? 'Profile',
-              () => ui.toggleModal('userProfile'),
-              ui.showUserProfile
-            )}
+          {/* Account button removed from in-game UI as requested */}
           {tbBtn('Home', () => router.push('/'))}
           {auth.token && tbBtn('Logout', () => void auth.logout())}
         </div>

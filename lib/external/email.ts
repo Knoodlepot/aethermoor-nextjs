@@ -1,5 +1,7 @@
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@aethermoor.com';
+let warnedMissingResendKey = false;
 
 export interface EmailOptions {
   to: string;
@@ -17,8 +19,13 @@ export async function sendEmail({
   text,
   html,
 }: EmailOptions): Promise<{ success: boolean; error?: string }> {
-  // In development or without API key, just log
+
+  // In development or without API key, just log ONCE per session
   if (!RESEND_API_KEY) {
+    if (!warnedMissingResendKey) {
+      console.warn('[EMAIL] RESEND_API_KEY missing: emails will be logged, not sent.');
+      warnedMissingResendKey = true;
+    }
     console.log(`[EMAIL] To: ${to} | Subject: ${subject}`);
     return { success: true };
   }

@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- Added a single `verify:all` script to run all verification checks in one command.
+- Automated verification and linting now run on every push via GitHub Actions, catching regressions before deploy.
+- Email sending in development is now gated: if the Resend key is missing, only a single warning is logged per session, reducing log noise and focusing on real blockers.
 - Under-the-hood database health now self-heals on each server start, so new columns added in updates apply automatically without manual database work.
 - Internal release checks now include a full hosted narrator journey test (new account, cloud save, and live AI response), improving deployment confidence before updates go live.
 - Behind-the-scenes documentation now matches the live Next.js game architecture more consistently.

@@ -1,0 +1,43 @@
+name: Verify & Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Unit Tests
+        run: npm run verify:unit
+      - name: E2E Tests
+        run: npm run verify:e2e
+      - name: Verify Mock State
+        run: npm run verify:mock-state
+      # Optional: Only run runtime verification if secrets are present
+      - name: Verify Runtime (if secrets present)
+        run: |
+          if [ -f .env.local ]; then
+            if grep -q DATABASE_URL .env.local && grep -q JWT_SECRET .env.local; then
+              npm run verify:runtime
+            else
+              echo "Skipping runtime verification: secrets missing."
+            fi
+          else
+            echo ".env.local not found, skipping runtime verification."
+          fi
+      - name: Verify Narrator
+        run: npm run verify:narrator

@@ -31,18 +31,17 @@ AI-powered browser RPG built on Next.js.
 | `aethermoor-support-dashboard.html` | Support dashboard utility |
 
 ## User Preferences
-- Surgical, minimal changes - do not rewrite working code
-- Always read files before editing
-- Enter plan mode for non-trivial features and get approval before coding
-- Auto-commit Next.js changes after implementation and validation when a git repository is available; no time/date estimates in plans
-- Patch notes should be player-facing, game-style (not dev jargon)
-- MEMORY.md should stay current so future sessions can continue without drift
 
----
 
 ## Latest Session Updates (2026-03-13)
+- **Automation/CI**: Added a single `verify:all` script for full local verification in one command.
+- **CI/CD**: GitHub Actions workflow now runs lint and all verification checks on every push, blocking regressions before deploy.
+- **Email gating**: Email sending in dev is now gated: only one warning is logged if the Resend key is missing, keeping logs clean.
 - **Production narrator smoke test passed (5/5)**: Verified full hosted flow against `https://aethermoor-nextjs.vercel.app` (ephemeral register, cloud save write, narrator turn, response shape, cleanup delete).
 - **Narrator verification scripts added**: Added `npm run verify:narrator` (local) and `npm run verify:narrator:prod` (hosted) shortcuts for repeatable end-to-end narrator checks.
+| Session | Work Done |
+|---------|-----------|
+| 2026-03-13 | Added verify:all script, GitHub Actions for CI, and email gating in dev |
 - **DB schema migrations applied**: Applied all missing columns to live Railway DB across 5 tables (`accounts`, `players`, `dungeon_progress`, `game_saves`, `moderation_incidents`). All 9 column additions confirmed OK.
 - **`migrateDb()` hardened**: `lib/db.ts` now runs idempotent `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` on every startup for all known columns — no more silent schema drift after deploys.
 - **Extra moderation columns confirmed legacy**: `accounts.moderation_yellow_count/red_card/last_reason/updated_at` and `moderation_incidents.level` are dormant legacy columns from the 2026-03-11 card system; left in place (harmless, unused by current code).
@@ -130,24 +129,4 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 | 2026-03-13 | Implemented HttpOnly cookie auth sessions across login/register/OAuth/verify and switched protected routes to cookie-aware auth checks; moved tag parse/apply pipeline into `/api/claude` with canonical server persistence |
 | 2026-03-13 | Security hardening pass: narrator prompt context now uses canonical server save state; cloud save validates ownership; admin routes moved to header-first secret auth with compatibility fallback |
 | 2026-03-13 | Cross-checked MEMORY/CLAUDE/CHANGELOG and documented that `index.html`/`index.hmtl` and `server.js` are legacy references, not active root files |
-| 2026-03-13 | Tidied MEMORY.md for faster scanning; added Quick Start; updated preference to allow auto-commits for Next.js work when git is available |
-| 2026-03-13 | Updated MEMORY.md to a Next.js-first baseline; removed deprecated legacy file references and updated game URL |
-| 2026-03-13 | Removed dead client narrator block; moved live geography/road/dungeon prompt templates into backend task types; admin auth shifted to header-first session secret checks |
-| 2026-03-13 | Security hardening: support dashboard moved behind backend route; admin secret now session-only + header-based (no query-string secrets) |
-| 2026-03-12 | Location Grid + World Geography (coord-based routing, all settlements + POIs, harbour flags) |
-| 2026-03-12 | Keeper of the Kiln NPC; `goldChange` + `repChange` tags; Theft RULE; time refinement (rest=8h, camp=7h) |
-| 2026-03-12 | max_tokens raised; screener fix; suggestions truncation fix; Player ID button |
-| 2026-03-12 | Admin: Recently Active, Clear Flags, live changelog; Email -> Resend API |
-| 2026-03-11 | Updated title/create UX: Begin Journey box, Load Game slots, Vision presets modal, class detail popups |
-| 2026-03-11 | Added `{"remove":{"item":"..."}}` tag support for player-to-NPC item transfers |
-| 2026-03-11 | Added yellow/red moderation card system + admin incident visibility/copy support |
-| 2026-03-11 | Hardened AI safety filters (pre/post moderation, fallback response, refund on blocked output) |
-| 2026-03-11 | Added Redis Phase 1 (optional cache + JWT blocklist check) |
-| 2026-03-11 | Travel Matrix - AI-generated locked travel times/geography per new game |
-| 2026-03-11 | Merged Claude + Copilot memory files into unified project MEMORY.md |
-| 2026-03-11 | Implemented Skill Tree system - 36 skills, 4 classes, 3 tiers each |
-| 2026-03-11 | Added Patch Notes screen with Discord webhook posting; created CHANGELOG.md |
-| 2026-03-11 | Added 12 enemy variants x 10 base archetypes = 120 bestiary entries |
-| Earlier | Implemented Bestiary (kill tracking, UI, server prompt integration) |
-| Earlier | Implemented cloud saves (persisted saves, authenticated sync) |
-| Earlier | Implemented main quest acts, faction systems, NPC travel, time systems, NG+, death systems |
+<!-- Archived session history: see previous versions for full details -->

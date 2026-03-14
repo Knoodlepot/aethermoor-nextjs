@@ -1,0 +1,15 @@
+{
+  "cookies": [
+    {
+      "name": "aethermoor_auth",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOiJjNjFjOWE5OC1hZWQ4LTQ2YjgtOGRlYS0xOTZiN2QzZWJmYjQiLCJwbGF5ZXJJZCI6InVwcHNvYmF0b2xhb2QtMTMzNzI4MWMiLCJlbWFpbCI6InVwcHNvYmF0b2xhb2RAZ21haWwuY29tIiwiaWF0IjoxNzczNDUwNzIzLCJleHAiOjE3ODEyMjY3MjN9.DhdSox1Hdg0WekE20MUUevPcr7G7JSknfgxtRRk9E20",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1781226723.032453,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

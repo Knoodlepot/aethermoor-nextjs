@@ -1,6 +1,11 @@
 import Stripe from 'stripe';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
+let warnedMissingStripeKey = false;
+if ((!process.env.STRIPE_SECRET_KEY || STRIPE_SECRET_KEY === 'sk_test_placeholder') && !warnedMissingStripeKey) {
+  console.warn('[STRIPE] Secret key missing or using placeholder: payments will not work.');
+  warnedMissingStripeKey = true;
+}
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 export interface TokenPackage {

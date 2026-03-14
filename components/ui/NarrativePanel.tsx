@@ -42,6 +42,7 @@ export function NarrativePanel({
   return (
     <div
       ref={logRef}
+      data-testid="narrative-panel"
       style={{
         flex: 1,
         overflowY: 'auto',
