@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Tightened protection against browser-side state tampering affecting hidden narrator context.
 - Improved admin endpoint protection with safer header-based authentication paths.
 - Core narrator-driven state updates now resolve server-side first, reducing client-side manipulation risk during progression.
+- Removed disruptive debug popups from the game screen. You will no longer see E2E test alerts while playing.
 
 ## [0.3.1] - 2026-03-14
 

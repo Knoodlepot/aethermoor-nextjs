@@ -100,6 +100,22 @@ function GameContent() {
     void gameLoop.executeCommand(trimmed, gameState);
   };
 
+  // Debug: Log loaded player/gameState after load (for E2E diagnosis)
+  useEffect(() => {
+    // [E2E DEBUG] useEffect for gameState.isLoaded fired
+    // eslint-disable-next-line no-console
+    console.log('[E2E DEBUG] useEffect fired, isLoaded:', gameState.isLoaded);
+    if (gameState.isLoaded) {
+      // eslint-disable-next-line no-console
+      console.log('[E2E DEBUG] Loaded player:', gameState.player);
+      // eslint-disable-next-line no-console
+      console.log('[E2E DEBUG] Full gameState:', gameState);
+      // Expose gameState for E2E extraction
+      // @ts-ignore
+      window.gameState = gameState;
+    }
+  }, [gameState.isLoaded, gameState.player, gameState]);
+
   // ── Auth / loading gates ────────────────────────────────────────────────────
 
   if (auth.authStatus === 'loading') {
@@ -142,23 +158,6 @@ function GameContent() {
       />
     );
   }
-
-
-  // Debug: Log loaded player/gameState after load (for E2E diagnosis)
-  useEffect(() => {
-    // [E2E DEBUG] useEffect for gameState.isLoaded fired
-    // eslint-disable-next-line no-console
-    console.log('[E2E DEBUG] useEffect fired, isLoaded:', gameState.isLoaded);
-    if (gameState.isLoaded) {
-      // eslint-disable-next-line no-console
-      console.log('[E2E DEBUG] Loaded player:', gameState.player);
-      // eslint-disable-next-line no-console
-      console.log('[E2E DEBUG] Full gameState:', gameState);
-      // Expose gameState for E2E extraction
-      // @ts-ignore
-      window.gameState = gameState;
-    }
-  }, [gameState.isLoaded, gameState.player, gameState]);
 
   if (!gameState.isLoaded) {
     return (
