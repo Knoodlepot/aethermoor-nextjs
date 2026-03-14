@@ -32,6 +32,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"mainQuestAct"\s*:\s*"[^"]+"\}/g, '');
   t = t.replace(/\{"disguisedReveal"\s*:\s*\[[^\]]*\]\}/g, '');
   t = t.replace(/\{"addPOI"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"addTerrain"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
   t = t.replace(/```[a-z]*\s*\{"context"\s*:\s*"\w+"\}\s*```/g, '');
   t = t.replace(/```[a-z]*\s*```/g, '');
@@ -319,6 +320,19 @@ export function extractAddPOITag(text: string): any {
 }
 
 /**
+ * Extract addTerrain tag: {"addTerrain":{"type":"forest|plains|grasslands|hills|mountains|tundra|swamp","x":N,"y":N,"w":N,"h":N}}
+ */
+export function extractAddTerrainTag(text: string): any {
+  const m = text.match(/\{"addTerrain"\s*:\s*(\{[^}]+\})\}/);
+  if (!m) return null;
+  try {
+    return JSON.parse(m[1]);
+  } catch {
+    return null;
+  }
+}
+
+/**
  */
 export interface ParsedTags {
   context: string | null;
@@ -343,6 +357,7 @@ export interface ParsedTags {
   mainQuestAct: string | null;
   disguisedReveal: string[] | null;
   addPOI: any;
+  addTerrain: any;
 }
 
 /**
@@ -372,6 +387,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     mainQuestAct: extractMainQuestActTag(narrative),
     disguisedReveal: extractDisguisedRevealTag(narrative),
     addPOI: extractAddPOITag(narrative),
+    addTerrain: extractAddTerrainTag(narrative),
   };
 }
 
@@ -591,6 +607,28 @@ export function processParsedTags(
               parent: poi.parent ?? null,
             },
           },
+        },
+      };
+    }
+  }
+
+  // Add terrain patch to terrain array
+  if (tags.addTerrain && tags.addTerrain.type && tags.addTerrain.w && tags.addTerrain.h) {
+    const t = tags.addTerrain;
+    const existingTerrain: any[] = (updatedSeed.travelMatrix as any)?.terrain || [];
+    // Avoid duplicates by checking type+x+y
+    const alreadyExists = existingTerrain.some(
+      (e: any) => e.type === t.type && Math.abs(e.x - (t.x ?? 50)) < 5 && Math.abs(e.y - (t.y ?? 50)) < 5
+    );
+    if (!alreadyExists) {
+      updatedSeed = {
+        ...updatedSeed,
+        travelMatrix: {
+          ...(updatedSeed.travelMatrix as any),
+          terrain: [
+            ...existingTerrain,
+            { type: t.type, x: t.x ?? 50, y: t.y ?? 50, w: t.w, h: t.h },
+          ],
         },
       };
     }
