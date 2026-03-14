@@ -250,34 +250,31 @@ function GameContent() {
 
   const playerInfoPanel = player ? (
     <div style={{ background: T.panel, borderBottom: `1px solid ${T.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, maxHeight: '60%' }}>
-      {/* Identity card — includes HP/XP bars and attributes */}
-      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 10 }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center' as const, marginBottom: 8 }}>
-          <div style={{ fontSize: 22, marginBottom: 2 }}>{(CLASSES as any)[player.class]?.icon ?? '⚔️'}</div>
-          <div style={{ ...tf, color: T.gold, fontSize: 14 }}>{player.name}</div>
-          <div style={{ color: T.accent, fontSize: 11, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
-          <div style={{ color: clockColor, fontSize: 10, marginTop: 2, letterSpacing: 1 }}>{clockStr}</div>
+      {/* Identity card — two column: left = icon/name/class, right = HP/XP/attributes */}
+      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 10, display: 'flex', gap: 10 }}>
+        {/* Left: class badge + name + class·level */}
+        <div style={{ textAlign: 'center' as const, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 70 }}>
+          <div style={{ fontSize: 22, marginBottom: 4 }}>{(CLASSES as any)[player.class]?.icon ?? '⚔️'}</div>
+          <div style={{ ...tf, color: T.gold, fontSize: 13 }}>{player.name}</div>
+          <div style={{ color: T.accent, fontSize: 10, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
         </div>
-        {/* HP + XP bars */}
-        <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 7, marginBottom: 7 }}>
+        {/* Divider */}
+        <div style={{ width: 1, background: T.border, flexShrink: 0 }} />
+        {/* Right: HP/XP bars + attributes */}
+        <div style={{ flex: 1, minWidth: 0 }}>
           <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
           <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
-          <div style={{ fontSize: 10, color: T.textFaint, textAlign: 'right' as const, marginTop: 1 }}>Next: {xpCeil} XP</div>
-        </div>
-        {/* Attributes */}
-        <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 7 }}>
-          <div style={{ ...tf, color: T.accent, fontSize: 10, letterSpacing: 2, marginBottom: 6 }}>ATTRIBUTES</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 6 }}>
+          <div style={{ fontSize: 10, color: T.textFaint, textAlign: 'right' as const, marginTop: 1, marginBottom: 6 }}>Next: {xpCeil} XP</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
             {([['STR', 'str'], ['AGI', 'agi'], ['INT', 'int'], ['WIL', 'wil']] as [string, string][]).map(([label, key]) => (
-              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.panel, padding: '4px 6px', border: `1px solid ${T.border}` }}>
+              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.panel, padding: '3px 5px', border: `1px solid ${T.border}` }}>
                 <span style={{ fontSize: 10, color: T.textMuted }}>{label}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ color: T.gold, fontSize: 13, ...tf }}>{(player as any)[key] ?? '—'}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <span style={{ color: T.gold, fontSize: 12, ...tf }}>{(player as any)[key] ?? '—'}</span>
                   {(player?.statPoints ?? 0) > 0 && (
                     <button
                       onClick={() => handleCommand('stat_point:' + key)}
-                      style={{ background: T.accent + '33', border: `1px solid ${T.accent}`, color: T.accent, width: 18, height: 18, fontSize: 12, cursor: 'pointer', padding: 0, lineHeight: '1' }}
+                      style={{ background: T.accent + '33', border: `1px solid ${T.accent}`, color: T.accent, width: 16, height: 16, fontSize: 11, cursor: 'pointer', padding: 0, lineHeight: '1' }}
                     >+</button>
                   )}
                 </div>
@@ -285,7 +282,7 @@ function GameContent() {
             ))}
           </div>
           {(player?.statPoints ?? 0) > 0 && (
-            <div style={{ color: T.gold, fontSize: 12, textAlign: 'center' as const, animation: 'pulse 1.5s infinite' }}>
+            <div style={{ color: T.gold, fontSize: 11, textAlign: 'center' as const, marginTop: 4, animation: 'pulse 1.5s infinite' }}>
               ⬆ {player.statPoints} stat points!
             </div>
           )}
