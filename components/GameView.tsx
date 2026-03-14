@@ -23,6 +23,7 @@ import { MapView } from '@/components/ui/MapView';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 // Screens
+import { CharacterCreationScreen } from '@/components/screens/CharacterCreationScreen';
 import { AuthScreen } from '@/components/screens/AuthScreen';
 import { InventoryScreen } from '@/components/screens/InventoryScreen';
 import { ShopScreen } from '@/components/screens/ShopScreen';
@@ -43,6 +44,7 @@ import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 
 import { CLASSES } from '@/lib/constants';
 import { countItem } from '@/lib/helpers';
+import { generateWorldSeed, INIT_PLAYER } from '@/lib/worldgen';
 
 // ─── Inner component (must live inside ThemeProvider) ─────────────────────────
 
@@ -64,10 +66,81 @@ function GameContent() {
 
   // Guest-mode flag: bypass auth gate without a real JWT
   const [guestMode, setGuestMode] = useState(false);
+  const [newGameLoading, setNewGameLoading] = useState(false);
+
+  /** Start a new game: generate world, init player, get opening narrative */
+  const handleStartNewGame = async (name: string, cls: string) => {
+    setNewGameLoading(true);
+    try {
+      const seed = generateWorldSeed();
+      const worldData = seed.worldData ?? [];
+      // Pick a random village/hamlet as starting location
+      const starters = worldData.filter((d: any) => d.type === 'village' || d.type === 'hamlet');
+      const startLoc: string = starters.length > 0
+        ? starters[Math.floor(Math.random() * starters.length)].name
+        : 'Aethermoor Capital';
+
+      const mainQuestEntry = {
+        id: 'main_' + Date.now(),
+        title: seed.questTitle,
+        objective: 'Investigate the growing darkness across Aethermoor',
+        status: 'active',
+        isMain: true,
+        templateIcon: seed.templateIcon,
+      };
+
+      const player = {
+        ...INIT_PLAYER(name, cls, startLoc, worldData),
+        location: startLoc,
+        exploredLocations: [startLoc],
+        quests: [mainQuestEntry],
+      };
+
+      gameState.setPlayer(player as any);
+      gameState.setWorldSeed(seed as any);
+      gameState.setMessages([]);
+      gameState.setLog([]);
+
+      // Call narrator for opening scene
+      const introMsg = [
+        {
+          role: 'user',
+          content: `Begin the adventure. I am ${player.name}, a ${player.class}. Paint the opening scene in ${player.location}. The world has a shadow over it — ${seed.act1Hook}. Don't name the villain yet. Describe the world around me richly with this dread woven in naturally so I know what I can do. One first hint of the main quest hook should colour the atmosphere.`,
+        },
+      ];
+      gameState.addMessage('user', introMsg[0].content);
+
+      const res = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ messages: introMsg, player, worldSeed: seed }),
+      });
+      const data = await res.json();
+      if (res.ok && data.narrative) {
+        const narrative = data.cleanNarrative || data.narrative;
+        gameState.setNarrative(narrative);
+        gameState.addMessage('assistant', narrative);
+        const finalPlayer = data.player ?? player;
+        const finalSeed = data.worldSeed ?? seed;
+        gameState.setPlayer(finalPlayer);
+        gameState.setWorldSeed(finalSeed);
+        await storage.saveGame(finalPlayer, finalSeed, [
+          ...introMsg,
+          { role: 'assistant', content: narrative },
+        ], narrative, []);
+      } else {
+        gameState.setNarrative('Your adventure begins…');
+        await storage.saveGame(player, seed, introMsg, 'Your adventure begins…', []);
+      }
+    } catch (err) {
+      console.error('New game error:', err);
+    } finally {
+      setNewGameLoading(false);
+    }
+  };
 
 
-
-  // Dungeon hint toast
   const [dungeonHint, setDungeonHint] = useState(false);
   const showDungeonHint = () => {
     setDungeonHint(true);
@@ -173,6 +246,18 @@ function GameContent() {
           <div style={{ fontSize: 14 }}>Loading your adventure…</div>
         </div>
       </div>
+    );
+  }
+
+  // ── Character creation — no save found ──────────────────────────────────────
+
+  if (gameState.isLoaded && !gameState.player) {
+    return (
+      <CharacterCreationScreen
+        onStart={handleStartNewGame}
+        isLoading={newGameLoading}
+        gravestones={[]}
+      />
     );
   }
 
