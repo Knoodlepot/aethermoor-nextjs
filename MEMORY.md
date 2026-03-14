@@ -43,6 +43,16 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Status Effects Expansion**: Added 6 new status effects (fearful, bleeding, cursed, blinded, weakened, chilled) alongside the existing 3 (poisoned, burning, stunned). Total: 9 status effects.
+  - `STATUS_EFFECTS` constant in `lib/constants.ts` — single source of truth for all 9 effects with icon, label, description, and cure text.
+  - `statusEffects?: string[]` added to the `Player` type — effects now persist in saves.
+  - New `{"playerStatus":{"add":"X"}}` / `{"playerStatus":{"remove":"X"}}` narrator tag, wired end-to-end through `tagParsers.ts` / `processParsedTags` / `applyNarrationState`.
+  - `CombatPanel`: replaced hardcoded emoji map with `StatusBadge` component; hovering any effect badge shows a tooltip with description and cure method.
+  - `useGameLoop`: `clearStatus` array now correctly applied when using cure consumables; `ui.setPlayerStatusEffects` synced after narrator response and consumable use (was previously never set).
+  - New cure consumables in `CONSUMABLE_EFFECTS`: Bandage (bleeding), Courage Draught (fearful), Purification Charm (cursed), Eyewash (blinded), Warming Draught (chilled), Tonic of Might (weakened).
+  - Narrator prompt: STATUS EFFECT RULES block — per-effect triggers, WIL/fear immunity rules (WIL 8+ immune to fearful), cure methods, and guard rules.
+  - Fear was already referenced in WIL stat rules but had no corresponding effect — now fully wired.
+
 - **Comprehensive Legal Pages**: Full rewrite of `app/legal/page.tsx` and `Legacy-legal.html`.
   - Nav changed from scroll-anchors to proper tab switching — active tab highlighted gold, other sections hidden.
   - **Terms of Service**: full clauses (eligibility, accounts, virtual currency, acceptable use, IP, UGC, service changes, liability, dispute resolution) + per-jurisdiction provisions covering UK (CRA 2015, CCR 2013, Online Safety Act), EU (CRD, Digital Content Directive, DSA), US (COPPA, CFAA, CCPA, CLRA), Canada (LPCQ, CASL, PIPEDA), Australia/NZ (ACL, CGA), Brazil/LATAM (CDC, Marco Civil, Law 24.240, PROFECO, Law 1480, Law 19.496), Asia-Pacific (Japan, South Korea, China, Singapore, India, Thailand + Malaysia/Philippines/Indonesia/Vietnam), Africa (ECT Act, CPA 68/2008, POPIA, Kenya DPA, FCCPA, NDPA, Ghana CPA Act).
@@ -168,6 +178,7 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
+| current | Status effects expanded: fearful, bleeding, cursed, blinded, weakened, chilled added; playerStatus tag; CombatPanel tooltips; clearStatus consumable wiring |
 | current | Mini Map in right sidebar below Side Quest Panel — click to open full map |
 | current-prev | Side Quest Panel in right sidebar; Main Quest tab in Quest Log (act timeline); Faction quest tab; track toggle on all quests; abandon quest with confirm |
 | current-prev | Legacy comparison pass: fixed 3 skill IDs (unbreakable/ghost_walk/avatar_divine), ported 10 canonical factions with rich join offers, added tiered gear shop system, faction gear sets, rank gear, protected/concealed item lists |

@@ -7,7 +7,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- **Comprehensive legal pages**: The Terms of Service, Privacy Policy, and Refund Policy have each been expanded into full, detailed documents and now each open in their own tab. The policies cover players worldwide, with specific sections for the United Kingdom, European Union, United States, Canada, Australia and New Zealand, Brazil and Latin America, the Asia-Pacific region, and Africa — citing the applicable laws and your rights in each region.
+- **Six new status effects**: Fear, Bleeding, Cursed, Blinded, Weakened, and Chilled join the existing Poisoned, Burning, and Stunned — bringing the full roster to nine. Each effect now has a proper description and can be applied and removed by the narrator during combat and exploration.
+  - **Fearful** 😨 — dread clouds your mind; you may freeze or hesitate, and attacks are penalised. Your Willpower resists or even blocks this effect entirely at high levels.
+  - **Bleeding** 🩸 — an open wound bleeds steadily, losing 3 HP per turn until you bind it.
+  - **Cursed** 🌑 — dark magic gnaws at your spirit, reducing your Willpower and Intellect.
+  - **Blinded** 🙈 — your vision is stripped away, causing heavy penalties to accuracy and agility.
+  - **Weakened** 💔 — your muscles betray you; Strength is halved until you recover.
+  - **Chilled** ❄️ — cold seeps into your bones, reducing Agility and slowing your initiative.
+- **Status effect tooltips**: Hovering over any status effect badge in the combat panel now shows a tooltip explaining what the effect does and exactly how to cure it.
+- **New cure items**: Six dedicated remedy items have been added — Bandage (stops bleeding), Courage Draught (clears fear), Purification Charm (lifts curses), Eyewash (restores sight), Warming Draught (thaws the chill), and Tonic of Might (restores strength).
+- **Status effects now persist**: Your active status effects are saved with your game and restored when you load — the narrator remembers you are poisoned, bleeding, or cursed between sessions.
+
+
 
 ### Added
 - **Three save slots**: Your progress is now stored across three separate save slots. Click **Save** in the top toolbar to choose which slot to write to — existing saves show your character name, class, level, location, and the date last saved. Empty slots show clearly. Overwriting a different slot asks for confirmation first.
