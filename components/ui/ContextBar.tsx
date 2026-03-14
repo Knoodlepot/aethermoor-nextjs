@@ -10,6 +10,12 @@ interface ContextBarProps {
   isLoading: boolean;
   isDyslexic?: boolean;
   locationGrid?: Record<string, any>;
+  onShop?: () => void;
+  onSkills?: () => void;
+  onQuests?: () => void;
+  onMap?: () => void;
+  activeQuestCount?: number;
+  skillPts?: number;
 }
 
 const TIER_ICONS: Record<string, string> = {
@@ -37,7 +43,7 @@ function locationIcon(locationName: string | undefined, locationGrid?: Record<st
   return TIER_ICONS[tier] ?? '🌲';
 }
 
-export function ContextBar({ player, isLoading, isDyslexic, locationGrid }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop, onSkills, onQuests, onMap, activeQuestCount = 0, skillPts = 0 }: ContextBarProps) {
   const { T } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -83,11 +89,82 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid }: Cont
       <span style={{ ...tf, color: T.gold, fontSize: 10, letterSpacing: 1 }}>
         {ctx === 'travel' && dest ? `${player?.location} → ${dest}` : player?.location}
       </span>
-      {isLoading && (
-        <span style={{ color: T.textFaint, fontSize: 10, fontStyle: 'italic', marginLeft: 'auto', fontFamily: 'Crimson Text,serif' }}>
-          weaving story...
-        </span>
-      )}
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+        {isLoading && (
+          <span style={{ color: T.textFaint, fontSize: 10, fontStyle: 'italic', fontFamily: 'Crimson Text,serif', marginRight: 4 }}>
+            weaving story...
+          </span>
+        )}
+        {(onShop || onSkills || onQuests || onMap) && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            {onShop && (
+              <button
+                onClick={onShop}
+                disabled={!['town', 'npc'].includes(ctx)}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${['town', 'npc'].includes(ctx) ? T.accent : T.border}`,
+                  color: ['town', 'npc'].includes(ctx) ? T.gold : T.textFaint,
+                  padding: '2px 6px', fontSize: 9, cursor: ['town', 'npc'].includes(ctx) ? 'pointer' : 'not-allowed',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
+                  opacity: ['town', 'npc'].includes(ctx) ? 1 : 0.4,
+                  whiteSpace: 'nowrap' as const,
+                }}
+              >🛒 Shop</button>
+            )}
+            {onSkills && (
+              <button
+                onClick={onSkills}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${T.accent}`,
+                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
+                  position: 'relative' as const, whiteSpace: 'nowrap' as const,
+                }}
+              >
+                🌿 Skills
+                {skillPts > 0 && (
+                  <span style={{ position: 'absolute', top: -3, right: -3, background: '#60a060', color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {skillPts}
+                  </span>
+                )}
+              </button>
+            )}
+            {onQuests && (
+              <button
+                onClick={onQuests}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${T.accent}`,
+                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
+                  position: 'relative' as const, whiteSpace: 'nowrap' as const,
+                }}
+              >
+                📜 Quests
+                {activeQuestCount > 0 && (
+                  <span style={{ position: 'absolute', top: -3, right: -3, background: T.accent, color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {activeQuestCount}
+                  </span>
+                )}
+              </button>
+            )}
+            {onMap && (
+              <button
+                onClick={onMap}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${T.accent}`,
+                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
+                  whiteSpace: 'nowrap' as const,
+                }}
+              >🗺️ Map</button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

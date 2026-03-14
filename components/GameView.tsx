@@ -386,6 +386,12 @@ function GameContent() {
         isLoading={gameLoop.isLoading}
         isDyslexic={isDyslexic}
         locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
+        onShop={() => ui.toggleModal('shop')}
+        onSkills={() => ui.toggleModal('skillTree')}
+        onQuests={() => ui.toggleModal('questLog')}
+        onMap={() => ui.toggleModal('map')}
+        activeQuestCount={activeQuestCount}
+        skillPts={skillPts}
       />
       {/* Scrollable info area */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -535,9 +541,13 @@ function GameContent() {
         isLoading={gameLoop.isLoading}
         isDyslexic={isDyslexic}
         locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
+        onShop={() => ui.toggleModal('shop')}
+        onSkills={() => ui.toggleModal('skillTree')}
+        onQuests={() => ui.toggleModal('questLog')}
+        onMap={() => ui.toggleModal('map')}
+        activeQuestCount={activeQuestCount}
+        skillPts={skillPts}
       />
-
-      {/* Commands + combat info */}
       <div
         style={{
           padding: '10px 12px',
