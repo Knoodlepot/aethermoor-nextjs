@@ -9,27 +9,35 @@ interface ContextBarProps {
   player: Player | null;
   isLoading: boolean;
   isDyslexic?: boolean;
+  locationGrid?: Record<string, any>;
 }
 
 const TIER_ICONS: Record<string, string> = {
-  hamlet:  '🏚️',
-  village: '🏘️',
-  town:    '🏛️',
-  city:    '🏰',
-  capital: '👑',
-  poi:     '⚠️',
-  dungeon: '🗝️',
+  hamlet:         '🏚️',
+  village:        '🏘️',
+  town:           '🏛️',
+  city:           '🏰',
+  capital:        '👑',
+  poi:            '⚠️',
+  dungeon:        '🗝️',
+  farm_arable:    '🌾',
+  farm_livestock: '🐄',
+  farm_mixed:     '🚜',
 };
 
-function locationIcon(locationName: string | undefined): string {
+function locationIcon(locationName: string | undefined, locationGrid?: Record<string, any>): string {
   if (!locationName) return '🌲';
   const lower = locationName.toLowerCase();
   if (lower.includes('dungeon')) return '🗝️';
+  // Check locationGrid type first (most accurate)
+  const gridEntry = locationGrid?.[locationName];
+  if (gridEntry?.type && TIER_ICONS[gridEntry.type]) return TIER_ICONS[gridEntry.type];
+  // Fallback to LOCATION_TIERS
   const tier = LOCATION_TIERS[locationName];
   return TIER_ICONS[tier] ?? '🌲';
 }
 
-export function ContextBar({ player, isLoading, isDyslexic }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic, locationGrid }: ContextBarProps) {
   const { T } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -46,12 +54,12 @@ export function ContextBar({ player, isLoading, isDyslexic }: ContextBarProps) {
     npc:     { label: 'Talking',     color: '#4070a0', icon: '💬' },
     camp:    { label: 'Camped',      color: '#a06020', icon: '🔥' },
     travel:  { label: 'Travelling',  color: '#5080a0', icon: '🚶' },
-    dungeon: { label: 'In Dungeon',  color: '#805090', icon: '🗝️' },
+    farm:    { label: 'At Farm',     color: '#6a8040', icon: '🌾' },
     poi:     { label: 'At Location', color: '#806030', icon: '⚠️' },
   };
   const ctxData = ctxInfo[ctx] || ctxInfo.explore;
 
-  const locIcon = locationIcon(player?.location);
+  const locIcon = locationIcon(player?.location, locationGrid);
   const dest = (player as any)?.travelDestination;
 
   return (

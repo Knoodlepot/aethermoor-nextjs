@@ -410,7 +410,7 @@ function buildNarratorSystem(p: any, w: any): string {
     let gridStr = '';
     if (lg && typeof lg === 'object') {
       const gridLines: string[] = [];
-      const TIERS = ['capital', 'city', 'town', 'village'];
+      const TIERS = ['capital', 'city', 'town', 'village', 'hamlet'];
       const mainLocs = Object.entries(lg)
         .filter(([, v]: [string, any]) => !v.isPOI && TIERS.includes(v.type))
         .sort((a: any, b: any) => TIERS.indexOf(a[1].type) - TIERS.indexOf(b[1].type));
@@ -426,7 +426,7 @@ function buildNarratorSystem(p: any, w: any): string {
       if (poiLocs.length) {
         gridLines.push('  POIs (within ~15h of parent):');
         for (const [locName, v] of (poiLocs.slice(0, 40) as [string, any][])) {
-          gridLines.push(`    ${sanitiseStr(locName, 28)} near ${sanitiseStr(v.parent || '?', 24)} [${v.x},${v.y}]`);
+          gridLines.push(`    ${sanitiseStr(locName, 28)} [${v.type || 'poi'}] near ${sanitiseStr(v.parent || '?', 24)} [${v.x},${v.y}]`);
         }
       }
       gridStr = '\nLOCATION GRID (coord [x,y] on 0–100 map; 1 unit ≈ 1.5h foot; route through waypoints):\n' + gridLines.join('\n');
@@ -508,7 +508,7 @@ RULES:
 - DO NOT offer numbered choices — the player uses a command panel to choose actions
 - SAFETY RULE: Never produce sexual/erotic content, nudity, porn, content involving minors, torture porn, gratuitous gore fetishism, depravity, abuse fetish content, or self-harm/suicide encouragement. Combat, killing, assassination, and dark fantasy violence are permitted and should be written with grim atmosphere — not sanitised, not gratuitous.
 - Describe the scene richly so the player knows what they can do
-- After each response include EXACTLY this on its own line, no code fences: {"context":"X"} where X is one of: explore, town, combat, npc, camp, dungeon
+- After each response include EXACTLY this on its own line, no code fences: {"context":"X"} where X is one of: explore, town, combat, npc, camp, dungeon, farm
 - Reward class/stats: Rogues notice shadows, Mages sense magic, etc.
 - When combat: describe vividly, note damage e.g. "you take 12 damage"
 - COMBAT GORE STYLE: Aethermoor uses a grim, gothic tone. Violence should have weight and consequence — never gratuitous, never a slasher film, but never sanitised either. Follow these tiers:
@@ -544,6 +544,7 @@ RULES:
 - TRAVEL RULE: Never move the player to a distant location automatically. End your response at the moment of decision — describe what lies ahead and let the player choose whether to go
 - TRAVEL TIME RULE: Use the LOCATION GRID above to estimate travel times. Formula: distance = sqrt((x1-x2)²+(y1-y2)²); foot hours ≈ distance×1.5. For multi-stop journeys, route through intermediate settlements (not crow-flies) — pick the nearest waypoint and sum the legs. Scale by transport: horse ×2.5, wagon ×1.5 (roads only), barge ×3 (river access at both ends or along route), boat ×4 (harbour required at origin and destination or coastal route). If a location has the harbour flag, sea transport is available from it. Always mention if a route requires crossing water or following the coast. Express times under 12h as hours, longer as days. Give at least 2 transport options where geography allows.
 - LOCATION RULE: All settlement names, city names, town names, hamlet names, and place names you reference in your narrative MUST be drawn exclusively from the LOCATION GRID in the data section above. Never invent, fabricate, abbreviate, or alter location names. Do not create cities, towns, villages, hamlets, or landmarks that are not listed. If a player travels somewhere or asks about a location, use the exact name as it appears in the LOCATION GRID.
+- FARM RULE: Every hamlet, village, town, city, and capital in the LOCATION GRID has a nearby farm that produces food and trade goods for the local economy. When the player first visits or asks about farmland near any settlement, emit on its own line: {"addPOI":{"name":"[Settlement] Farmstead","type":"farm_arable","parent":"[Settlement]","x":[settlement_x+2],"y":[settlement_y+2]}} — use type "farm_livestock" for coastal/river settlements, "farm_mixed" for cities and capitals. Name the farm "[Settlement Name] Farmstead" or similar. Only emit addPOI once per farm (check if the farm already exists in the LOCATION GRID before emitting). Farms support these player interactions: (1) buy Rations (5g each, up to 5), buy Medicinal Herb (3g each); (2) hire on as a farmhand — work 4–8 hours, earn 2 gold per hour, emit {"goldChange":N} and {"timePass":{"hours":N}}; (3) forage/gather ingredients from nearby fields — award Bitter Root, Glowcap Mushroom, or Firewood via {"grant":{"item":"ItemName"}}. Set context to "farm" when the player arrives at the farm.
 - ITEM GRANT RULE: When you narratively give the player a physical object (token, key, letter, map, scroll, pouch, etc.) OR when a conversational purchase concludes and the item is handed over, emit on its own line: {"grant":{"item":"ItemName"}}
 - ABILITY GRANT RULE: When a named NPC explicitly completes the act of teaching the player a new skill, power, or gift — not when it is merely discussed or offered, but when the teaching moment is fully concluded — emit on its own line: {"grantAbility":"AbilityName"} using the exact ability name. The only ability currently teachable this way is "Spirit Sight" (taught by Sanam upon full resolution of his quest). Do not invent new ability names.
 - ITEM REMOVE RULE: When the player clearly gives, hands over, trades away, donates, or surrenders an item from their own inventory to someone else, emit on its own line: {"remove":{"item":"ItemName"}} using the exact item name if known.

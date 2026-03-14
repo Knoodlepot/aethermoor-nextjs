@@ -385,6 +385,7 @@ function GameContent() {
         player={gameState.player}
         isLoading={gameLoop.isLoading}
         isDyslexic={isDyslexic}
+        locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
       />
       {/* Scrollable info area */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -533,6 +534,7 @@ function GameContent() {
         player={gameState.player}
         isLoading={gameLoop.isLoading}
         isDyslexic={isDyslexic}
+        locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
       />
 
       {/* Commands + combat info */}

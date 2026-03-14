@@ -31,6 +31,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"suggestions"\s*:[\s\S]*/g, ''); // Catch truncated suggestions
   t = t.replace(/\{"mainQuestAct"\s*:\s*"[^"]+"\}/g, '');
   t = t.replace(/\{"disguisedReveal"\s*:\s*\[[^\]]*\]\}/g, '');
+  t = t.replace(/\{"addPOI"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
   t = t.replace(/```[a-z]*\s*\{"context"\s*:\s*"\w+"\}\s*```/g, '');
   t = t.replace(/```[a-z]*\s*```/g, '');
@@ -305,7 +306,19 @@ export function extractDisguisedRevealTag(text: string): string[] | null {
 }
 
 /**
- * Parse all tags from AI response
+ * Extract addPOI tag: {"addPOI":{"name":"...","type":"farm_arable|farm_livestock|farm_mixed","parent":"Settlement","x":N,"y":N}}
+ */
+export function extractAddPOITag(text: string): any {
+  const m = text.match(/\{"addPOI"\s*:\s*(\{[^}]+\})\}/);
+  if (!m) return null;
+  try {
+    return JSON.parse(m[1]);
+  } catch {
+    return null;
+  }
+}
+
+/**
  */
 export interface ParsedTags {
   context: string | null;
@@ -329,6 +342,7 @@ export interface ParsedTags {
   shopPrice: any;
   mainQuestAct: string | null;
   disguisedReveal: string[] | null;
+  addPOI: any;
 }
 
 /**
@@ -357,6 +371,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     shopPrice: extractShopPriceTag(narrative),
     mainQuestAct: extractMainQuestActTag(narrative),
     disguisedReveal: extractDisguisedRevealTag(narrative),
+    addPOI: extractAddPOITag(narrative),
   };
 }
 
@@ -555,6 +570,30 @@ export function processParsedTags(
       ...updatedPlayer,
       disguisedItemsRevealed: [...new Set([...currentRevealed, ...tags.disguisedReveal])],
     };
+  }
+
+  // Add POI to locationGrid (farms, etc.)
+  if (tags.addPOI && tags.addPOI.name && tags.addPOI.type) {
+    const poi = tags.addPOI;
+    const existingGrid = (updatedSeed.travelMatrix as any)?.locationGrid || {};
+    if (!existingGrid[poi.name]) {
+      updatedSeed = {
+        ...updatedSeed,
+        travelMatrix: {
+          ...(updatedSeed.travelMatrix as any),
+          locationGrid: {
+            ...existingGrid,
+            [poi.name]: {
+              x: poi.x ?? 50,
+              y: poi.y ?? 50,
+              type: poi.type,
+              isPOI: true,
+              parent: poi.parent ?? null,
+            },
+          },
+        },
+      };
+    }
   }
 
   return {
