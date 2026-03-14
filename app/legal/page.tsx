@@ -333,6 +333,8 @@ export default function LegalPage() {
       fontFamily: 'Georgia, serif',
       lineHeight: 1.6,
       minHeight: '100dvh',
+      height: '100dvh',
+      overflowY: 'auto',
     }}>
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px 48px' }}>
         <h1 style={{ color: '#f0c060', fontFamily: '"Cinzel", Georgia, serif', letterSpacing: 1 }}>
