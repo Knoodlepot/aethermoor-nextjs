@@ -16,6 +16,7 @@ import { ContextBar } from '@/components/ui/ContextBar';
 import { InputBar } from '@/components/panels/InputBar';
 import { CombatPanel } from '@/components/panels/CombatPanel';
 import { MainQuestPanel } from '@/components/panels/MainQuestPanel';
+import { SideQuestPanel } from '@/components/panels/SideQuestPanel';
 
 // UI
 import { NarrativePanel } from '@/components/ui/NarrativePanel';
@@ -504,6 +505,13 @@ function GameContent() {
             onOpen={() => ui.toggleModal('questLog')}
           />
         )}
+        <SideQuestPanel
+          quests={gameState.player?.quests || []}
+          onOpenQuest={(questId) => ui.openQuestLogAt(questId)}
+          onToggleTrack={(questId) => handleCommand('toggle_quest_track:' + questId)}
+          onAbandon={(questId) => handleCommand('abandon_quest:' + questId)}
+          onOpenLog={() => ui.openModal('questLog')}
+        />
       </div>
 
       {/* Action buttons at bottom of right column (legacy style) */}
@@ -798,6 +806,10 @@ function GameContent() {
           worldSeed={gameState.worldSeed}
           onClose={() => ui.closeModal('questLog')}
           onDismiss={(questId: string) => handleCommand('dismiss_quest:' + questId)}
+          onAbandon={(questId: string) => handleCommand('abandon_quest:' + questId)}
+          onToggleTrack={(questId: string) => handleCommand('toggle_quest_track:' + questId)}
+          initialQuestId={ui.questLogInitialId}
+          onInitialQuestIdConsumed={ui.clearQuestLogInitialId}
         />
       )}
 

@@ -137,7 +137,7 @@ export interface Quest {
   id: string;
   title: string;
   objective: string;
-  status: "active" | "completed";
+  status: "active" | "completed" | "failed";
   reward: string;
   giver: string;
   givenDay: number;
@@ -145,6 +145,8 @@ export interface Quest {
   type: "main" | "faction" | "side" | "contract";
   factionId?: string;
   factionRank?: number;
+  location?: string;
+  tracked?: boolean;
 }
 
 // World Seed (Persistent world state)

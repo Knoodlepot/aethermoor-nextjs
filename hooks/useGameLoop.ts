@@ -388,6 +388,34 @@ export function useGameLoop(
           return { success: true };
         }
 
+        // ── abandon_quest:<questId> ──
+        if (command.startsWith('abandon_quest:')) {
+          const questId = command.slice('abandon_quest:'.length);
+          updatedPlayer = {
+            ...updatedPlayer,
+            quests: (updatedPlayer.quests || []).map((q) =>
+              q.id === questId ? { ...q, status: 'failed' as const } : q
+            ),
+          };
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative, gs.log);
+          return { success: true };
+        }
+
+        // ── toggle_quest_track:<questId> ──
+        if (command.startsWith('toggle_quest_track:')) {
+          const questId = command.slice('toggle_quest_track:'.length);
+          updatedPlayer = {
+            ...updatedPlayer,
+            quests: (updatedPlayer.quests || []).map((q) =>
+              q.id === questId ? { ...q, tracked: !(q.tracked ?? true) } : q
+            ),
+          };
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative, gs.log);
+          return { success: true };
+        }
+
         // 1. Add user message to conversation history
         const userMessages = [...gs.messages.slice(-19), { role: 'user', content: command }];
         gs.setMessages(userMessages);

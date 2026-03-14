@@ -76,6 +76,11 @@ export interface UIContext {
   // Vision menu
   showVisionMenu: boolean;
   setShowVisionMenu: (show: boolean) => void;
+
+  // Quest log deep-link
+  questLogInitialId: string | null;
+  openQuestLogAt: (questId: string) => void;
+  clearQuestLogInitialId: () => void;
 }
 
 /**
@@ -130,6 +135,18 @@ export function useUI(): UIContext {
 
   // Vision menu
   const [showVisionMenu, setShowVisionMenu] = useState(false);
+
+  // Quest log deep-link
+  const [questLogInitialId, setQuestLogInitialId] = useState<string | null>(null);
+
+  const openQuestLogAt = useCallback((questId: string) => {
+    setQuestLogInitialId(questId);
+    setShowQuestLog(true);
+  }, []);
+
+  const clearQuestLogInitialId = useCallback(() => {
+    setQuestLogInitialId(null);
+  }, []);
 
   /**
    * Open a modal by name
@@ -289,5 +306,8 @@ export function useUI(): UIContext {
     setMobileTab,
     showVisionMenu,
     setShowVisionMenu,
+    questLogInitialId,
+    openQuestLogAt,
+    clearQuestLogInitialId,
   };
 }
