@@ -68,6 +68,13 @@ function GameContent() {
   // Story/Map tab toggle (left column, desktop)
   const [leftTab, setLeftTab] = useState<'story' | 'map'>('story');
 
+  // Dungeon hint toast
+  const [dungeonHint, setDungeonHint] = useState(false);
+  const showDungeonHint = () => {
+    setDungeonHint(true);
+    setTimeout(() => setDungeonHint(false), 4500);
+  };
+
   // Stable setState references for effects
   const { setIsMobile } = ui;
 
@@ -328,7 +335,7 @@ function GameContent() {
       {tbBtn('📝 Patch', () => ui.openModal('patchNotes'))}
       {badgeBtn('🌿 Skills', () => ui.toggleModal('skillTree'), { count: skillPts, color: '#60a060' })}
       <button
-        onClick={() => dungeonAvailable ? handleCommand('enter_dungeon') : undefined}
+        onClick={() => dungeonAvailable ? handleCommand('enter_dungeon') : !atCapital ? showDungeonHint() : undefined}
         title={atCapital ? (inDungeon ? 'Already in the dungeon' : 'Enter the Dungeon of Echoes') : 'Travel to Aethermoor Capital to access the Dungeon of Echoes'}
         style={{
           background: dungeonAvailable ? 'rgba(100,20,20,0.35)' : 'transparent',
@@ -342,6 +349,19 @@ function GameContent() {
           transition: 'all 0.3s',
         }}
       >🕳️ Dungeon</button>
+      {/* Dungeon hint toast */}
+      {dungeonHint && (
+        <div style={{
+          position: 'fixed' as const, bottom: 80, left: '50%', transform: 'translateX(-50%)',
+          background: '#0d0610', border: '1px solid #6b2a8a', color: '#c89ad8',
+          padding: '12px 20px', fontSize: 13, fontFamily: "'Crimson Text',Georgia,serif",
+          fontStyle: 'italic', lineHeight: 1.7, maxWidth: 320, textAlign: 'center' as const,
+          zIndex: 9999, boxShadow: '0 4px 24px #00000099', animation: 'slideIn 0.3s ease',
+          pointerEvents: 'none' as const,
+        }}>
+          "Those who seek the Dungeon of Echoes must first stand before the seat of power... where the Capital's spires pierce the sky, a darkness waits beneath."
+        </div>
+      )}
     </div>
   );
 
