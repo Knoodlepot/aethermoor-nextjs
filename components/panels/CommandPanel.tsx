@@ -54,56 +54,34 @@ export function CommandPanel({ player, onCommand, isLoading, isDyslexic }: Comma
             alignItems: 'center',
             justifyContent: 'center',
             gap: 3,
-            padding: '8px 4px',
-            fontSize: 20,
-            transition: 'all 0.15s',
-            opacity: available ? 1 : 0.25,
-            ...btnFont,
-          }}
-          onMouseEnter={(e) => {
-            if (available) {
-              e.currentTarget.style.background = T.accent + '22';
-              e.currentTarget.style.borderColor = T.accent;
-              e.currentTarget.style.color = T.gold;
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = available ? T.panel : 'transparent';
-            e.currentTarget.style.borderColor = available ? T.border : T.border + '44';
-            e.currentTarget.style.color = available ? T.text : T.textFaint + '66';
-          }}
-        >
-          <span style={{ fontSize: 18, lineHeight: 1 }}>{cmd.icon}</span>
-          <span style={{ fontSize: 9, letterSpacing: 0.5, lineHeight: 1.2, textAlign: 'center', ...tf, color: 'inherit' }}>
-            {cmd.label.toUpperCase()}
-          </span>
-        </button>
-      </div>
-    );
-  };
-
-  return (
-    <div style={{ borderTop: `1px solid ${T.border}`, background: T.panelAlt }}>
-      {/* Context bar */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '6px 16px',
-          borderBottom: `1px solid ${T.border}`,
-          background: ctxData.color + '18',
-          flexWrap: 'wrap',
-        }}
-      >
-        <span style={{ fontSize: 14 }}>{ctxData.icon}</span>
-        <span style={{ ...tf, color: ctxData.color, fontSize: 10, letterSpacing: 2 }}>
-          {ctxData.label.toUpperCase()}
-        </span>
-        <div style={{ width: 1, height: 12, background: T.border, margin: '0 2px', flexShrink: 0 }} />
-        <span style={{ fontSize: 13 }}>📍</span>
-        <span style={{ ...tf, color: T.gold, fontSize: 10, letterSpacing: 1 }}>{player?.location}</span>
-        {isLoading && (
+            return (
+              <div style={{ borderTop: `1px solid ${T.border}`, background: T.panelAlt }}>
+                {/* Button grid */}
+                <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {COMMAND_GROUPS.map((group) => {
+                    const hasActive = group.commands.some((c) => c.context.includes(ctx));
+                    return (
+                      <div key={group.label}>
+                        <div
+                          style={{
+                            ...btnFont,
+                            fontSize: 10,
+                            color: T.textFaint,
+                            marginBottom: 2,
+                            letterSpacing: 1,
+                          }}
+                        >
+                          {group.label}
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                          {group.commands.filter((c) => c.context.includes(ctx)).map(actionBtn)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
           <span style={{ color: T.textFaint, fontSize: 10, fontStyle: 'italic', marginLeft: 'auto', fontFamily: 'Crimson Text,serif' }}>
             weaving story...
           </span>

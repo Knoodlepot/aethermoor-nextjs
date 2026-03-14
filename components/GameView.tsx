@@ -21,6 +21,7 @@ import { useGameLoop } from '@/hooks/useGameLoop';
 // Panels
 import { CommandPanel } from '@/components/panels/CommandPanel';
 import { MobileCommandPanel } from '@/components/panels/MobileCommandPanel';
+import { ContextBar } from '@/components/ui/ContextBar';
 import { InputBar } from '@/components/panels/InputBar';
 import { CombatPanel } from '@/components/panels/CombatPanel';
 import { MainQuestPanel } from '@/components/panels/MainQuestPanel';
@@ -362,6 +363,12 @@ function GameContent() {
     >
       {/* Player info panel at the top */}
       {playerInfoPanel}
+      {/* Context/location bar */}
+      <ContextBar
+        player={gameState.player}
+        isLoading={gameLoop.isLoading}
+        isDyslexic={isDyslexic}
+      />
       {/* Scrollable info area */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {ui.currentEnemy && (
@@ -404,20 +411,26 @@ function GameContent() {
         flexWrap: 'wrap',
         alignItems: 'center',
         userSelect: 'none' as const,
+        justifyContent: 'space-between',
       }}
     >
-      {tbBtn('Inventory', () => ui.toggleModal('inventory'), ui.showInventory)}
-      {tbBtn('Shop', () => ui.toggleModal('shop'), ui.showShop)}
-      {tbBtn('Quests', () => ui.toggleModal('questLog'), ui.showQuestLog)}
-      {tbBtn('Bestiary', () => ui.toggleModal('bestiary'), ui.showBestiary)}
-      {tbBtn('Skills', () => ui.toggleModal('skillTree'), ui.showSkillTree)}
-      {tbBtn('Standings', () => ui.toggleModal('standings'), ui.showStandings)}
-      {tbBtn('Crafting', () => ui.toggleModal('crafting'), ui.showCrafting)}
-      {tbBtn('Map', () => ui.setMapOpen(!ui.mapOpen), ui.mapOpen)}
-      {tbBtn('Guide', () => ui.openModal('howToPlay'))}
-      {tbBtn('Patch Notes', () => ui.openModal('patchNotes'))}
-      {tbBtn('Home', () => router.push('/'))}
-      {auth.token && tbBtn('Logout', () => void auth.logout())}
+      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+        {tbBtn('Inventory', () => ui.toggleModal('inventory'), ui.showInventory)}
+        {tbBtn('Shop', () => ui.toggleModal('shop'), ui.showShop)}
+        {tbBtn('Quests', () => ui.toggleModal('questLog'), ui.showQuestLog)}
+        {tbBtn('Bestiary', () => ui.toggleModal('bestiary'), ui.showBestiary)}
+        {tbBtn('Skills', () => ui.toggleModal('skillTree'), ui.showSkillTree)}
+        {tbBtn('Standings', () => ui.toggleModal('standings'), ui.showStandings)}
+        {tbBtn('Crafting', () => ui.toggleModal('crafting'), ui.showCrafting)}
+        {tbBtn('Map', () => ui.setMapOpen(!ui.mapOpen), ui.mapOpen)}
+        {tbBtn('Guide', () => ui.openModal('howToPlay'))}
+        {tbBtn('Patch Notes', () => ui.openModal('patchNotes'))}
+        {tbBtn('Home', () => router.push('/'))}
+        {auth.token && tbBtn('Logout', () => void auth.logout())}
+      </div>
+      <div style={{ marginLeft: 'auto', fontFamily: tf.fontFamily, color: clockColor, fontSize: 13, letterSpacing: 1, minWidth: 90, textAlign: 'right' }}>
+        {clockStr}
+      </div>
     </div>
   );
 
@@ -461,6 +474,13 @@ function GameContent() {
           onSuggestionSelect={(s) => ui.setPendingSuggestion(s)}
         />
       </div>
+
+      {/* Context/location bar */}
+      <ContextBar
+        player={gameState.player}
+        isLoading={gameLoop.isLoading}
+        isDyslexic={isDyslexic}
+      />
 
       {/* Commands + combat info */}
       <div
