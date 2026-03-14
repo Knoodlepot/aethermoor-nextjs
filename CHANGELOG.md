@@ -26,6 +26,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Skill tree updates: several Tier III skills now explicitly let the narrator notice and respond to your mastery — Unbreakable, Ghost Walk, Avatar of Light, Warlord's Presence, Resurrection Light, and Berserker Rage.
 
 ### Fixed
+- Faction gifts, quest keys, and rank gear no longer appear in the shop sell list — protected items cannot be sold.
+- Tiered gear (Enchanted Blade, Masterwork Sword, etc.) now shows correct sell prices instead of 10g for everything.
+- Shop stock now updates when you level up, so new tier gear appears without needing to travel first.
 - Warrior Tier III skill corrected to **Unbreakable** — the narrator now reacts to this milestone as intended.
 - Rogue Tier III skill corrected to **Ghost Walk** — the narrator's 25% attack-negation narrative now triggers correctly.
 - Cleric Tier III skill corrected to **Avatar of Light** (id: avatar_divine) — the narrator's divine-avatar narrative now triggers correctly.

@@ -34,15 +34,17 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **ShopScreen sell fixes**: Protected items (faction gifts, rank gear, quest keys) filtered from the sell tab — cannot be sold. Sell prices for tiered gear now use canonical prices (Enchanted Blade 280g → 140g sell) instead of 10g fallback. Shop stock now re-evaluates on level-up so tiered gear appears without travelling.
+- **Sell handler protection**: `sell:` short-circuit in `useGameLoop.ts` now rejects protected items before removing from inventory.
 - **Deterministic command handlers**: Added short-circuit handlers in `hooks/useGameLoop.ts` for all UI-driven commands that previously sent to narrator but never changed state: `join_faction:`, `decline_faction:`, `rival_faction:`, `buy:`, `sell:`, `equip:`, `unequip:`, `drop:`, `craft:`, `dismiss_quest:`. These now apply state changes immediately without a narrator call.
 - **Equip slot fix**: Replaced `getItemSlotEx` in `lib/helpers.ts` with a proper implementation using a static item-to-slot map, TIERED_GEAR lookup, and type-based fallback. Previously all Armour-type items incorrectly resolved to the "offhand" slot; now body armour, helmets, and boots resolve to their correct slots.
-- **Faction join**: Joining a faction now grants the correct gift item (signet/token/etc.), applies +50 starting XP to the joined faction, applies -30 XP to the rival faction, and clears any pending offer.
-- **Faction decline**: Declining 2+ factions now correctly triggers The Forgotten's offer (alternate pitch variant). Rival-faction rejections apply a -50 standing penalty.
+- **Faction join**: Joining a faction now grants the correct gift item, applies +50 starting XP to the joined faction, -30 XP to the rival faction, and clears any pending offer.
+- **Faction decline**: Declining 2+ factions now correctly triggers The Forgotten's offer. Rival-faction rejections apply a -50 standing penalty.
 - **Craft handler**: Validates crafting level, consumes all required ingredients (case-insensitive), produces results, and awards crafting XP.
-- **Skill tree fixes (P0)**: Fixed three Tier III skill IDs that the narrator route checks for but were misnamed in the UI: Warrior `last_stand` → `unbreakable`; Rogue `phantom` → `ghost_walk`; Cleric `avatar` → `avatar_divine`. Players who unlock these now receive the correct narrator responses.
-- **Canonical factions (P1)**: Replaced 8 placeholder factions (`warriors_guild`, `thieves_guild`, etc.) with the 10 canonical factions from the legacy game (`iron_conclave`, `shadowmere_guild`, `ember_circle`, `silver_hand`, `thornwood_druids`, `merchants_compact`, `crowns_watch`, `the_forgotten`, `arcane_academy`, `sea_wolves`). FACTIONS and FACTION_JOIN_OFFERS now exported from `lib/constants.ts` and shared between `StandingsScreen.tsx` and `FactionOfferModal.tsx`.
-- **Tiered gear (P2)**: Added `TIERED_GEAR` constant (13 items, tier 2–4, levels 5/10/15) to `lib/constants.ts`. Updated `generateShopStock` in `lib/helpers.ts` to inject level-appropriate gear into shop stock based on player level and location tier.
-- **Faction gear sets (P3)**: Added `FACTION_SETS`, `FACTION_RANK_GEAR`, `CONCEALED_ITEMS`, and `PROTECTED_ITEMS` to `lib/constants.ts`.
+- **Skill tree fixes (P0)**: Fixed three Tier III skill IDs: Warrior `last_stand` → `unbreakable`; Rogue `phantom` → `ghost_walk`; Cleric `avatar` → `avatar_divine`.
+- **Canonical factions (P1)**: Replaced 8 placeholder factions with 10 canonical factions. FACTIONS and FACTION_JOIN_OFFERS exported from `lib/constants.ts`.
+- **Tiered gear (P2)**: Added `TIERED_GEAR` constant (13 items, tier 2–4) to `lib/constants.ts`. Updated `generateShopStock` with level-based injection.
+- **Faction gear sets (P3)**: Added `FACTION_SETS`, `FACTION_RANK_GEAR`, `CONCEALED_ITEMS`, `PROTECTED_ITEMS` to `lib/constants.ts`.
 
 ### Previous Session (2026-03-13)
 - Added verify:all script, GitHub Actions for CI, and email gating in dev; production narrator smoke pass complete (5/5)
