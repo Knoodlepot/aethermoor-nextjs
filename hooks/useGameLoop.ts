@@ -5,6 +5,8 @@ import type { Player, WorldSeed } from '../lib/types';
 import type { GameStateContext } from './useGameState';
 import type { UIContext } from './useUI';
 import type { UseStorageReturn } from './useStorage';
+import { FACTION_JOIN_OFFERS, PROTECTED_ITEMS, RECIPES } from '../lib/constants';
+import { getItemSlotEx } from '../lib/helpers';
 
 export interface GameLoopContext {
   executeCommand: (
@@ -65,6 +67,194 @@ export function useGameLoop(
             skillPoints: currentPoints - 1,
           } as typeof updatedPlayer;
 
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          return { success: true };
+        }
+
+        // ── join_faction:<id> ──
+        if (command.startsWith('join_faction:')) {
+          const fid = command.slice('join_faction:'.length);
+          const joined: string[] = Array.isArray(updatedPlayer.joinedFactions) ? updatedPlayer.joinedFactions : [];
+          if (!joined.includes(fid)) {
+            const offer = (FACTION_JOIN_OFFERS as Record<string, any>)[fid];
+            const giftItem: string | null = offer?.gift ?? null;
+            const newInventory = giftItem ? [...updatedPlayer.inventory, giftItem] : [...updatedPlayer.inventory];
+            const rivalId: string | null = offer?.rival ?? null;
+            const newStandings = { ...updatedPlayer.factionStandings };
+            newStandings[fid] = (newStandings[fid] ?? 0) + 50; // starting reputation with faction
+            if (rivalId) newStandings[rivalId] = (newStandings[rivalId] ?? 0) - 30;
+            updatedPlayer = {
+              ...updatedPlayer,
+              joinedFactions: [...joined, fid],
+              pendingFactionOffer: null,
+              inventory: newInventory,
+              factionStandings: newStandings,
+            };
+          }
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          return { success: true };
+        }
+
+        // ── decline_faction:<id> ──
+        if (command.startsWith('decline_faction:')) {
+          const fid = command.slice('decline_faction:'.length);
+          const declines: string[] = Array.isArray(updatedPlayer.factionDeclines) ? updatedPlayer.factionDeclines : [];
+          const newDeclines = declines.includes(fid) ? declines : [...declines, fid];
+          let nextOffer: string | null = null;
+          if (newDeclines.length >= 2 && !updatedPlayer.joinedFactions?.includes('the_forgotten')
+              && updatedPlayer.pendingFactionOffer !== 'the_forgotten'
+              && !newDeclines.includes('the_forgotten')) {
+            nextOffer = 'the_forgotten';
+          }
+          updatedPlayer = {
+            ...updatedPlayer,
+            factionDeclines: newDeclines,
+            pendingFactionOffer: nextOffer,
+          };
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          return { success: true };
+        }
+
+        // ── rival_faction:<id> ── (mark as declined + standing penalty)
+        if (command.startsWith('rival_faction:')) {
+          const fid = command.slice('rival_faction:'.length);
+          const declines: string[] = Array.isArray(updatedPlayer.factionDeclines) ? updatedPlayer.factionDeclines : [];
+          const newDeclines = declines.includes(fid) ? declines : [...declines, fid];
+          const newStandings = { ...updatedPlayer.factionStandings };
+          newStandings[fid] = (newStandings[fid] ?? 0) - 50;
+          updatedPlayer = {
+            ...updatedPlayer,
+            factionDeclines: newDeclines,
+            pendingFactionOffer: null,
+            factionStandings: newStandings,
+          };
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          return { success: true };
+        }
+
+        // ── buy:<name>:<price> ──
+        if (command.startsWith('buy:')) {
+          const parts = command.split(':');
+          const price = parseInt(parts[parts.length - 1], 10);
+          const itemName = parts.slice(1, -1).join(':');
+          if (!isNaN(price) && updatedPlayer.gold >= price && itemName) {
+            updatedPlayer = {
+              ...updatedPlayer,
+              gold: updatedPlayer.gold - price,
+              inventory: [...updatedPlayer.inventory, itemName],
+            };
+            gs.setPlayer(updatedPlayer);
+            await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+            return { success: true };
+          }
+          return { success: false, error: 'Cannot buy item' };
+        }
+
+        // ── sell:<name>:<price> ──
+        if (command.startsWith('sell:')) {
+          const parts = command.split(':');
+          const price = parseInt(parts[parts.length - 1], 10);
+          const itemName = parts.slice(1, -1).join(':');
+          if (!isNaN(price) && itemName) {
+            const idx = updatedPlayer.inventory.indexOf(itemName);
+            if (idx === -1) return { success: false, error: 'Item not in inventory' };
+            const newInv = [...updatedPlayer.inventory];
+            newInv.splice(idx, 1);
+            updatedPlayer = { ...updatedPlayer, gold: updatedPlayer.gold + price, inventory: newInv };
+            gs.setPlayer(updatedPlayer);
+            await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+            return { success: true };
+          }
+          return { success: false, error: 'Cannot sell item' };
+        }
+
+        // ── equip:<name> ──
+        if (command.startsWith('equip:')) {
+          const itemName = command.slice('equip:'.length);
+          const slot = getItemSlotEx(itemName);
+          if (!slot) return { success: false, error: 'Item cannot be equipped' };
+          const idx = updatedPlayer.inventory.indexOf(itemName);
+          if (idx === -1) return { success: false, error: 'Item not in inventory' };
+          const newInv = [...updatedPlayer.inventory];
+          newInv.splice(idx, 1);
+          const prevItem = updatedPlayer.equipped?.[slot] ?? null;
+          if (prevItem) newInv.push(prevItem);
+          updatedPlayer = {
+            ...updatedPlayer,
+            inventory: newInv,
+            equipped: { ...updatedPlayer.equipped, [slot]: itemName },
+          };
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          return { success: true };
+        }
+
+        // ── unequip:<slot> ──
+        if (command.startsWith('unequip:')) {
+          const slot = command.slice('unequip:'.length);
+          const itemName = updatedPlayer.equipped?.[slot] ?? null;
+          if (!itemName) return { success: false, error: 'Nothing equipped in that slot' };
+          updatedPlayer = {
+            ...updatedPlayer,
+            inventory: [...updatedPlayer.inventory, itemName],
+            equipped: { ...updatedPlayer.equipped, [slot]: null },
+          };
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          return { success: true };
+        }
+
+        // ── drop:<name> ──
+        if (command.startsWith('drop:')) {
+          const itemName = command.slice('drop:'.length);
+          if (PROTECTED_ITEMS.has(itemName)) return { success: false, error: 'That item cannot be dropped' };
+          const idx = updatedPlayer.inventory.indexOf(itemName);
+          if (idx === -1) return { success: false, error: 'Item not in inventory' };
+          const newInv = [...updatedPlayer.inventory];
+          newInv.splice(idx, 1);
+          updatedPlayer = { ...updatedPlayer, inventory: newInv };
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          return { success: true };
+        }
+
+        // ── craft:<recipeId> ──
+        if (command.startsWith('craft:')) {
+          const recipeId = command.slice('craft:'.length);
+          const recipe = RECIPES.find((r) => r.id === recipeId);
+          if (!recipe) return { success: false, error: 'Unknown recipe' };
+          const craftLevel: number = (updatedPlayer.professions as any)?.crafting?.level ?? 0;
+          if (craftLevel < recipe.minCraftLevel) return { success: false, error: 'Crafting level too low' };
+          const inv = [...updatedPlayer.inventory];
+          for (const { item, qty } of recipe.ingredients) {
+            let needed = qty;
+            for (let i = inv.length - 1; i >= 0 && needed > 0; i--) {
+              if (inv[i].toLowerCase() === item.toLowerCase()) { inv.splice(i, 1); needed--; }
+            }
+            if (needed > 0) return { success: false, error: `Missing ingredient: ${item}` };
+          }
+          for (let i = 0; i < recipe.resultQty; i++) inv.push(recipe.result);
+          const professions = { ...(updatedPlayer.professions as any) };
+          if (professions.crafting) {
+            professions.crafting = { ...professions.crafting, xp: (professions.crafting.xp ?? 0) + recipe.xpReward };
+          }
+          updatedPlayer = { ...updatedPlayer, inventory: inv, professions };
+          gs.setPlayer(updatedPlayer);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          return { success: true };
+        }
+
+        // ── dismiss_quest:<questId> ──
+        if (command.startsWith('dismiss_quest:')) {
+          const questId = command.slice('dismiss_quest:'.length);
+          updatedPlayer = {
+            ...updatedPlayer,
+            quests: updatedPlayer.quests.filter((q) => q.id !== questId),
+          };
           gs.setPlayer(updatedPlayer);
           await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
           return { success: true };

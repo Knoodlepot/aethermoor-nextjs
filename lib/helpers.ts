@@ -341,15 +341,59 @@ export function getItemInfo(name: string): { icon: string; type: string; desc: s
   return (ITEM_INFO as Record<string, { icon: string; type: string; desc: string }>)[key];
 }
 
+// Static item-to-slot map (covers all canonical equipment)
+const ITEM_SLOT_MAP: Record<string, string> = {
+  // Weapons
+  dagger: 'weapon', sword: 'weapon', 'iron sword': 'weapon', 'steel sword': 'weapon',
+  'arcane wand': 'weapon', staff: 'weapon', 'blade of aethermoor': 'weapon',
+  'staff of ages': 'weapon', 'war hammer': 'weapon', 'hunting bow': 'weapon',
+  'enchanted blade': 'weapon', 'battle axe': 'weapon', 'masterwork sword': 'weapon',
+  'archmage staff': 'weapon', 'ember staff': 'weapon', 'holy mace': 'weapon',
+  'crown sword': 'weapon', 'rebel blade': 'weapon', "archon's staff": 'weapon',
+  "corsair's cutlass": 'weapon',
+  // Offhand / Shields
+  shield: 'offhand', 'iron shield': 'offhand', 'steel shield': 'offhand',
+  'tower shield': 'offhand', 'obsidian shield': 'offhand', "champion's pauldrons": 'offhand',
+  // Head
+  'war helm': 'head', 'shadow hood': 'head', 'antler crown': 'head', 'broken crown': 'head',
+  // Body
+  'leather armour': 'body', chainmail: 'body', 'plate armour': 'body',
+  'dragon scale armour': 'body', 'mage robes': 'body', 'voidsteel armour': 'body',
+  'thornwood leathers': 'body', 'ember robes': 'body', 'vestments of light': 'body',
+  'royal armour': 'body', 'robes of the academy': 'body', 'wolf coat': 'body',
+  'ragged cloak': 'body', 'compact coat': 'body', "warlord's plate": 'body',
+  'shadowmere cloak': 'body',
+  // Feet
+  'shadow boots': 'feet', 'root boots': 'feet', 'gold-threaded boots': 'feet',
+  // Accessories
+  'amulet of warding': 'accessory', 'ring of strength': 'accessory',
+  'ring of agility': 'accessory', 'ring of wisdom': 'accessory', 'ring of power': 'accessory',
+  'silver amulet': 'accessory', "scholar's ring": 'accessory', "merchant's ring": 'accessory',
+  "warden's badge": 'accessory', "navigator's compass": 'accessory',
+  'iron conclave signet': 'accessory', 'shadowmere calling card': 'accessory',
+  "ember initiate's focus": 'accessory', 'silver hand medallion': 'accessory',
+  'thornwood seedling': 'accessory', 'compact letter of credit': 'accessory',
+  "crown's watch warrant card": 'accessory', "forgotten's mark": 'accessory',
+  'academy research pass': 'accessory', 'sea wolves token': 'accessory',
+  'sigil of the hand': 'accessory', 'ember focus': 'accessory',
+};
+
 /**
- * Determine which equipment slot an item goes in, by name
+ * Determine which equipment slot an item goes in, by name.
+ * Checks static map first, then TIERED_GEAR, then type-based fallback.
  */
 export function getItemSlotEx(name: string): string | null {
+  if (!name) return null;
+  const lower = name.toLowerCase();
+  if (ITEM_SLOT_MAP[lower]) return ITEM_SLOT_MAP[lower];
+  // Check TIERED_GEAR for explicit slot
+  const tiered = TIERED_GEAR.find((g) => g.name.toLowerCase() === lower);
+  if (tiered) return tiered.slot;
+  // Type-based fallback (only for non-Armour types to avoid ambiguity)
   const info = getItemInfo(name);
   if (!info) return null;
-  for (const [slot, def] of Object.entries(EQUIP_SLOTS)) {
-    if ((def as any).types?.includes(info.type)) return slot;
-  }
+  if (info.type === 'Weapon') return 'weapon';
+  if (info.type === 'Magic') return 'accessory';
   return null;
 }
 

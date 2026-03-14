@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Buying items from shops now actually adds them to your inventory** and deducts gold. Previously, shop purchases sent the action to the narrator but never updated your character's gold or inventory.
+- **Selling items now correctly removes them from your inventory** and credits your gold.
+- **Equipping items now properly moves them to the correct equipment slot.** A long-standing bug caused body armour, helmets, and boots to be placed in the wrong slot (off-hand) when equipped. This is now resolved — armour goes to the body slot, helms to the head slot, and boots to the feet slot.
+- **Unequipping an item now correctly returns it to your inventory.**
+- **Dropping an item now removes it from your inventory** (quest-critical and faction-gifted items remain protected and cannot be dropped).
+- **Joining a faction now works correctly.** Joining adds the faction to your record, grants your joining gift, applies starting standing with that faction, and notes any standing shift with their rivals — all immediately without narrator involvement.
+- **Declining a faction offer now updates your character correctly.** After refusing two or more faction offers, The Forgotten will now reliably approach you with their alternate pitch.
+- **Crafting now functions end-to-end.** Selecting a recipe correctly consumes the required ingredients, produces the result item, and awards crafting experience.
+- **Dismissing a quest from the quest log now removes it.**
+
 ### Added
 - Ten canonical factions now appear in the Standings screen with full lore, rank abilities, and rival relationships: The Iron Conclave, The Shadowmere Guild, The Ember Circle, The Silver Hand, The Thornwood Druids, The Merchant's Compact, The Crown's Watch, The Forgotten, The Arcane Academy, and The Sea Wolves.
 - Faction join offers now feature rich narrative pitches unique to each faction, including special dialogue for The Forgotten when you have already refused other factions.

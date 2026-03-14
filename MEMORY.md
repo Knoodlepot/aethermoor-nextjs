@@ -34,11 +34,15 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Deterministic command handlers**: Added short-circuit handlers in `hooks/useGameLoop.ts` for all UI-driven commands that previously sent to narrator but never changed state: `join_faction:`, `decline_faction:`, `rival_faction:`, `buy:`, `sell:`, `equip:`, `unequip:`, `drop:`, `craft:`, `dismiss_quest:`. These now apply state changes immediately without a narrator call.
+- **Equip slot fix**: Replaced `getItemSlotEx` in `lib/helpers.ts` with a proper implementation using a static item-to-slot map, TIERED_GEAR lookup, and type-based fallback. Previously all Armour-type items incorrectly resolved to the "offhand" slot; now body armour, helmets, and boots resolve to their correct slots.
+- **Faction join**: Joining a faction now grants the correct gift item (signet/token/etc.), applies +50 starting XP to the joined faction, applies -30 XP to the rival faction, and clears any pending offer.
+- **Faction decline**: Declining 2+ factions now correctly triggers The Forgotten's offer (alternate pitch variant). Rival-faction rejections apply a -50 standing penalty.
+- **Craft handler**: Validates crafting level, consumes all required ingredients (case-insensitive), produces results, and awards crafting XP.
 - **Skill tree fixes (P0)**: Fixed three Tier III skill IDs that the narrator route checks for but were misnamed in the UI: Warrior `last_stand` → `unbreakable`; Rogue `phantom` → `ghost_walk`; Cleric `avatar` → `avatar_divine`. Players who unlock these now receive the correct narrator responses.
 - **Canonical factions (P1)**: Replaced 8 placeholder factions (`warriors_guild`, `thieves_guild`, etc.) with the 10 canonical factions from the legacy game (`iron_conclave`, `shadowmere_guild`, `ember_circle`, `silver_hand`, `thornwood_druids`, `merchants_compact`, `crowns_watch`, `the_forgotten`, `arcane_academy`, `sea_wolves`). FACTIONS and FACTION_JOIN_OFFERS now exported from `lib/constants.ts` and shared between `StandingsScreen.tsx` and `FactionOfferModal.tsx`.
-- **Faction join offers (P1)**: Full narrative pitch text for all 10 factions ported from legacy, including The Forgotten's special alternate pitch after 2+ other declines. Rival warnings now show faction-specific explanatory text.
 - **Tiered gear (P2)**: Added `TIERED_GEAR` constant (13 items, tier 2–4, levels 5/10/15) to `lib/constants.ts`. Updated `generateShopStock` in `lib/helpers.ts` to inject level-appropriate gear into shop stock based on player level and location tier.
-- **Faction gear sets (P3)**: Added `FACTION_SETS` (10 faction sets with 2-piece and 3-piece bonuses), `FACTION_RANK_GEAR` (rank 3/4 gear rewards per faction), `CONCEALED_ITEMS`, and `PROTECTED_ITEMS` to `lib/constants.ts`.
+- **Faction gear sets (P3)**: Added `FACTION_SETS`, `FACTION_RANK_GEAR`, `CONCEALED_ITEMS`, and `PROTECTED_ITEMS` to `lib/constants.ts`.
 
 ### Previous Session (2026-03-13)
 - Added verify:all script, GitHub Actions for CI, and email gating in dev; production narrator smoke pass complete (5/5)
@@ -94,7 +98,8 @@ Tags are embedded in narrator prose, parsed by client logic, and stripped from d
 ## Session History (most recent first)
 | Session | Work Done |
 |---------|-----------|
-| current | Legacy comparison pass: fixed 3 skill IDs (unbreakable/ghost_walk/avatar_divine), ported 10 canonical factions with rich join offers, added tiered gear shop system, faction gear sets, rank gear, protected/concealed item lists |
+| current | Deterministic command handlers for buy/sell/equip/unequip/drop/craft/join-faction/decline-faction/dismiss-quest; equip slot map fix for body armour, helmets, and boots |
+| current-prev | Legacy comparison pass: fixed 3 skill IDs (unbreakable/ghost_walk/avatar_divine), ported 10 canonical factions with rich join offers, added tiered gear shop system, faction gear sets, rank gear, protected/concealed item lists |
 | 2026-03-13 | Production narrator smoke pass complete (5/5) and new `verify:narrator` / `verify:narrator:prod` scripts added |
 | 2026-03-13 | DB schema migrations applied (9 missing columns across 5 tables); migrateDb() now self-heals on startup; temp scripts removed |
 | 2026-03-13 | Full 8/8 runtime verification passed against live Railway DB; patched missing account_id column on players table |
