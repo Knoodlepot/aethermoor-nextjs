@@ -223,15 +223,15 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
     g.beginPath(); g.moveTo(KEY_X + 6, KEY_Y + 22); g.lineTo(W - 14, KEY_Y + 22); g.stroke();
 
     // Settlements
-    g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#806030';
+    g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#a07848';
     g.fillText('SETTLEMENTS', KEY_X + 10, KEY_Y + 35);
     const settlementKeys = [
-      { icon: '🏰', label: 'Capital', col: '#c9a84c' },
-      { icon: '🏙️', label: 'City',    col: '#6090c0' },
-      { icon: '🏘️', label: 'Town',    col: '#60885a' },
-      { icon: '🏡', label: 'Village', col: '#706448' },
-      { icon: '🛖', label: 'Hamlet',  col: '#4c4030' },
-      { icon: '🌾', label: 'Farm',    col: '#387030' },
+      { icon: '🏰', label: 'Capital', col: '#e8cc6a' },
+      { icon: '🏙️', label: 'City',    col: '#80b0d8' },
+      { icon: '🏘️', label: 'Town',    col: '#80a870' },
+      { icon: '🏡', label: 'Village', col: '#a08c68' },
+      { icon: '🛖', label: 'Hamlet',  col: '#887060' },
+      { icon: '🌾', label: 'Farm',    col: '#70a050' },
     ];
     settlementKeys.forEach((sk, i) => {
       const kx = KEY_Y + 47 + i * 16;
@@ -246,14 +246,14 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
     g.beginPath(); g.moveTo(KEY_X + 6, divY1); g.lineTo(W - 14, divY1); g.stroke();
 
     // POIs
-    g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#806030'; g.textAlign = 'left';
+    g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#a07848'; g.textAlign = 'left';
     g.fillText('POINTS OF INTEREST', KEY_X + 10, divY1 + 13);
     const poiKeys = [
-      { icon: '🌲', label: 'Ancient Forest',  col: '#5a9038' },
-      { icon: '🕳️', label: 'Cave',            col: '#a05838' },
-      { icon: '🏚️', label: 'Ancient Ruins',   col: '#907850' },
-      { icon: '🌳', label: 'Dark Wood',       col: '#7050a0' },
-      { icon: '⛩️', label: 'Forgotten Shrine',col: '#c06030' },
+      { icon: '🌲', label: 'Ancient Forest',  col: '#7ab850' },
+      { icon: '🕳️', label: 'Cave',            col: '#c07050' },
+      { icon: '🏚️', label: 'Ancient Ruins',   col: '#b09870' },
+      { icon: '🌳', label: 'Dark Wood',       col: '#9070c0' },
+      { icon: '⛩️', label: 'Forgotten Shrine',col: '#d07840' },
     ];
     poiKeys.forEach((pk, i) => {
       const kx = divY1 + 25 + i * 16;
@@ -267,7 +267,7 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
     g.beginPath(); g.moveTo(KEY_X + 6, divY2); g.lineTo(W - 14, divY2); g.stroke();
 
     // Roads
-    g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#806030'; g.textAlign = 'left';
+    g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#a07848'; g.textAlign = 'left';
     g.fillText('ROADS', KEY_X + 10, divY2 + 13);
     const roadKeys = [
       { type: 'highway', label: "King's Road",   desc: 'Capital / City'    },
@@ -285,7 +285,7 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
       g.restore();
       g.font = 'bold 8px Cinzel,serif'; g.fillStyle = rs.color; g.textAlign = 'left';
       g.fillText(rk.label, KEY_X + 56, ry + 3);
-      g.font = '7px Cinzel,serif'; g.fillStyle = '#504030';
+      g.font = '7px Cinzel,serif'; g.fillStyle = '#807060';
       g.fillText(rk.desc, KEY_X + 56, ry + 13);
     });
 
@@ -294,7 +294,7 @@ export function MapView({ player, worldSeed, onClose, inline = false }: MapViewP
     g.beginPath(); g.moveTo(KEY_X + 6, divY3); g.lineTo(W - 14, divY3); g.stroke();
 
     // Markers
-    g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#806030'; g.textAlign = 'left';
+    g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#a07848'; g.textAlign = 'left';
     g.fillText('MARKERS', KEY_X + 10, divY3 + 13);
     [{ sym: '◆', col: '#fffce0', label: 'Your location' }, { sym: '?', col: '#806040', label: 'Unexplored nearby' }]
       .forEach((mk, i) => {
