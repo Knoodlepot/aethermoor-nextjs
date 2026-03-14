@@ -212,6 +212,16 @@ export default function Home() {
           <p style={{ marginTop: '0.5rem', fontSize: '0.75rem' }}>
             Your theme preference resets on reload. Sign in to save your settings.
           </p>
+          <p style={{ marginTop: '0.75rem' }}>
+            <a
+              href="/legal"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#7a6040', textDecoration: 'underline', textUnderlineOffset: 2, fontSize: '0.75rem' }}
+            >
+              Legal (Terms · Privacy · Refund Policy)
+            </a>
+          </p>
         </div>
       </div>
 
