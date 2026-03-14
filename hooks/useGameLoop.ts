@@ -294,6 +294,22 @@ export function useGameLoop(
           return { success: true };
         }
 
+        // ── stat_point:<stat> ──
+        if (command.startsWith('stat_point:')) {
+          const stat = command.slice('stat_point:'.length) as 'str' | 'agi' | 'int' | 'wil';
+          const pts: number = (updatedPlayer as any).statPoints ?? 0;
+          if (pts > 0 && ['str', 'agi', 'int', 'wil'].includes(stat)) {
+            updatedPlayer = {
+              ...updatedPlayer,
+              [stat]: ((updatedPlayer as any)[stat] ?? 0) + 1,
+              statPoints: pts - 1,
+            } as any;
+            gs.setPlayer(updatedPlayer);
+            await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);
+          }
+          return { success: true };
+        }
+
         // 1. Add user message to conversation history
         const userMessages = [...gs.messages.slice(-19), { role: 'user', content: command }];
         gs.setMessages(userMessages);

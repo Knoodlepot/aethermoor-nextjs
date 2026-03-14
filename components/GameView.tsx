@@ -41,20 +41,17 @@ import { UserProfileModal } from '@/components/modals/UserProfileModal';
 // ClassInfoModal is imported here; rendered during character creation (future CharacterCreation screen)
 import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 
+import { CLASSES } from '@/lib/constants';
+import { countItem } from '@/lib/helpers';
+
 // ─── Inner component (must live inside ThemeProvider) ─────────────────────────
 
+/** XP required to reach the next level (simple formula matching legacy) */
+function xpForNextLevel(level: number): number {
+  return Math.floor(100 * Math.pow(1.4, level - 1));
+}
+
 function GameContent() {
-  // ...existing code...
-
-    // [E2E DEBUG] GameContent function invoked
-    if (typeof window !== 'undefined') {
-      // eslint-disable-next-line no-console
-      console.log('[E2E DEBUG] GameContent function invoked');
-      // E2E: force a breakpoint for test
-      debugger;
-      // window.alert('[E2E DEBUG] GameContent function invoked');
-    }
-
   const router = useRouter();
   const { T, tf, isDyslexic } = useTheme();
 
@@ -67,6 +64,9 @@ function GameContent() {
 
   // Guest-mode flag: bypass auth gate without a real JWT
   const [guestMode, setGuestMode] = useState(false);
+
+  // Story/Map tab toggle (left column, desktop)
+  const [leftTab, setLeftTab] = useState<'story' | 'map'>('story');
 
   // Stable setState references for effects
   const { setIsMobile } = ui;
@@ -216,133 +216,132 @@ function GameContent() {
 
   // ── Player Info Panel (for right column) ───────────────────────────────────
 
-  const playerInfoPanel = (
-    <div
-      style={{
-        background: T.panel,
-        borderBottom: `2px solid ${T.border}`,
-        padding: '8px 14px',
-        userSelect: 'none' as const,
-        marginBottom: 12,
-      }}
-    >
-      {/* Name / class / level */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          marginBottom: 6,
-          flexWrap: 'wrap' as const,
-        }}
-      >
-        <span
-          style={{
-            ...tf,
-            color: T.gold,
-            fontSize: 14,
-            letterSpacing: 2,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap' as const,
-            maxWidth: 200,
-          }}
-        >
-          {player?.name || 'Adventurer'}
-        </span>
-        <span style={{ color: T.textFaint, fontSize: 11 }}>·</span>
-        <span style={{ ...tf, color: T.accent, fontSize: 11, letterSpacing: 1 }}>
-          {player?.class || '—'}&nbsp;Lv.{player?.level ?? 1}
-        </span>
+  // ── XP bar values ──────────────────────────────────────────────────────────
+  const playerLevel: number = player?.level ?? 1;
+  const playerXp: number = player?.xp ?? 0;
+  const xpFloor = Math.floor(100 * Math.pow(1.4, playerLevel - 2)); // xp at start of current level
+  const xpCeil = xpForNextLevel(playerLevel);
+  const xpProgress = Math.max(0, playerXp - (playerLevel > 1 ? xpFloor : 0));
+  const xpRange = Math.max(1, xpCeil - (playerLevel > 1 ? xpFloor : 0));
+  const xpPct = Math.min(100, Math.round((xpProgress / xpRange) * 100));
+  const rations = player ? countItem(player.inventory ?? [], 'Rations') : 0;
+
+  // ── StatBar helper ─────────────────────────────────────────────────────────
+  const StatBar = ({ label, value, max, color }: { label: string; value: number; max: number; color: string }) => {
+    const pct = Math.min(100, Math.round((value / Math.max(1, max)) * 100));
+    return (
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, ...tf, color: T.textMuted, marginBottom: 2 }}>
+          <span>{label}</span>
+          <span>{value}/{max}</span>
+        </div>
+        <div style={{ height: 5, background: T.border, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: color, transition: 'width 0.3s' }} />
+        </div>
       </div>
-      {/* Stats + HP + gold */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          flexWrap: 'wrap' as const,
-        }}
-      >
-        {/* Core stats */}
-        {(
-          [
-            ['STR', player?.str],
-            ['AGI', player?.agi],
-            ['INT', player?.int],
-            ['WIL', player?.wil],
-          ] as [string, number | undefined][]
-        ).map(([label, val]) => (
-          <div key={label} style={{ textAlign: 'center', minWidth: 28 }}>
-            <div style={{ ...tf, color: T.text, fontSize: 13, lineHeight: '1.2' }}>
-              {val ?? '—'}
+    );
+  };
+
+  const playerInfoPanel = player ? (
+    <div style={{ background: T.panel, borderBottom: `1px solid ${T.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, maxHeight: '60%' }}>
+      {/* Identity card */}
+      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 14, textAlign: 'center' as const }}>
+        <div style={{ fontSize: 28, marginBottom: 4 }}>{(CLASSES as any)[player.class]?.icon ?? '⚔️'}</div>
+        <div style={{ ...tf, color: T.gold, fontSize: 16 }}>{player.name}</div>
+        <div style={{ color: T.accent, fontSize: 12, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
+        <div style={{ color: clockColor, fontSize: 11, marginTop: 4, letterSpacing: 1 }}>{clockStr}</div>
+      </div>
+      {/* HP + XP bars */}
+      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 12, margin: '0 0 0 0' }}>
+        <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
+        <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
+        <div style={{ fontSize: 11, color: T.textFaint, textAlign: 'right' as const, marginTop: 2 }}>Next: {xpCeil} XP</div>
+      </div>
+      {/* Attributes */}
+      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 12 }}>
+        <div style={{ ...tf, color: T.accent, fontSize: 11, letterSpacing: 2, marginBottom: 10 }}>ATTRIBUTES</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+          {([['STR', 'str'], ['AGI', 'agi'], ['INT', 'int'], ['WIL', 'wil']] as [string, string][]).map(([label, key]) => (
+            <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.panel, padding: '6px 8px', border: `1px solid ${T.border}` }}>
+              <span style={{ fontSize: 11, color: T.textMuted }}>{label}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ color: T.gold, fontSize: 15, ...tf }}>{(player as any)[key] ?? '—'}</span>
+                {(player?.statPoints ?? 0) > 0 && (
+                  <button
+                    onClick={() => handleCommand('stat_point:' + key)}
+                    style={{ background: T.accent + '33', border: `1px solid ${T.accent}`, color: T.accent, width: 18, height: 18, fontSize: 12, cursor: 'pointer', padding: 0, lineHeight: '1' }}
+                  >+</button>
+                )}
+              </div>
             </div>
-            <div style={{ ...tf, color: T.textFaint, fontSize: 9, letterSpacing: 1 }}>
-              {label}
-            </div>
+          ))}
+        </div>
+        {(player?.statPoints ?? 0) > 0 && (
+          <div style={{ color: T.gold, fontSize: 12, textAlign: 'center' as const, animation: 'pulse 1.5s infinite' }}>
+            ⬆ {player.statPoints} stat points!
+          </div>
+        )}
+      </div>
+      {/* Resources row */}
+      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 12, display: 'flex', justifyContent: 'space-around' }}>
+        {([['🪙', player.gold, 'Gold'], ['🎒', rations, 'Rations'], ['⭐', player.reputation ?? 0, 'Rep'], ['📍', player.location, 'Here']] as [string, any, string][]).map(([icon, val, lbl]) => (
+          <div key={lbl} style={{ textAlign: 'center' as const }}>
+            <div style={{ color: lbl === 'Rations' ? (val > 0 ? '#80a060' : '#c05050') : lbl === 'Here' ? T.accent : T.gold, fontSize: lbl === 'Here' ? 8 : 17, lineHeight: '1.2', ...tf }}>{val}</div>
+            <div style={{ color: T.textMuted, fontSize: 10 }}>{icon} {lbl}</div>
           </div>
         ))}
-
-        <div style={{ width: 1, height: 24, background: T.border, flexShrink: 0 }} />
-
-        {/* HP bar */}
-        <div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: 10,
-              ...tf,
-              color: T.textMuted,
-              marginBottom: 2,
-            }}
-          >
-            <span>HP</span>
-            <span style={{ marginLeft: 8 }}>
-              {hp}/{maxHp}
-            </span>
-          </div>
-          <div
-            style={{
-              height: 5,
-              width: 100,
-              borderRadius: 3,
-              background: T.border,
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                height: '100%',
-                width: `${hpPct}%`,
-                background: hpColor,
-                borderRadius: 3,
-                transition: 'width 0.3s',
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Gold */}
-        <div style={{ ...tf, color: T.gold, fontSize: 13, whiteSpace: 'nowrap' as const }}>
-          {player?.gold ?? 0} gp
-        </div>
       </div>
     </div>
-  );
+  ) : null;
 
   // ── Bottom action buttons (right column, legacy style) ─────────────────────
+
+  const activeQuestCount = (player?.quests ?? []).filter((q: any) => q.status === 'active').length;
+  const bestiaryCount = (player?.bestiary ?? []).length;
+  const skillPts = player?.skillPoints ?? 0;
+  const atCapital = player?.location === 'Aethermoor Capital';
+  const inDungeon = !!(player as any)?.dungeon;
+  const dungeonAvailable = atCapital && !inDungeon;
+
+  const badgeBtn = (label: string, onClick: () => void, badge?: { count: number; color: string }) => (
+    <button
+      onClick={onClick}
+      style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, position: 'relative' as const }}
+    >
+      {label}
+      {badge && badge.count > 0 && (
+        <span style={{ position: 'absolute', top: -4, right: -4, background: badge.color, color: '#fff', borderRadius: '50%', width: 14, height: 14, fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {badge.count}
+        </span>
+      )}
+    </button>
+  );
+
   const actionButtons = player && (
     <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}`, padding: '6px 8px', gap: 4, flexWrap: 'wrap' as const, justifyContent: 'flex-start', background: T.panelAlt }}>
-      {tbBtn('📜 Quests', () => ui.toggleModal('questLog'))}
+      {badgeBtn('📜 Quests', () => ui.toggleModal('questLog'), { count: activeQuestCount, color: T.accent })}
       {['town', 'npc'].includes(player?.context) && tbBtn('🛒 Shop', () => ui.toggleModal('shop'))}
       {tbBtn('🎒 Gear', () => ui.toggleModal('inventory'))}
       {tbBtn('⭐ Rep', () => ui.toggleModal('standings'))}
-      {tbBtn('📖 Bestiary', () => ui.toggleModal('bestiary'))}
+      {badgeBtn('📖 Bestiary', () => ui.toggleModal('bestiary'), { count: bestiaryCount, color: '#c04040' })}
       {tbBtn('⚒️ Craft', () => ui.toggleModal('crafting'))}
       {tbBtn('📝 Patch', () => ui.openModal('patchNotes'))}
-      {tbBtn('🌿 Skills', () => ui.toggleModal('skillTree'))}
-      {tbBtn('❓ Guide', () => ui.openModal('howToPlay'))}
+      {badgeBtn('🌿 Skills', () => ui.toggleModal('skillTree'), { count: skillPts, color: '#60a060' })}
+      <button
+        onClick={() => dungeonAvailable ? handleCommand('enter_dungeon') : undefined}
+        title={atCapital ? (inDungeon ? 'Already in the dungeon' : 'Enter the Dungeon of Echoes') : 'Travel to Aethermoor Capital to access the Dungeon of Echoes'}
+        style={{
+          background: dungeonAvailable ? 'rgba(100,20,20,0.35)' : 'transparent',
+          border: `1px solid ${dungeonAvailable ? '#c03030' : T.border}`,
+          color: dungeonAvailable ? '#e06060' : '#444',
+          padding: '4px 10px', fontSize: 11,
+          cursor: dungeonAvailable ? 'pointer' : 'not-allowed',
+          fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1,
+          animation: dungeonAvailable ? 'pulse 1.2s infinite' : 'none',
+          opacity: atCapital ? 1 : 0.35,
+          transition: 'all 0.3s',
+        }}
+      >🕳️ Dungeon</button>
     </div>
   );
 
@@ -407,7 +406,7 @@ function GameContent() {
       }}
     >
       <div style={{ ...tf, color: T.gold, fontSize: 18, letterSpacing: 3 }}>⚔ AETHERMOOR</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {ui.levelUpMsg && (
           <div style={{ color: '#ffffff', fontSize: 13, animation: 'pulse 1s infinite', ...tf, textShadow: `0 0 12px ${T.gold}` }}>
             {ui.levelUpMsg}
@@ -420,6 +419,14 @@ function GameContent() {
         >
           New Game
         </button>
+        {player && (
+          <button
+            onClick={() => void storage.saveGame(gameState.player!, gameState.worldSeed!, gameState.messages ?? [], gameState.narrative ?? '', gameState.log ?? [])}
+            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+          >
+            💾 Save
+          </button>
+        )}
         {auth.token && (
           <button
             onClick={() => void auth.logout()}
@@ -435,18 +442,35 @@ function GameContent() {
 
   const desktopLayout = (
     <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-      {/* Left: narrative + input bar */}
+      {/* Left: narrative (or map) + tab toggle + input bar */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <NarrativePanel
-          narrative={gameState.narrative}
-          log={gameState.log}
-          suggestions={ui.suggestions}
-          pendingSuggestion={ui.pendingSuggestion}
-          onSuggestionSelect={(s) => {
-            // Stage the suggestion for confirm-or-edit; NarrativePanel shows the confirm card
-            ui.setPendingSuggestion(s);
-          }}
-        />
+        {leftTab === 'story' && (
+          <NarrativePanel
+            narrative={gameState.narrative}
+            log={gameState.log}
+            suggestions={ui.suggestions}
+            pendingSuggestion={ui.pendingSuggestion}
+            onSuggestionSelect={(s) => {
+              ui.setPendingSuggestion(s);
+            }}
+          />
+        )}
+        {leftTab === 'map' && player && gameState.worldSeed && (
+          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' as const }}>
+            <MapView player={gameState.player!} worldSeed={gameState.worldSeed} inline />
+          </div>
+        )}
+        {/* Story / Map tab toggle */}
+        <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}` }}>
+          <button
+            onClick={() => setLeftTab('story')}
+            style={{ flex: 1, padding: '9px 0', background: leftTab === 'story' ? T.panelAlt : 'transparent', border: 'none', borderRight: `1px solid ${T.border}`, color: leftTab === 'story' ? T.gold : T.textMuted, cursor: 'pointer', fontFamily: "'Cinzel',serif", fontSize: 11, letterSpacing: 1.5, transition: 'all 0.2s' }}
+          >📖  Story</button>
+          <button
+            onClick={() => setLeftTab('map')}
+            style={{ flex: 1, padding: '9px 0', background: leftTab === 'map' ? T.panelAlt : 'transparent', border: 'none', color: leftTab === 'map' ? T.gold : T.textMuted, cursor: 'pointer', fontFamily: "'Cinzel',serif", fontSize: 11, letterSpacing: 1.5, transition: 'all 0.2s' }}
+          >🗺️  Map</button>
+        </div>
         <InputBar
           player={gameState.player}
           onFreeText={handleFreeText}
