@@ -250,43 +250,46 @@ function GameContent() {
 
   const playerInfoPanel = player ? (
     <div style={{ background: T.panel, borderBottom: `1px solid ${T.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, maxHeight: '60%' }}>
-      {/* Identity card */}
-      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 14, textAlign: 'center' as const }}>
-        <div style={{ fontSize: 28, marginBottom: 4 }}>{(CLASSES as any)[player.class]?.icon ?? '⚔️'}</div>
-        <div style={{ ...tf, color: T.gold, fontSize: 16 }}>{player.name}</div>
-        <div style={{ color: T.accent, fontSize: 12, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
-        <div style={{ color: clockColor, fontSize: 11, marginTop: 4, letterSpacing: 1 }}>{clockStr}</div>
-      </div>
-      {/* HP + XP bars */}
-      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 12, margin: '0 0 0 0' }}>
-        <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
-        <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
-        <div style={{ fontSize: 11, color: T.textFaint, textAlign: 'right' as const, marginTop: 2 }}>Next: {xpCeil} XP</div>
-      </div>
-      {/* Attributes */}
-      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 12 }}>
-        <div style={{ ...tf, color: T.accent, fontSize: 11, letterSpacing: 2, marginBottom: 10 }}>ATTRIBUTES</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
-          {([['STR', 'str'], ['AGI', 'agi'], ['INT', 'int'], ['WIL', 'wil']] as [string, string][]).map(([label, key]) => (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.panel, padding: '6px 8px', border: `1px solid ${T.border}` }}>
-              <span style={{ fontSize: 11, color: T.textMuted }}>{label}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ color: T.gold, fontSize: 15, ...tf }}>{(player as any)[key] ?? '—'}</span>
-                {(player?.statPoints ?? 0) > 0 && (
-                  <button
-                    onClick={() => handleCommand('stat_point:' + key)}
-                    style={{ background: T.accent + '33', border: `1px solid ${T.accent}`, color: T.accent, width: 18, height: 18, fontSize: 12, cursor: 'pointer', padding: 0, lineHeight: '1' }}
-                  >+</button>
-                )}
-              </div>
-            </div>
-          ))}
+      {/* Identity card — includes HP/XP bars and attributes */}
+      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 14 }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center' as const, marginBottom: 12 }}>
+          <div style={{ fontSize: 28, marginBottom: 4 }}>{(CLASSES as any)[player.class]?.icon ?? '⚔️'}</div>
+          <div style={{ ...tf, color: T.gold, fontSize: 16 }}>{player.name}</div>
+          <div style={{ color: T.accent, fontSize: 12, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
+          <div style={{ color: clockColor, fontSize: 11, marginTop: 4, letterSpacing: 1 }}>{clockStr}</div>
         </div>
-        {(player?.statPoints ?? 0) > 0 && (
-          <div style={{ color: T.gold, fontSize: 12, textAlign: 'center' as const, animation: 'pulse 1.5s infinite' }}>
-            ⬆ {player.statPoints} stat points!
+        {/* HP + XP bars */}
+        <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 10, marginBottom: 10 }}>
+          <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
+          <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
+          <div style={{ fontSize: 11, color: T.textFaint, textAlign: 'right' as const, marginTop: 2 }}>Next: {xpCeil} XP</div>
+        </div>
+        {/* Attributes */}
+        <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 10 }}>
+          <div style={{ ...tf, color: T.accent, fontSize: 11, letterSpacing: 2, marginBottom: 10 }}>ATTRIBUTES</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+            {([['STR', 'str'], ['AGI', 'agi'], ['INT', 'int'], ['WIL', 'wil']] as [string, string][]).map(([label, key]) => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.panel, padding: '6px 8px', border: `1px solid ${T.border}` }}>
+                <span style={{ fontSize: 11, color: T.textMuted }}>{label}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ color: T.gold, fontSize: 15, ...tf }}>{(player as any)[key] ?? '—'}</span>
+                  {(player?.statPoints ?? 0) > 0 && (
+                    <button
+                      onClick={() => handleCommand('stat_point:' + key)}
+                      style={{ background: T.accent + '33', border: `1px solid ${T.accent}`, color: T.accent, width: 18, height: 18, fontSize: 12, cursor: 'pointer', padding: 0, lineHeight: '1' }}
+                    >+</button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+          {(player?.statPoints ?? 0) > 0 && (
+            <div style={{ color: T.gold, fontSize: 12, textAlign: 'center' as const, animation: 'pulse 1.5s infinite' }}>
+              ⬆ {player.statPoints} stat points!
+            </div>
+          )}
+        </div>
       </div>
       {/* Resources row */}
       <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 12, display: 'flex', justifyContent: 'space-around' }}>
