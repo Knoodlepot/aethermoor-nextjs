@@ -579,14 +579,8 @@ function GameContent() {
           Next: {xpCeil} XP
         </div>
 
-        {/* Stat pills */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-          {([['STR', 'str'], ['AGI', 'agi'], ['INT', 'int'], ['WIL', 'wil']] as [string, string][]).map(([label, key]) => (
-            <StatPill key={key} label={label} statKey={key} value={(player as any)[key] ?? 0} />
-          ))}
-        </div>
         {(player?.statPoints ?? 0) > 0 && (
-          <div style={{ color: T.gold, fontSize: 11, textAlign: 'center' as const, marginTop: 4, animation: 'pulse 1.5s infinite' }}>
+          <div style={{ color: T.gold, fontSize: 11, textAlign: 'center' as const, marginBottom: 4, animation: 'pulse 1.5s infinite' }}>
             ⬆ {player.statPoints} stat points!
           </div>
         )}

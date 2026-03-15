@@ -125,8 +125,8 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
               </button>
             )}
             {onGear && (
-              <button onClick={onGear} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const }}>
-                🎒 Gear
+              <button onClick={onGear} title="Character Screen — Equipped gear, inventory, skill tree, and attributes" style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const }}>
+                🎒 Character
               </button>
             )}
             {onDungeon && (
