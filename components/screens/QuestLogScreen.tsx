@@ -76,10 +76,10 @@ export function QuestLogScreen({
   const { T, tf, bf } = useTheme();
 
   const allQuests = player.quests || [];
-  const activeQuests = allQuests.filter((q) => (q.status as string) === 'active' && q.type !== 'main' && q.type !== 'faction' && !!q.type);
+  const activeQuests = allQuests.filter((q) => (q.status as string) === 'active' && q.type !== 'main' && q.type !== 'faction');
   const factionQuests = allQuests.filter((q) => (q.status as string) === 'active' && q.type === 'faction');
-  const doneQuests = allQuests.filter((q) => (q.status as string) === 'completed' && q.type !== 'main' && !!q.type);
-  const failedQuests = allQuests.filter((q) => (q.status as string) === 'failed' && q.type !== 'main' && !!q.type);
+  const doneQuests = allQuests.filter((q) => (q.status as string) === 'completed' && q.type !== 'main');
+  const failedQuests = allQuests.filter((q) => (q.status as string) === 'failed' && q.type !== 'main');
   const knownNpcs = player.knownNpcs || [];
 
   const getInitialTab = (): TabId => {
