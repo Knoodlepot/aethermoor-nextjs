@@ -27,6 +27,7 @@ const TOWN_ACTIONS: ActionBtn[] = [
   { icon: '📋', label: 'Notice Board', text: 'I walk over to the notice board and read what\'s posted.' },
   { icon: '🛏', label: 'Rest',         text: 'I find somewhere comfortable to rest for a few hours.' },
   { icon: '👁', label: 'Look',         text: 'I look around the town, taking in my surroundings.' },
+  { icon: '⚒️', label: 'Craft',        text: 'I look for a suitable place to craft and work on my supplies.' },
 ];
 
 const EXPLORE_ACTIONS: ActionBtn[] = [
