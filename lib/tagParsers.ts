@@ -544,7 +544,12 @@ export function processParsedTags(
       if (!alreadyExists) {
         updatedPlayer = {
           ...updatedPlayer,
-          quests: [...currentQuests, { ...tags.newQuest, status: 'active' }],
+          quests: [...currentQuests, {
+            ...tags.newQuest,
+            type: tags.newQuest.type || 'side',
+            status: 'active',
+            tracked: true,
+          }],
         };
       }
     }
