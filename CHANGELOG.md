@@ -2,6 +2,9 @@
 ## [Unreleased]
 
 ### Added
+- The world map now features a fully hierarchical road network: all road types (King’s Road, Merchant Road, Dirt Road, Trail, Farm Track) are generated naturally. Each settlement, POI, and farm connects to its nearest valid neighbors, and settlements may have a few crossroads. Roads are visually distinct and match the map key, making travel and exploration more immersive.
+
+### Added
 - The world map now features procedural terrain generation, with the largest patch of each terrain type (forest, mountains, etc.) given a unique dark fantasy name. All rivers (15% of routes, mix of long and short) are also named from a themed pool. These names are visible to the narrator and on the map, and will be referenced in narrative and exploration.
 ### Added
 - **Three save slots**: Your progress is now stored across three separate save slots. Click **Save** in the top toolbar to choose which slot to write to — existing saves show your character name, class, level, location, and the date last saved. Empty slots show clearly. Overwriting a different slot asks for confirmation first.

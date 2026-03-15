@@ -18,11 +18,11 @@ Do this without being asked. Never leave the user to commit manually.
 
 
 ## Latest Session Updates
-- Procedural terrain generation now assigns unique dark fantasy names to the largest patch of each terrain type (forest, mountains, etc.) at world generation. All rivers (15% of routes, mix of long and short) are also named from a themed pool. Names are visible to the narrator and map. Fog of war still applies for unexplored features.
+- Hierarchical, natural road network generation: All map key road types (King’s Road, Merchant Road, Dirt Road, Trail, Farm Track) are now generated at worldgen. Each node connects to its nearest valid neighbors (1–2, within a natural distance). Limited crossroads are created between settlements only. No POI/farm crossroads. All road types are visually distinct on the map.
 
 | Date       | Summary                                                      |
 |------------|--------------------------------------------------------------|
-| 2026-03-15 | Terrain and river naming, 15% river coverage, worldgen patch |
+| 2026-03-15 | Hierarchical road network, all map key road types, natural connections |
 
 ## Project Overview
 AI-powered browser RPG built on Next.js.
