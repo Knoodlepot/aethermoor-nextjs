@@ -331,6 +331,7 @@ const PLOT_TEMPLATES = [
 
 export function generateProceduralWorld(seed?: string): any[] {
   // Use a seedable RNG for all worldgen randomness
+
   const rng = mulberry32(stringToSeed(seed || (Math.random() + Date.now()).toString()));
   // Override helpers to use this RNG
   pick = <T>(arr: T[]): T => arr[Math.floor(rng() * arr.length)];
@@ -351,16 +352,16 @@ export function generateProceduralWorld(seed?: string): any[] {
     'Reedmere','Saltmarsh','Tallow','Upton','Wychwood','Zephyrhill',
   ];
   const pool = [...prefixes];
-  const pickName = () => pool.splice(Math.floor(Math.random() * pool.length), 1)[0] || 'Ancient';
+  const pickName = () => pool.splice(Math.floor(rng() * pool.length), 1)[0] || 'Ancient';
 
   const rulerFirst = ['Edmund','Mira','Aldric','Serafina','Tobias','Wren','Gareth','Isolde','Cormac','Elara','Branoc','Thessaly','Oswin','Veda','Radulf'];
   const rulerTitle = ['of the','the','Lord of','Lady of'];
   const traits = ['Wise','Stern','Kind','Greedy','Cautious','Ambitious','Pious','Ruthless','Fair','Eccentric'];
   const mkRuler = (place: string) => ({
-    name: rulerFirst[Math.floor(Math.random() * rulerFirst.length)] + ' ' +
-          rulerTitle[Math.floor(Math.random() * rulerTitle.length)] + ' ' +
+    name: rulerFirst[Math.floor(rng() * rulerFirst.length)] + ' ' +
+          rulerTitle[Math.floor(rng() * rulerTitle.length)] + ' ' +
           place.split(' ')[0],
-    trait: traits[Math.floor(Math.random() * traits.length)],
+    trait: traits[Math.floor(rng() * traits.length)],
   });
 
   const add = (type: string, forcedName?: string) => {
@@ -369,7 +370,7 @@ export function generateProceduralWorld(seed?: string): any[] {
     const n = forcedName || pickName() + ' ' + label;
     world.push({
       name: n, type, icon: config.icon,
-      populace: Math.floor(Math.random() * (config.popRange[1] - config.popRange[0])) + config.popRange[0],
+      populace: Math.floor(rng() * (config.popRange[1] - config.popRange[0])) + config.popRange[0],
       industry: config.industries,
       ruler: mkRuler(n),
     });
