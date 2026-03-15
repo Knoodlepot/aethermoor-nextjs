@@ -13,8 +13,7 @@
     "verify:narrator:prod": "powershell -NoProfile -Command \"$env:NEXT_PUBLIC_URL='https://aethermoor-nextjs.vercel.app'; node __tests__/manual/narratorTurnTest.cjs\"",
     "verify:all": "npm run verify:runtime && npm run verify:mock-state && npm run verify:narrator",
     "test": "vitest run",
-    "verify:unit": "vitest run",
-    
+    "verify:unit": "vitest run"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -37,8 +36,7 @@
     "@types/react-dom": "^19",
     "@types/redis": "^4.0.10",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    
+    "eslint-config-next": "16.1.6"
     "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.0"
