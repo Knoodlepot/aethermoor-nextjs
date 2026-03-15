@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
+import { LOCATION_TIERS } from '@/lib/constants';
 
 interface ContextActionPanelProps {
   context: string;
@@ -63,6 +64,28 @@ const HELP_CHANCE: Record<string, number> = {
   hamlet:  0.20,
 };
 
+const TIER_ICONS: Record<string, string> = {
+  hamlet:         '🏚️',
+  village:        '🏘️',
+  town:           '🏛️',
+  city:           '🏰',
+  capital:        '👑',
+  poi:            '⚠️',
+  dungeon:        '🗝️',
+  farm_arable:    '🌾',
+  farm_livestock: '🐄',
+  farm_mixed:     '🐂',
+};
+
+function locationIcon(locationName: string | undefined, locationGrid?: Record<string, any>): string {
+  if (!locationName) return '🌲';
+  if (locationName.toLowerCase().includes('dungeon')) return '🗝️';
+  const gridEntry = locationGrid?.[locationName];
+  if (gridEntry?.type && TIER_ICONS[gridEntry.type]) return TIER_ICONS[gridEntry.type];
+  const tier = LOCATION_TIERS[locationName];
+  return TIER_ICONS[tier] ?? '🌲';
+}
+
 function getSettlementType(location: string | undefined, locationGrid: Record<string, any> | undefined): string | null {
   if (!location || !locationGrid) return null;
   const entry = locationGrid[location];
@@ -84,6 +107,7 @@ export function ContextActionPanel({ context, isLoading, onAction, inventory = [
   const { T, tf } = useTheme();
 
   const { label, color, actions } = getTemplateFor(context);
+  const locIcon = locationIcon(location, locationGrid);
 
   // Resolve per-button item requirements
   const resolvedActions = actions.map((a) => {
@@ -115,8 +139,16 @@ export function ContextActionPanel({ context, isLoading, onAction, inventory = [
       }}
     >
       {/* Header */}
-      <div style={{ ...tf, fontSize: 8, color, letterSpacing: 2, marginBottom: 6 }}>
-        {label} ACTIONS
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+        <span style={{ ...tf, fontSize: 8, color, letterSpacing: 2 }}>{label} ACTIONS</span>
+        {location && (
+          <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ fontSize: 10 }}>{locIcon}</span>
+            <span style={{ ...tf, color: T.gold, fontSize: 8, letterSpacing: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const, maxWidth: 90 }}>
+              {location}
+            </span>
+          </span>
+        )}
       </div>
 
       {/* Button grid */}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useTheme } from '@/components/providers/ThemeProvider';
-import { LOCATION_TIERS } from '@/lib/constants';
 import type { Player } from '@/lib/types';
 
 interface ContextBarProps {
@@ -22,32 +21,7 @@ interface ContextBarProps {
   bestiaryCount?: number;
 }
 
-const TIER_ICONS: Record<string, string> = {
-  hamlet:         '🏚️',
-  village:        '🏘️',
-  town:           '🏛️',
-  city:           '🏰',
-  capital:        '👑',
-  poi:            '⚠️',
-  dungeon:        '🗝️',
-  farm_arable:    '🌾',
-  farm_livestock: '🐄',
-  farm_mixed:     '🐂',
-};
-
-function locationIcon(locationName: string | undefined, locationGrid?: Record<string, any>): string {
-  if (!locationName) return '🌲';
-  const lower = locationName.toLowerCase();
-  if (lower.includes('dungeon')) return '🗝️';
-  // Check locationGrid type first (most accurate)
-  const gridEntry = locationGrid?.[locationName];
-  if (gridEntry?.type && TIER_ICONS[gridEntry.type]) return TIER_ICONS[gridEntry.type];
-  // Fallback to LOCATION_TIERS
-  const tier = LOCATION_TIERS[locationName];
-  return TIER_ICONS[tier] ?? '🌲';
-}
-
-export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, bestiaryCount = 0 }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount = 0 }: ContextBarProps) {
   const { T } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -68,9 +42,6 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
     poi:     { label: 'At Location', color: '#806030', icon: '⚠️' },
   };
   const ctxData = ctxInfo[ctx] || ctxInfo.explore;
-
-  const locIcon = locationIcon(player?.location, locationGrid);
-  const dest = (player as any)?.travelDestination;
 
   return (
     <div
@@ -95,17 +66,9 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
         )}
       </div>
 
-      {/* Right: location + buttons */}
+      {/* Right: buttons */}
       {(onDungeon || onGear || onBestiary) && (
         <div style={{ flex: 1, borderLeft: `1px solid ${T.border}`, padding: '4px', display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-          {/* Location row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3, paddingLeft: 2 }}>
-            <span style={{ fontSize: 10, flexShrink: 0 }}>{locIcon}</span>
-            <span style={{ ...tf, color: T.gold, fontSize: 8, letterSpacing: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
-              {ctx === 'travel' && dest ? `${player?.location} → ${dest}` : player?.location}
-            </span>
-          </div>
-          {/* Button grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             {onBestiary && (
               <button
