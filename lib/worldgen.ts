@@ -4,14 +4,16 @@
 // ============================================================
 
 import { CLASSES, FACTIONS } from './constants';
+import { mulberry32, stringToSeed } from './seedrandom';
 
 type ClassKey = keyof typeof CLASSES;
 
 // ── Helpers ──────────────────────────────────────────────────
-const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-const rand = (mn: number, mx: number) => mn + Math.random() * (mx - mn);
-const clamp = (v: number, mn: number, mx: number) => Math.max(mn, Math.min(mx, v));
-const angle = () => Math.random() * Math.PI * 2;
+// These will be reassigned inside generateProceduralWorld to use the correct RNG
+let pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+let rand = (mn: number, mx: number) => mn + Math.random() * (mx - mn);
+let clamp = (v: number, mn: number, mx: number) => Math.max(mn, Math.min(mx, v));
+let angle = () => Math.random() * Math.PI * 2;
 
 // ── Settlement types ─────────────────────────────────────────
 const SETTLEMENT_TYPES: Record<string, { label: string; icon: string; popRange: [number, number]; industries: string[] }> = {
@@ -28,6 +30,11 @@ const SETTLEMENT_TYPES: Record<string, { label: string; icon: string; popRange: 
   poi_ruins:     { label: 'Ancient Ruins',   icon: '🏚️', popRange: [0, 0],        industries: ['Archaeology', 'Scavenging', 'Forbidden Lore'] },
   poi_wood:      { label: 'Dark Wood',       icon: '🌳', popRange: [0, 0],        industries: ['Charcoal', 'Hunting', 'Witchcraft'] },
   poi_shrine:    { label: 'Forgotten Shrine',icon: '⛩️', popRange: [0, 0],        industries: ['Pilgrimage', 'Ancient Magic', 'Offerings'] },
+  poi_library:   { label: 'Lost Library',     icon: '📚', popRange: [0, 0],        industries: ['Lore', 'Secrets', 'Ancient Tomes'] },
+  poi_observ:    { label: 'Haunted Observatory', icon: '🔭', popRange: [0, 0],     industries: ['Stargazing', 'Prophecy', 'Arcane Research'] },
+  poi_spring:    { label: 'Hidden Spring',    icon: '💧', popRange: [0, 0],        industries: ['Healing', 'Mystic Waters', 'Pilgrimage'] },
+  poi_battle:    { label: 'Ancient Battlefield', icon: '⚔️', popRange: [0, 0],     industries: ['Ghosts', 'Relics', 'History'] },
+  poi_anomaly:   { label: 'Arcane Anomaly',   icon: '🌀', popRange: [0, 0],        industries: ['Wild Magic', 'Rifts', 'Strange Phenomena'] },
 };
 
 // ── Villain data ─────────────────────────────────────────────
@@ -322,7 +329,14 @@ const PLOT_TEMPLATES = [
 
 // ── World generation ─────────────────────────────────────────
 
-export function generateProceduralWorld(): any[] {
+export function generateProceduralWorld(seed?: string): any[] {
+  // Use a seedable RNG for all worldgen randomness
+  const rng = mulberry32(stringToSeed(seed || (Math.random() + Date.now()).toString()));
+  // Override helpers to use this RNG
+  pick = <T>(arr: T[]): T => arr[Math.floor(rng() * arr.length)];
+  rand = (mn: number, mx: number) => mn + rng() * (mx - mn);
+  clamp = (v: number, mn: number, mx: number) => Math.max(mn, Math.min(mx, v));
+  angle = () => rng() * Math.PI * 2;
   const world: any[] = [];
 
   const prefixes = [
@@ -394,6 +408,11 @@ export function generateProceduralWorld(): any[] {
     poi_ruins:  ['the Shattered Keep','the Old Temple','the Forsaken Hold','the Crumbled Citadel','the Grey Stones','the Fallen Spire','the Burial Mound','the Witch\'s Tower','the Sunken Fort','the Ancient Stones'],
     poi_wood:   ['the Darkwood','the Cursed Boughs','the Nightwood','the Witch Timbers','the Pale Wood','the Hangman\'s Wood','the Black Boughs','the Tangle','the Sorrow Wood','the Mist Wood'],
     poi_shrine: ['the Forgotten Altar','the Old Shrine','the Mossy Stones','the Weeping Idol','the Stone Circle','the Blood Altar','the Unnamed Shrine','the Half-buried Temple','the Moonstone Ring','the God\'s Wound'],
+    poi_library: ['the Lost Athenaeum','the Whispering Stacks','the Sealed Archive','the Scriptorium','the Ruined Library','the Forbidden Vault','the Dustbound Hall','the Star Chamber'],
+    poi_observ: ['the Starwatch','the Broken Lens','the Gloamspire','the Astral Tower','the Nightglass','the Oracle Dome','the Celestial Eye','the Fallen Observatory'],
+    poi_spring: ['the Silver Spring','the Moonwell','the Hidden Pool','the Verdant Source','the Healing Waters','the Crystal Fountain','the Sacred Spring','the Veiled Oasis'],
+    poi_battle: ['the Red Field','the Silent Mound','the Broken Line','the Ghost Trenches','the Fallen Banner','the Hero\'s Cairn','the Bloodmeadow','the Lost Encampment'],
+    poi_anomaly: ['the Wild Nexus','the Shifting Scar','the Arcane Spiral','the Unbound Rift','the Flickering Veil','the Chaos Node','the Ether Sink','the Strange Maw'],
   };
   const poiMiniBosses: Record<string, string[]> = {
     poi_forest: ['Ancient Treant','Forest Warden','Corrupted Dryad','Giant Spiderqueen','Feral Troll','Elder Wolf','Cursed Hunter','Grove Specter'],
@@ -401,6 +420,11 @@ export function generateProceduralWorld(): any[] {
     poi_ruins:  ['Revenant Knight','Lich Apprentice','Cursed Guardian','Ruin Specter','Bone Colossus','Possessed Statue','Shadow Wraith','Ancient Sentinel'],
     poi_wood:   ['Witch of the Wood','Nightmare Stag','Black Hound Alpha','Cursed Woodsman','Thorn Demon','Void Walker','Dark Sprite Queen','Weeping Wraith'],
     poi_shrine: ['Shrine Zealot','Corrupted Priest','Stone Idol','Demon Bound','Blood Cultist Leader','Hollow Prophet','Ancient Revenant','God\'s Echo'],
+    poi_library: ['Mad Archivist','Spectral Librarian','Cursed Scribe','Bookwyrm','Ink Elemental','Lost Scholar','Tome Guardian','Whispering Shade'],
+    poi_observ: ['Star-Maddened Seer','Astral Wraith','Broken Astrologer','Celestial Horror','Nightglass Gazer','Fallen Oracle','Comet Revenant','Watcher in the Dark'],
+    poi_spring: ['Water Nymph','Corrupted Naiad','Spring Serpent','Healing Wight','Mist Elemental','Blessed Guardian','Drowned Pilgrim','Crystal Golem'],
+    poi_battle: ['Battlefield Revenant','Ghost Captain','Relic Hunter','Bloodshade','Fallen Hero','Spectral Warhound','Banner Wraith','Cairn Guardian'],
+    poi_anomaly: ['Rift Stalker','Chaos Spawn','Arcane Aberration','Wild Mage','Ether Phantom','Reality Leech','Spiral Horror','Unstable Construct'],
   };
   const poiLoot: Record<string, string[]> = {
     poi_forest: ['Heartwood Staff','Dryad\'s Tear','Sylvan Bow','Ancient Bark Shield','Forest Cloak','Verdant Blade'],
@@ -408,16 +432,63 @@ export function generateProceduralWorld(): any[] {
     poi_ruins:  ['Runebound Sword','Ancient Medallion','Scholar\'s Tome','Shattered Crown','Relic Armour','Forgotten Rune'],
     poi_wood:   ['Witch\'s Grimoire','Shadow Cloak','Cursed Blade','Nightmare Totem','Darkwood Staff','Void Crystal'],
     poi_shrine: ['Blessed Idol','Divine Fragment','Shrine-keeper\'s Robe','Sacred Totem','Relic Blade','Consecrated Shield'],
+    poi_library: ['Ancient Grimoire','Lost Map','Cursed Codex','Sage\'s Quill','Memory Scroll','Secret Index','Star Chart','Forbidden Lexicon'],
+    poi_observ: ['Stargazer\'s Lens','Celestial Chart','Prophet\'s Orb','Nightglass Shard','Astrologer\'s Ring','Oracle\'s Staff','Comet Dust','Fallen Star'],
+    poi_spring: ['Healing Draught','Moonwell Water','Blessed Flask','Crystal Vial','Sacred Moss','Verdant Band','Oasis Stone','Veilwater'],
+    poi_battle: ['Hero\'s Medal','Bloodstained Banner','Ghostly Blade','Relic Arrow','Warrior\'s Token','Cairn Stone','Battle Map','Lost Standard'],
+    poi_anomaly: ['Wild Magic Shard','Rift Crystal','Etheric Band','Chaos Relic','Spiral Token','Unstable Gem','Strange Device','Anomaly Core'],
   };
   const mainSettlements = world.filter((s) => ['capital','city','town','village','hamlet'].includes(s.type));
-  const poiCounts: Record<string, number> = { poi_forest: 8, poi_cave: 10, poi_ruins: 8, poi_wood: 7, poi_shrine: 6 };
+  const poiCounts: Record<string, number> = {
+    poi_forest: 16, poi_cave: 20, poi_ruins: 16, poi_wood: 14, poi_shrine: 12,
+    poi_library: 8, poi_observ: 8, poi_spring: 8, poi_battle: 8, poi_anomaly: 8
+  };
+  // --- Main quest POI integration ---
+  // Pick a random POI type for the main quest (weighted toward ruins, shrine, anomaly, library)
+  const mainQuestPOITypes = ['poi_ruins','poi_shrine','poi_anomaly','poi_library','poi_observ'];
+  const mainQuestPOIType = mainQuestPOITypes[Math.floor(Math.random() * mainQuestPOITypes.length)];
+  const mainQuestPOINames = poiNames[mainQuestPOIType] || ['the Main Quest Site'];
+  const mainQuestPOIName = mainQuestPOINames[Math.floor(Math.random() * mainQuestPOINames.length)];
+  const mainQuestPOIBoss = (poiMiniBosses[mainQuestPOIType] || ['Main Quest Boss'])[Math.floor(Math.random() * (poiMiniBosses[mainQuestPOIType] || ['Main Quest Boss']).length)];
+  const mainQuestPOILoot = (poiLoot[mainQuestPOIType] || ['Main Quest Relic'])[Math.floor(Math.random() * (poiLoot[mainQuestPOIType] || ['Main Quest Relic']).length)];
+  const mainQuestSettlement = mainSettlements[Math.floor(Math.random() * mainSettlements.length)];
+  // Add the main quest POI
+  world.push({
+    name: mainQuestPOIName,
+    type: mainQuestPOIType,
+    icon: SETTLEMENT_TYPES[mainQuestPOIType].icon,
+    populace: 0,
+    industry: SETTLEMENT_TYPES[mainQuestPOIType].industries,
+    parentSettlement: mainQuestSettlement.name,
+    isPOI: true,
+    isMainQuestPOI: true,
+    miniBoss: mainQuestPOIBoss,
+    treasureLoot: mainQuestPOILoot,
+    bossDefeated: false,
+    ruler: null,
+    questFlavour: `This place is central to the main quest. Legends say it holds the key to defeating the great evil. A puzzle or riddle bars the way, and only those who solve it may claim the reward.`,
+    questPuzzle: `A mysterious mechanism, ancient inscription, or magical barrier blocks the final chamber. The solution is hinted at by clues scattered across the land.`,
+    questReward: `A unique artifact or knowledge needed to progress the main quest.`,
+  });
+
+  // Add other POIs as normal, but distribute quest clues to a few
+  const cluePOICount = 3 + Math.floor(Math.random() * 3); // 3-5 clues
+  const cluePOIIndexes: number[] = [];
+  while (cluePOIIndexes.length < cluePOICount) {
+    const idx = Math.floor(Math.random() * Object.values(poiCounts).reduce((a,b)=>a+b,0));
+    if (!cluePOIIndexes.includes(idx)) cluePOIIndexes.push(idx);
+  }
+  let poiGlobalIndex = 0;
   Object.entries(poiCounts).forEach(([type, count]) => {
     const names = [...(poiNames[type] || [])];
     const bosses = poiMiniBosses[type] || [];
     const loot = poiLoot[type] || [];
     for (let i = 0; i < count; i++) {
+      // Avoid duplicating the main quest POI
+      if (type === mainQuestPOIType && names[i % names.length] === mainQuestPOIName) continue;
       const name = names[i % names.length];
       const nearSettlement = mainSettlements[Math.floor(Math.random() * mainSettlements.length)];
+      const isCluePOI = cluePOIIndexes.includes(poiGlobalIndex);
       world.push({
         name, type,
         icon: SETTLEMENT_TYPES[type].icon,
@@ -429,7 +500,9 @@ export function generateProceduralWorld(): any[] {
         treasureLoot: loot[Math.floor(Math.random() * loot.length)],
         bossDefeated: false,
         ruler: null,
+        questClue: isCluePOI ? `A cryptic clue or fragment related to the main quest puzzle is hidden here.` : undefined,
       });
+      poiGlobalIndex++;
     }
   });
 
@@ -792,14 +865,17 @@ export function generateMainQuestSeed(): any {
   };
 }
 
-export function generateWorldSeed(): any {
-  const worldData = generateProceduralWorld();
+export function generateWorldSeed(seedStr?: string): any {
+  // If no seed provided, generate a random one
+  const actualSeed = seedStr || Math.random().toString(36).slice(2) + Date.now().toString(36);
+  const worldData = generateProceduralWorld(actualSeed);
   const seed = generateMainQuestSeed();
   seed.travelMatrix = buildTravelMatrix(worldData);
   seed.worldSettlements = worldData
     .filter((d) => ['capital','city','town','village','hamlet'].includes(d.type))
     .map((d) => ({ name: d.name, type: d.type, mapX: d.mapX, mapY: d.mapY }));
   seed.worldData = worldData;
+  seed.seed = actualSeed;
   return seed;
 }
 

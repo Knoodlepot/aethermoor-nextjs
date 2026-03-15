@@ -111,10 +111,10 @@ function GameContent() {
   }, [auth.authStatus, searchParams]);
 
   /** Start a new game: generate world, init player, get opening narrative */
-  const handleStartNewGame = async (name: string, cls: string) => {
+  const handleStartNewGame = async (name: string, cls: string, seedStr?: string) => {
     setNewGameLoading(true);
     try {
-      const seed = generateWorldSeed();
+      const seed = generateWorldSeed(seedStr);
       const worldData = seed.worldData ?? [];
       // Pick a random village/hamlet as starting location
       const starters = worldData.filter((d: any) => d.type === 'village' || d.type === 'hamlet');
@@ -310,9 +310,9 @@ function GameContent() {
   if (gameState.isLoaded && (!gameState.player || isNewGame)) {
     return (
       <CharacterCreationScreen
-        onStart={async (name, cls) => {
+        onStart={async (name, cls, seed) => {
           // After starting, clear the ?new=1 param so refreshing doesn't re-trigger
-          await handleStartNewGame(name, cls);
+          await handleStartNewGame(name, cls, seed);
           router.replace('/game');
         }}
         isLoading={newGameLoading}
@@ -477,6 +477,7 @@ function GameContent() {
     );
   };
 
+  const [seedCopied, setSeedCopied] = useState(false);
   const playerInfoPanel = player ? (
     <div style={{ background: T.panel, borderBottom: `1px solid ${T.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, maxHeight: '60%' }}>
       {/* Identity card — two column: left = icon/name/class, right = HP/XP/attributes */}
@@ -491,6 +492,36 @@ function GameContent() {
         <div style={{ width: 1, background: T.border, flexShrink: 0 }} />
         {/* Right: HP/XP bars + attributes */}
         <div style={{ flex: 1, minWidth: 0 }}>
+          {/* World Seed display and copy */}
+          {worldSeed?.seed && (
+            <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 11, color: T.textMuted, letterSpacing: 1 }}>Seed:</span>
+              <span style={{ fontSize: 12, color: T.accent, fontFamily: 'monospace', background: T.panelAlt, padding: '2px 8px', borderRadius: 4, border: `1px solid ${T.border}` }}>{worldSeed.seed}</span>
+              <button
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(worldSeed.seed);
+                    setSeedCopied(true);
+                    setTimeout(() => setSeedCopied(false), 1200);
+                  } catch {}
+                }}
+                style={{
+                  background: seedCopied ? T.gold : T.panelAlt,
+                  color: seedCopied ? '#0d0d1a' : T.textMuted,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 4,
+                  fontSize: 11,
+                  padding: '2px 8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  marginLeft: 2,
+                }}
+                title="Copy seed to clipboard"
+              >
+                {seedCopied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+          )}
           <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
           <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
           <div style={{ fontSize: 10, color: T.textFaint, textAlign: 'right' as const, marginTop: 1, marginBottom: 6 }}>Next: {xpCeil} XP</div>

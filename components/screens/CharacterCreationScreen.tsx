@@ -5,17 +5,20 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 import { CLASSES } from '@/lib/constants';
 
+
 interface Props {
-  onStart: (name: string, cls: string) => void;
+  onStart: (name: string, cls: string, seed?: string) => void;
   isLoading: boolean;
   gravestones?: { name: string; class: string; level: number; epitaph?: string }[];
 }
+
 
 export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }: Props) {
   const { T, tf, isDyslexic } = useTheme();
   const [playerName, setPlayerName] = useState('');
   const [selClass, setSelClass] = useState<string>('');
   const [classInfoClass, setClassInfoClass] = useState<string | null>(null);
+  const [seed, setSeed] = useState('');
 
   const canStart = playerName.trim().length > 0 && selClass !== '' && !isLoading;
 
@@ -111,7 +114,7 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
         )}
 
         {/* Name input */}
-        <div style={{ marginBottom: 26 }}>
+        <div style={{ marginBottom: 18 }}>
           <label
             style={{
               ...tf,
@@ -143,6 +146,44 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
               letterSpacing: isDyslexic ? '0.05em' : 'normal',
             }}
           />
+        </div>
+
+        {/* World Seed input */}
+        <div style={{ marginBottom: 26 }}>
+          <label
+            style={{
+              ...tf,
+              color: T.accent,
+              fontSize: 12,
+              letterSpacing: 2,
+              display: 'block',
+              marginBottom: 8,
+            }}
+          >
+            WORLD SEED (optional)
+          </label>
+          <input
+            value={seed}
+            onChange={(e) => setSeed(e.target.value)}
+            placeholder="Random if left blank"
+            maxLength={32}
+            style={{
+              width: '100%',
+              background: T.inputBg ?? T.panelAlt,
+              border: `1px solid ${seed ? T.accent : T.border}`,
+              color: T.text,
+              padding: '12px 16px',
+              fontSize: isDyslexic ? 16 : 15,
+              fontFamily: isDyslexic ? "'OpenDyslexic',Arial,sans-serif" : "'Crimson Text',Georgia,serif",
+              outline: 'none',
+              boxSizing: 'border-box' as const,
+              transition: 'border-color 0.2s',
+              letterSpacing: isDyslexic ? '0.05em' : 'normal',
+            }}
+          />
+          <div style={{ color: T.textMuted, fontSize: 11, marginTop: 4 }}>
+            Enter a code to replay a world, or leave blank for a random seed.
+          </div>
         </div>
 
         {/* Class selection */}
@@ -251,7 +292,7 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
 
         {/* Start button */}
         <button
-          onClick={() => canStart && onStart(playerName.trim(), selClass)}
+          onClick={() => canStart && onStart(playerName.trim(), selClass, seed.trim() || undefined)}
           disabled={!canStart}
           style={{
             ...tf,
