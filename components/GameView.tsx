@@ -1086,6 +1086,7 @@ function GameContent() {
           onUnequip={(slot: string) => handleCommand('unequip:' + slot)}
           onUse={(item: string) => handleCommand('use:' + item)}
           onDrop={(item: string) => handleCommand('drop:' + item)}
+          onUnlock={(skillId: string) => handleCommand('unlock_skill:' + skillId)}
           onClose={() => ui.closeModal('inventory')}
         />
       )}

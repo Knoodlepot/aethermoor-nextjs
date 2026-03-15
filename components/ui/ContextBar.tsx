@@ -47,7 +47,7 @@ function locationIcon(locationName: string | undefined, locationGrid?: Record<st
   return TIER_ICONS[tier] ?? '🌲';
 }
 
-export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop, onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts = 0, bestiaryCount = 0 }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, bestiaryCount = 0 }: ContextBarProps) {
   const { T } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -102,7 +102,7 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
       </div>
 
       {/* Right: buttons */}
-      {(onShop || onSkills || onDungeon || onGear || onBestiary) && (
+      {(onDungeon || onGear || onBestiary) && (
         <div style={{ borderLeft: `1px solid ${T.border}`, padding: '4px', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             {onBestiary && (
@@ -127,30 +127,6 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
             {onGear && (
               <button onClick={onGear} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const }}>
                 🎒 Gear
-              </button>
-            )}
-            {onShop && (
-              <button
-                onClick={onShop}
-                disabled={!['town', 'npc'].includes(ctx)}
-                style={{
-                  background: 'transparent',
-                  border: `1px solid ${['town', 'npc'].includes(ctx) ? T.accent : T.border}`,
-                  color: ['town', 'npc'].includes(ctx) ? T.gold : T.textFaint,
-                  padding: '2px 6px', fontSize: 9, cursor: ['town', 'npc'].includes(ctx) ? 'pointer' : 'not-allowed',
-                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
-                  opacity: ['town', 'npc'].includes(ctx) ? 1 : 0.4, whiteSpace: 'nowrap' as const,
-                }}
-              >🛒 Shop</button>
-            )}
-            {onSkills && (
-              <button onClick={onSkills} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, position: 'relative' as const, whiteSpace: 'nowrap' as const }}>
-                🌿 Skills
-                {skillPts > 0 && (
-                  <span style={{ position: 'absolute', top: -3, right: -3, background: '#60a060', color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {skillPts}
-                  </span>
-                )}
               </button>
             )}
             {onDungeon && (
