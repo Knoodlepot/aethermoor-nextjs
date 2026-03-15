@@ -119,6 +119,7 @@ function GameContent() {
 
   /** Start a new game: generate world, init player, get opening narrative */
   const handleStartNewGame = async (name: string, cls: string, seedStr?: string) => {
+    storage.clearAllSaves();
     setNewGameLoading(true);
     try {
       const seed = generateWorldSeed(seedStr);
