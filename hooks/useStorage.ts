@@ -262,11 +262,22 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
    */
   const clearAllSaves = useCallback(() => {
     try {
+      // Legacy single-slot keys
       localStorage.removeItem('rpg-player');
       localStorage.removeItem('rpg-seed');
       localStorage.removeItem('rpg-messages');
       localStorage.removeItem('rpg-narrative');
       localStorage.removeItem('rpg-log');
+      localStorage.removeItem('rpg-seed-str');
+      // Slot-keyed keys for all 3 slots
+      for (let s = 1; s <= 3; s++) {
+        localStorage.removeItem(`rpg-player-slot${s}`);
+        localStorage.removeItem(`rpg-seed-slot${s}`);
+        localStorage.removeItem(`rpg-messages-slot${s}`);
+        localStorage.removeItem(`rpg-narrative-slot${s}`);
+        localStorage.removeItem(`rpg-log-slot${s}`);
+        localStorage.removeItem(`rpg-seed-str-slot${s}`);
+      }
     } catch (error) {
       console.warn('Failed to clear saves:', error);
     }

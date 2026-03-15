@@ -210,10 +210,9 @@ function GameContent() {
       ];
       gameState.addMessage('user', introMsg[0].content);
 
-      // Write new game to cloud NOW (fire-and-forget) so the narrator API's
-      // canonical-state lookup finds the new save, not the old one.
-      // DB write is <100ms; Anthropic API takes 1-3s — it will finish in time.
-      storage.saveToCloud(player as any, seed as any, introMsg, '', []);
+      // Await cloud save so the narrator API's canonical-state lookup finds
+      // the new game, not the old save. Fire-and-forget had a timing race.
+      await storage.saveToCloud(player as any, seed as any, introMsg, '', []);
 
       const res = await fetch('/api/claude', {
         method: 'POST',

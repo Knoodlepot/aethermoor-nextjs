@@ -449,10 +449,17 @@ export function useGameLoop(
         // 3. Use server-applied state updates from /api/claude
         const cleanNarrative = narratorResponse.cleanNarrative || narratorResponse.narrative;
         if (narratorResponse.player && narratorResponse.worldSeed) {
-          updatedPlayer = narratorResponse.player;
-          // Always preserve world-structure fields from the current local seed.
-          // The canonical state from the DB may be stale (e.g. old save format
-          // without travelMatrix.routes), so we never let it overwrite these.
+          // Merge narrator updates onto current local state, never letting
+          // stale canonical DB data overwrite core identity or world-structure.
+          updatedPlayer = {
+            ...gs.player,
+            ...narratorResponse.player,
+            name: (gs.player as any).name,
+            class: (gs.player as any).class,
+            location: (gs.player as any).location,
+            exploredLocations: (narratorResponse.player as any).exploredLocations
+              ?? (gs.player as any).exploredLocations,
+          } as typeof gs.player;
           const localSeed = gs.worldSeed as any;
           updatedSeed = {
             ...localSeed,
