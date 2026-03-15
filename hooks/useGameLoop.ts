@@ -6,7 +6,7 @@ import type { GameStateContext } from './useGameState';
 import type { UIContext } from './useUI';
 import type { UseStorageReturn } from './useStorage';
 import { FACTION_JOIN_OFFERS, PROTECTED_ITEMS, RECIPES, CONSUMABLE_EFFECTS } from '../lib/constants';
-import { getItemSlotEx } from '../lib/helpers';
+import { getItemSlotEx, formatGameTime } from '../lib/helpers';
 
 export interface GameLoopContext {
   executeCommand: (
@@ -370,7 +370,8 @@ export function useGameLoop(
             const dist = Math.sqrt(dx * dx + dy * dy);
             const footHours = dist * 1.5;
             const SPEED: Record<string, number> = { foot: 1, horse: 2.5, hire_horse: 2.5, barge: 3, boat: 4 };
-            travelHours = Math.max(1, Math.round(footHours / (SPEED[method] ?? 1)));
+            // Round to nearest half-hour for more precise clock display
+            travelHours = Math.max(0.5, Math.round((footHours / (SPEED[method] ?? 1)) * 2) / 2);
           }
 
           // Advance game time
@@ -381,8 +382,11 @@ export function useGameLoop(
           // Build arrival narrative
           const methodLabels: Record<string, string> = { foot: 'on foot', horse: 'on horseback', hire_horse: 'on a hired horse', barge: 'by river barge', boat: 'by sea' };
           const methodLabel = methodLabels[method] ?? method;
-          const timeDesc = travelHours < 24 ? `${travelHours}h` : `${Math.floor(travelHours / 24)}d ${travelHours % 24 > 0 ? (travelHours % 24) + 'h' : ''}`.trim();
-          const msg = `After ${timeDesc} travelling ${methodLabel}, you arrive at ${dest}. The road-dust settles as you take in your surroundings.`;
+          const timeDesc = travelHours < 24
+            ? (travelHours % 1 === 0.5 ? `${Math.floor(travelHours)}h 30m` : `${travelHours}h`)
+            : `${Math.floor(travelHours / 24)}d ${travelHours % 24 > 0 ? (travelHours % 24) + 'h' : ''}`.trim();
+          const arrivalTime = formatGameTime(newHour, newDay).time;
+          const msg = `After ${timeDesc} travelling ${methodLabel}, you arrive at ${dest} at ${arrivalTime}. The road-dust settles as you take in your surroundings.`;
 
           const exploredSet = new Set(updatedPlayer.exploredLocations ?? [updatedPlayer.location]);
           exploredSet.add(dest);

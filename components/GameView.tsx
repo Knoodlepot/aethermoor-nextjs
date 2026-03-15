@@ -412,9 +412,11 @@ function GameContent() {
   const clockHour: number = player?.gameHour ?? 8;
   const clockDay: number = player?.gameDay ?? 1;
   const isDay = clockHour >= 6 && clockHour < 20;
-  const h12 = clockHour % 12 || 12;
-  const ampm = clockHour < 12 ? 'AM' : 'PM';
-  const clockStr = `Day ${clockDay} · ${h12}${ampm}`;
+  const _ch = Math.floor(clockHour);
+  const _cm = clockHour % 1 >= 0.5 ? '30' : '00';
+  const _h12 = _ch === 0 ? 12 : _ch > 12 ? _ch - 12 : _ch;
+  const ampm = _ch < 12 ? 'AM' : 'PM';
+  const clockStr = `Day ${clockDay} · ${_h12}:${_cm}${ampm}`;
   const clockColor = isDay ? '#c8a040' : '#7080b8';
 
   // ── Header button helper (legacy style) ───────────────────────────────────
