@@ -442,7 +442,17 @@ export function useGameLoop(
         const cleanNarrative = narratorResponse.cleanNarrative || narratorResponse.narrative;
         if (narratorResponse.player && narratorResponse.worldSeed) {
           updatedPlayer = narratorResponse.player;
-          updatedSeed = narratorResponse.worldSeed;
+          // Always preserve world-structure fields from the current local seed.
+          // The canonical state from the DB may be stale (e.g. old save format
+          // without travelMatrix.routes), so we never let it overwrite these.
+          updatedSeed = {
+            ...gs.worldSeed,
+            ...narratorResponse.worldSeed,
+            travelMatrix: (gs.worldSeed as any).travelMatrix,
+            worldData: (gs.worldSeed as any).worldData,
+            worldSettlements: (gs.worldSeed as any).worldSettlements,
+            seed: (gs.worldSeed as any).seed,
+          };
         }
 
         // 3b. Show level-up notification if the player leveled up

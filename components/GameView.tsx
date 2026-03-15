@@ -228,7 +228,12 @@ function GameContent() {
         gameState.setNarrative(narrative);
         gameState.addMessage('assistant', narrative);
         const finalPlayer = data.player ?? player;
-        const finalSeed = data.worldSeed ?? seed;
+        // The API may return stale canonical data from the DB because the new
+        // save hasn't been written yet at this point. Always keep world-structure
+        // fields from the freshly generated seed so travelMatrix/routes are intact.
+        const finalSeed = data.worldSeed
+          ? { ...seed, ...data.worldSeed, travelMatrix: seed.travelMatrix, worldData: seed.worldData, worldSettlements: seed.worldSettlements, seed: seed.seed }
+          : seed;
         gameState.setPlayer(finalPlayer);
         gameState.setWorldSeed(finalSeed);
         await storage.saveGame(finalPlayer, finalSeed, [
