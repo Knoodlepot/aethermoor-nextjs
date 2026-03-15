@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **XP and leveling now work.** Defeating enemies and completing quest objectives grants experience points. When you accumulate enough XP, your character levels up — shown with a notification and applied immediately.
+- **Class-specific HP growth on level-up.** Warriors are hardiest, gaining 10 max HP per level. Clerics gain 7, Rogues 5, and Mages 3 — reflecting each class's durability. Your HP is also partially restored when you level up.
+- **Stat Points and Skill Points now awarded on level-up.** Each level gained grants +3 Stat Points (spend them in the character panel to raise STR, AGI, INT, or WIL) and +1 Skill Point (for the skill tree).
+
 ### Fixed
 - **Combat damage now actually reduces your HP.** Previously, the narrator described hits and wounds in prose but your health bar never changed — you could fight forever without ever being in danger. This has been fixed: damage dealt by enemies now reduces your HP in real time, and healing (potions, rest, magic) now restores it properly.
 - **Player death is now real.** If your HP reaches zero, you fall in battle. A gravestone is recorded and your adventure ends — permanently. A dramatic death screen appears with the final moments of your story, a randomly chosen epitaph, and the option to Begin Anew with a fresh character. Death is not a setback. It is an ending.

@@ -43,6 +43,14 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **XP and Level-Up System**: XP now granted on enemy kills and quest completions via `{"xpGain":N}` narrator tag. Level-up applies class-specific maxHp gains, +3 statPoints, +1 skillPoints per level.
+  - `lib/helpers.ts`: Added `XP_TABLE` (20 levels), `xpToLevel(xp)`, `HP_PER_LEVEL` record (Warrior:10, Cleric:7, Rogue:5, Mage:3)
+  - `lib/types.ts`: Added `skillPoints: number` to Player interface
+  - `lib/tagParsers.ts`: Added `extractXpGainTag`, `xpGain` in ParsedTags, wired into `parseAllTags`, level-up logic in `processParsedTags`, strip regex in `stripContextTag`
+  - `app/api/claude/route.ts`: Narrator rule to emit `{"xpGain":N}` on kills/quest completions (tiered: minion 15–25, standard 30–50, tough 60–90, elite 100–140, boss 200–350)
+  - `hooks/useGameLoop.ts`: Level-up detection (compare level before/after narrator call); calls `ui.setLevelUpMsg` if leveled up
+  - `lib/worldgen.ts`, test helpers: Added `skillPoints: 0` to new player objects
+
 - **Enemy Level Scaling**: Enemies now scale with player level. New `buildEnemyScalingBlock(level)` function computes concrete HP and damage for 5 enemy tiers and injects them into the narrator system prompt alongside player stat rules.
   - Minion (wolves, cultists): baseHp 20, baseStr 4 — scales +5 HP and +1 dmg per 2 levels
   - Standard (bandits, skeletons): baseHp 28, baseStr 5
