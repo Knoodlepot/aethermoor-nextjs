@@ -340,19 +340,32 @@ export function generateProceduralWorld(seed?: string): any[] {
   angle = () => rng() * Math.PI * 2;
   const world: any[] = [];
 
-  const prefixes = [
-    'Oakhaven','Stoneford','Ravenwatch','Fairmeadow','Gloomspire','Highgarden',
-    'Ironhold','Suntree','Muddybanks','Cloudpeak','Duskwood','Goldcrest',
-    'Ashwick','Bramblegate','Crestfall','Dunmore','Embervale','Frostholm',
-    'Greywater','Hollowmere','Ivywood','Kettlebridge','Larchfield','Millcross',
-    'Netherby','Oldwick','Pinehurst','Quarrystone','Redmarsh','Silverbrook',
-    'Thornmere','Undercliff','Verdant','Westgate','Yarrow','Blackfen',
-    'Coppergate','Deepholm','Eastmere','Foxley','Grimshaw','Harrowfield',
-    'Kestrel','Linden','Moorside','Northgate','Owlwatch','Pebbleford',
-    'Reedmere','Saltmarsh','Tallow','Upton','Wychwood','Zephyrhill',
-  ];
-  const pool = [...prefixes];
-  const pickName = () => pool.splice(Math.floor(rng() * pool.length), 1)[0] || 'Ancient';
+  // Procedural name generator
+  const syllables1 = ["Ash", "Bar", "Bel", "Cor", "Dar", "Eld", "Fen", "Gal", "Hal", "Ire", "Jar", "Kel", "Lor", "Mor", "Nor", "Orl", "Pen", "Quel", "Rav", "Sel", "Tar", "Ul", "Val", "Wyn", "Yar", "Zel", "Thal", "Vor", "Lan", "Mar", "Nym", "Ost", "Pry", "Quin", "Ril", "Syl", "Tor", "Um", "Var", "Wil", "Xan", "Yel", "Zor"];
+  const syllables2 = ["a", "e", "i", "o", "u", "y", "ae", "ia", "io", "ea", "ai", "ou", "ui", "ei", "au", "oa", "eo", "eu", "ie", "oi", "ua", "io", "ey", "ay", "oo"];
+  const syllables3 = ["ban", "brook", "crest", "dale", "fall", "gate", "hall", "keep", "mere", "mont", "moor", "ness", "peak", "rest", "rock", "shade", "shire", "stead", "stone", "vale", "watch", "wick", "wood", "ford", "field", "grove", "haven", "land", "marsh", "port", "reach", "ridge", "run", "spring", "strand", "thorn", "view", "well", "wind", "wold", "wynd", "den", "holt", "lyn", "moor", "pool", "ridge", "side", "ton", "ward", "way", "wynn"];
+  const suffixes = ["", "ton", "ville", "burg", "stead", "port", "mouth", "field", "ford", "gate", "wick", "brook", "mere", "moor", "crest", "fall", "vale", "haven", "watch", "rock", "wood", "land", "marsh", "grove", "ridge", "run", "spring", "strand", "thorn", "view", "well", "wind", "wold", "den", "holt", "lyn", "pool", "side", "ward", "way", "wynn"];
+
+  const usedNames = new Set<string>();
+  function proceduralName(type: string = ""): string {
+    let name = "";
+    let tries = 0;
+    do {
+      const s1 = pick(syllables1);
+      const s2 = pick(syllables2);
+      const s3 = pick(syllables3);
+      const suf = pick(suffixes);
+      name = s1 + s2 + s3 + suf;
+      // Optionally add type-based suffix for POIs
+      if (type.startsWith("poi_")) {
+        const label = SETTLEMENT_TYPES[type]?.label?.split(" ").pop();
+        if (label && Math.random() < 0.5) name += " " + label;
+      }
+      tries++;
+    } while (usedNames.has(name) && tries < 10);
+    usedNames.add(name);
+    return name;
+  }
 
   const rulerFirst = ['Edmund','Mira','Aldric','Serafina','Tobias','Wren','Gareth','Isolde','Cormac','Elara','Branoc','Thessaly','Oswin','Veda','Radulf'];
   const rulerTitle = ['of the','the','Lord of','Lady of'];
@@ -366,8 +379,7 @@ export function generateProceduralWorld(seed?: string): any[] {
 
   const add = (type: string, forcedName?: string) => {
     const config = SETTLEMENT_TYPES[type];
-    const label = config.label.split(' ').pop() || type;
-    const n = forcedName || pickName() + ' ' + label;
+    const n = forcedName || proceduralName(type);
     world.push({
       name: n, type, icon: config.icon,
       populace: Math.floor(rng() * (config.popRange[1] - config.popRange[0])) + config.popRange[0],
