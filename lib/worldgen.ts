@@ -1,36 +1,4 @@
-  // --- Guarantee all settlements and POIs are connected ---
-  const allConnectNodes = [
-    ...settlements,
-    ...pois
-  ];
-  allConnectNodes.forEach((node) => {
-    const alreadyConnected = routes.some(r => r.from === node.name || r.to === node.name);
-    if (!alreadyConnected) {
-      // Find closest valid neighbor (settlement or POI, not self)
-      const candidates = allConnectNodes.filter(n => n.name !== node.name);
-      if (candidates.length > 0) {
-        const closest = candidates.map(n => ({ n, d: getDist(node, n) }))
-          .sort((a, b) => a.d - b.d)[0];
-        if (closest) {
-          // Pick roadType based on node type
-          let roadType = 'road';
-          if (node.isPOI) roadType = 'trail';
-          else if (node.type === 'village' || node.type === 'hamlet') roadType = 'dirt';
-          else if (node.type === 'city') roadType = 'road';
-          else if (node.type === 'capital') roadType = 'highway';
-          routes.push({
-            from: node.name,
-            to: closest.n.name,
-            hours: Math.max(4, Math.round(closest.d * 1.5)),
-            road: true,
-            barge: false,
-            sea: false,
-            roadType
-          });
-        }
-      }
-    }
-  });
+
 // ============================================================
 // AETHERMOOR WORLD GENERATION — ported from legacy index.html
 // ============================================================
@@ -543,6 +511,7 @@ export function buildTravelMatrix(worldData: any[]): any {
     };
   });
 
+
   // --- Hierarchical road network generation ---
   const routes: any[] = [];
   const getDist = (a: any, b: any) => {
@@ -627,6 +596,40 @@ export function buildTravelMatrix(worldData: any[]): any {
           roadType: 'road'
         });
         added++;
+      }
+    }
+  });
+
+  // --- Guarantee all settlements and POIs are connected ---
+  const allConnectNodes = [
+    ...settlements,
+    ...pois
+  ];
+  allConnectNodes.forEach((node) => {
+    const alreadyConnected = routes.some(r => r.from === node.name || r.to === node.name);
+    if (!alreadyConnected) {
+      // Find closest valid neighbor (settlement or POI, not self)
+      const candidates = allConnectNodes.filter(n => n.name !== node.name);
+      if (candidates.length > 0) {
+        const closest = candidates.map(n => ({ n, d: getDist(node, n) }))
+          .sort((a, b) => a.d - b.d)[0];
+        if (closest) {
+          // Pick roadType based on node type
+          let roadType = 'road';
+          if (node.isPOI) roadType = 'trail';
+          else if (node.type === 'village' || node.type === 'hamlet') roadType = 'dirt';
+          else if (node.type === 'city') roadType = 'road';
+          else if (node.type === 'capital') roadType = 'highway';
+          routes.push({
+            from: node.name,
+            to: closest.n.name,
+            hours: Math.max(4, Math.round(closest.d * 1.5)),
+            road: true,
+            barge: false,
+            sea: false,
+            roadType
+          });
+        }
       }
     }
   });

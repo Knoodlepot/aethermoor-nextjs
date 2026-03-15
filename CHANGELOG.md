@@ -2,6 +2,7 @@
 ## [Unreleased]
 
 ### Added
+- All settlements and points of interest are now guaranteed to be connected by roads or trails. No more isolated locations: every town, village, and landmark is reachable from the start, making exploration and travel more reliable and immersive.
 - The world map now features a fully hierarchical road network: all road types (King’s Road, Merchant Road, Dirt Road, Trail, Farm Track) are generated naturally. Each settlement, POI, and farm connects to its nearest valid neighbors, and settlements may have a few crossroads. Roads are visually distinct and match the map key, making travel and exploration more immersive.
 
 ### Added
