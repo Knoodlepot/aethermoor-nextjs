@@ -6,7 +6,7 @@ import type { GameStateContext } from './useGameState';
 import type { UIContext } from './useUI';
 import type { UseStorageReturn } from './useStorage';
 import { FACTION_JOIN_OFFERS, PROTECTED_ITEMS, RECIPES, CONSUMABLE_EFFECTS } from '../lib/constants';
-import { getItemSlotEx, formatGameTime, advanceGameTime } from '../lib/helpers';
+import { getItemSlotEx, formatGameTime, advanceGameTime, xpToLevel, HP_PER_LEVEL, LEVEL_CAP } from '../lib/helpers';
 
 export interface GameLoopContext {
   executeCommand: (
@@ -482,6 +482,34 @@ export function useGameLoop(
           const isCombatAction = (updatedPlayer as any).context === 'combat';
           const baseHours = isCombatAction ? (5 / 60) : 0.5;
           updatedPlayer = advanceGameTime(updatedPlayer as any, baseHours) as typeof gs.player;
+
+          // Grant base XP on every narrator turn (mirrors legacy behaviour: 10-24 XP per response)
+          // The narrator's xpGain tag adds on top of this for kills/quests.
+          {
+            const baseXp = 10 + Math.floor(Math.random() * 15);
+            const oldLevel = updatedPlayer.level || 1;
+            const newXp = (updatedPlayer.xp || 0) + baseXp;
+            const newLevel = Math.min(xpToLevel(newXp), LEVEL_CAP);
+            const levelsGained = newLevel - oldLevel;
+            let newMaxHp = updatedPlayer.maxHp || 0;
+            let newStatPoints = updatedPlayer.statPoints || 0;
+            let newSkillPoints = updatedPlayer.skillPoints || 0;
+            if (levelsGained > 0) {
+              const hpGain = (HP_PER_LEVEL[(updatedPlayer as any).class] ?? 5) * levelsGained;
+              newMaxHp += hpGain;
+              newStatPoints += 3 * levelsGained;
+              newSkillPoints += 1 * levelsGained;
+            }
+            updatedPlayer = {
+              ...updatedPlayer,
+              xp: newXp,
+              level: newLevel,
+              maxHp: newMaxHp,
+              hp: levelsGained > 0 ? Math.min(newMaxHp, (updatedPlayer.hp || 0) + (HP_PER_LEVEL[(updatedPlayer as any).class] ?? 5) * levelsGained) : updatedPlayer.hp,
+              statPoints: newStatPoints,
+              skillPoints: newSkillPoints,
+            } as typeof gs.player;
+          }
 
           const localSeed = gs.worldSeed as any;
           updatedSeed = {
