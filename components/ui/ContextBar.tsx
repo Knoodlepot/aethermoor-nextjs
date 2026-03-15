@@ -80,18 +80,12 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
         background: ctxData.color + '18',
       }}
     >
-      {/* Left: context + location */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 8px', gap: 2, minWidth: 0 }}>
+      {/* Left: context status only */}
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 8px', gap: 2 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ fontSize: 11 }}>{ctxData.icon}</span>
           <span style={{ ...tf, color: ctxData.color, fontSize: 8, letterSpacing: 1 }}>
             {ctxData.label.toUpperCase()}
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <span style={{ fontSize: 10, flexShrink: 0 }}>{locIcon}</span>
-          <span style={{ ...tf, color: T.gold, fontSize: 8, letterSpacing: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
-            {ctx === 'travel' && dest ? `${player?.location} → ${dest}` : player?.location}
           </span>
         </div>
         {isLoading && (
@@ -101,9 +95,17 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
         )}
       </div>
 
-      {/* Right: buttons */}
+      {/* Right: location + buttons */}
       {(onDungeon || onGear || onBestiary) && (
-        <div style={{ borderLeft: `1px solid ${T.border}`, padding: '4px', display: 'flex', alignItems: 'center' }}>
+        <div style={{ flex: 1, borderLeft: `1px solid ${T.border}`, padding: '4px', display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+          {/* Location row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, paddingLeft: 2 }}>
+            <span style={{ fontSize: 10, flexShrink: 0 }}>{locIcon}</span>
+            <span style={{ ...tf, color: T.gold, fontSize: 8, letterSpacing: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+              {ctx === 'travel' && dest ? `${player?.location} → ${dest}` : player?.location}
+            </span>
+          </div>
+          {/* Button grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             {onBestiary && (
               <button
