@@ -41,6 +41,7 @@ export function useGameLoop(
       }
 
       setIsLoading(true);
+      ui.setSuggestions([]);
       try {
         // Track state for save
         let updatedPlayer = gs.player;

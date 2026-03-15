@@ -67,41 +67,6 @@ export function NarrativePanel({
         />
       )}
 
-      {/* Game log (last 15 entries) */}
-      {log.length > 0 && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: 12,
-            background: T.panel,
-            border: `1px solid ${T.border}`,
-            borderRadius: 4,
-            maxHeight: 150,
-            overflowY: 'auto',
-          }}
-        >
-          {log
-            .slice(-15)
-            .reverse()
-            .map((entry, idx) => (
-              <div
-                key={idx}
-                style={{
-                  fontSize: 12,
-                  color:
-                    entry.type === 'action' ? T.gold : T.textMuted,
-                  marginBottom: 4,
-                  fontFamily:
-                    entry.type === 'action'
-                      ? "'Cinzel',serif"
-                      : "'Crimson Text',serif",
-                }}
-              >
-                [{entry.type}] {entry.text}
-              </div>
-            ))}
-        </div>
-      )}
     </div>
   );
 }
