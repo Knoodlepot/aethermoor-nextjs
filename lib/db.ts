@@ -112,6 +112,9 @@ export async function initDb(): Promise<void> {
   pool = new Pool({
     connectionString: databaseUrl,
     ssl: { rejectUnauthorized: false },
+    max: 3,                      // limit simultaneous connections (serverless safety)
+    connectionTimeoutMillis: 8000, // fail fast rather than hang
+    idleTimeoutMillis: 30000,
   });
 
   // Test connection
