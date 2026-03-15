@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { LOCATION_TIERS } from '@/lib/constants';
 import type { Player } from '@/lib/types';
@@ -48,7 +47,7 @@ function locationIcon(locationName: string | undefined, locationGrid?: Record<st
   return TIER_ICONS[tier] ?? '🌲';
 }
 
-export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop, onSkills, onQuests, onDungeon, dungeonAvailable, onCraft, onGear, onBestiary, activeQuestCount = 0, skillPts = 0, bestiaryCount = 0 }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop, onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts = 0, bestiaryCount = 0 }: ContextBarProps) {
   const { T } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -103,7 +102,7 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
       </div>
 
       {/* Right: buttons */}
-      {(onShop || onSkills || onQuests || onDungeon || onCraft || onGear || onBestiary) && (
+      {(onShop || onSkills || onDungeon || onGear || onBestiary) && (
         <div style={{ borderLeft: `1px solid ${T.border}`, padding: '4px', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             {onBestiary && (
@@ -123,11 +122,6 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
                     {bestiaryCount}
                   </span>
                 )}
-              </button>
-            )}
-            {onCraft && (
-              <button onClick={onCraft} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const }}>
-                ⚒️ Craft
               </button>
             )}
             {onGear && (
@@ -155,16 +149,6 @@ export function ContextBar({ player, isLoading, isDyslexic, locationGrid, onShop
                 {skillPts > 0 && (
                   <span style={{ position: 'absolute', top: -3, right: -3, background: '#60a060', color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {skillPts}
-                  </span>
-                )}
-              </button>
-            )}
-            {onQuests && (
-              <button onClick={onQuests} style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, position: 'relative' as const, whiteSpace: 'nowrap' as const }}>
-                📜 Quests
-                {activeQuestCount > 0 && (
-                  <span style={{ position: 'absolute', top: -3, right: -3, background: T.accent, color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {activeQuestCount}
                   </span>
                 )}
               </button>
