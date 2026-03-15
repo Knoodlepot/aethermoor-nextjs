@@ -21,8 +21,7 @@ interface ActionBtn {
 }
 
 const TOWN_ACTIONS: ActionBtn[] = [
-  { icon: '💬', label: 'Talk',         text: 'I approach someone to start a conversation.' },
-  { icon: '❓', label: 'Ask Around',   text: 'I ask around for local information, news, or gossip.' },
+  { icon: '💬', label: 'Talk',         text: 'I approach someone to start a conversation, asking around for local information, news, or gossip.' },
   { icon: '🪙', label: 'Barter',       text: 'barter' },
   { icon: '📋', label: 'Notice Board', text: 'I walk over to the notice board and read what\'s posted.' },
   { icon: '🛏', label: 'Rest',         text: 'I find somewhere comfortable to rest for a few hours.' },
