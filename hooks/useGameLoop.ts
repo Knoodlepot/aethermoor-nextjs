@@ -444,21 +444,42 @@ export function useGameLoop(
           updatedSeed = narratorResponse.worldSeed;
         }
 
+        // 3a. Handle player death (hp reached 0 from hpChange tag)
+        let deathNarrative: string | null = null;
+        if (updatedPlayer.hp <= 0) {
+          const gravestone = {
+            name: updatedPlayer.name,
+            level: updatedPlayer.level,
+            class: updatedPlayer.class,
+            day: updatedPlayer.gameDay || 1,
+            epitaph: `Fell in battle on Day ${updatedPlayer.gameDay || 1}.`,
+          };
+          updatedPlayer = {
+            ...updatedPlayer,
+            hp: Math.floor(updatedPlayer.maxHp / 2),
+            context: 'town',
+            combat: { inCombat: false, currentEnemy: null },
+            deathCount: (updatedPlayer.deathCount || 0) + 1,
+            gravestones: [...(updatedPlayer.gravestones || []), gravestone],
+          };
+          deathNarrative = `⚰️ **You have fallen.**\n\nDarkness takes you. When you wake, you find yourself back in safety — battered, humbled, and half-healed. Death has left its mark.\n\n*Deaths: ${updatedPlayer.deathCount}*`;
+        }
+
         // 4. Update all game state
         gs.setPlayer(updatedPlayer);
         gs.setWorldSeed(updatedSeed);
-        gs.setNarrative(cleanNarrative);
-        gs.addMessage('assistant', cleanNarrative);
+        gs.setNarrative(deathNarrative || cleanNarrative);
+        gs.addMessage('assistant', deathNarrative || cleanNarrative);
         ui.setPlayerStatusEffects(updatedPlayer.statusEffects || []);
 
         // 5. Add to game log
         gs.addLogEntry('action', command);
-        gs.addLogEntry('response', cleanNarrative.substring(0, 100));
+        gs.addLogEntry('response', (deathNarrative || cleanNarrative).substring(0, 100));
 
         // 6. Save game state — include assistant response in saved history
         const fullMessages = [
           ...userMessages,
-          { role: 'assistant', content: cleanNarrative },
+          { role: 'assistant', content: deathNarrative || cleanNarrative },
         ];
         await storage.saveGame(updatedPlayer, updatedSeed, fullMessages, cleanNarrative, gs.log);
 

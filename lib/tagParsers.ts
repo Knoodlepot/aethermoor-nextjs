@@ -34,6 +34,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"addPOI"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"addTerrain"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"playerStatus"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"hpChange"\s*:\s*-?\d+\}/g, '');
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
   t = t.replace(/```[a-z]*\s*\{"context"\s*:\s*"\w+"\}\s*```/g, '');
   t = t.replace(/```[a-z]*\s*```/g, '');
@@ -334,6 +335,14 @@ export function extractAddTerrainTag(text: string): any {
 }
 
 /**
+ * Extract HP change tag: {"hpChange":-12} (negative = damage, positive = healing)
+ */
+export function extractHpChangeTag(text: string): number | null {
+  const m = text.match(/\{"hpChange"\s*:\s*(-?\d+)\}/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+/**
  * Extract player status effect tag: {"playerStatus":{"add":"effectName"}} or {"playerStatus":{"remove":"effectName"}}
  */
 export function extractPlayerStatusTag(text: string): { add?: string; remove?: string } | null {
@@ -373,6 +382,7 @@ export interface ParsedTags {
   addPOI: any;
   addTerrain: any;
   playerStatus: { add?: string; remove?: string } | null;
+  hpChange: number | null;
 }
 
 /**
@@ -404,6 +414,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     addPOI: extractAddPOITag(narrative),
     addTerrain: extractAddTerrainTag(narrative),
     playerStatus: extractPlayerStatusTag(narrative),
+    hpChange: extractHpChangeTag(narrative),
   };
 }
 
@@ -662,6 +673,12 @@ export function processParsedTags(
       const effect = tags.playerStatus.remove;
       updatedPlayer = { ...updatedPlayer, statusEffects: current.filter((e) => e !== effect) };
     }
+  }
+
+  // HP change — damage (negative) or healing (positive), clamped to [0, maxHp]
+  if (tags.hpChange !== null) {
+    const newHp = Math.max(0, Math.min(updatedPlayer.maxHp, (updatedPlayer.hp || 0) + tags.hpChange));
+    updatedPlayer = { ...updatedPlayer, hp: newHp };
   }
 
   return {
