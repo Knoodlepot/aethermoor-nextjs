@@ -43,6 +43,15 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Enemy Level Scaling**: Enemies now scale with player level. New `buildEnemyScalingBlock(level)` function computes concrete HP and damage for 5 enemy tiers and injects them into the narrator system prompt alongside player stat rules.
+  - Minion (wolves, cultists): baseHp 20, baseStr 4 — scales +5 HP and +1 dmg per 2 levels
+  - Standard (bandits, skeletons): baseHp 28, baseStr 5
+  - Tough (zombies, soldiers, beasts): baseHp 40, baseStr 7
+  - Elite (drakes, assassins): baseHp 60, baseStr 9
+  - Boss (named/dungeon lords): baseHp 80, baseStr 10
+  - Veteran/named prefix = ×1.4; Boss tier = ×2. Narrator told to announce bloodied state (≤30% HP) and not one-shot from full health.
+  - Base values match `ENEMY_ARCHETYPES` in `lib/constants.ts`.
+
 - **Permadeath Death Screen**: When a player's HP hits 0, a fullscreen death screen replaces the game.
   - `components/screens/DeathScreen.tsx`: Dark gothic screen with 10 random tragic verse endings, the final narrator prose excerpt (what killed them), character obituary (name/class/level/day survived), and a "Begin Anew" button.
   - `hooks/useUI.ts`: Added `'death'` ScreenType, `deathInfo` state, `showDeathScreen()` method.
