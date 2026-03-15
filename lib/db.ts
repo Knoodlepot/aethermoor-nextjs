@@ -111,7 +111,7 @@ export async function initDb(): Promise<void> {
 
   pool = new Pool({
     connectionString: databaseUrl,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: { rejectUnauthorized: false },
   });
 
   // Test connection
