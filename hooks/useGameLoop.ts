@@ -523,12 +523,22 @@ export function useGameLoop(
         ];
         await storage.saveGame(updatedPlayer, updatedSeed, fullMessages, cleanNarrative, gs.log);
 
-        // 7. Update UI suggestions if provided
+        // 7. Update UI suggestions if provided; fall back to context defaults
         if (narratorResponse.suggestions && narratorResponse.suggestions.length > 0) {
-          ui.setSuggestions(narratorResponse.suggestions.slice(0, 5));
+          ui.setSuggestions(narratorResponse.suggestions.slice(0, 3));
           ui.setPendingSuggestion(null);
         } else {
-          ui.setSuggestions([]);
+          const ctx = (updatedPlayer as any).context || 'explore';
+          const fallback: Record<string, string[]> = {
+            explore: ['Look around carefully', 'Travel to the nearest settlement', 'Make camp for the night'],
+            town:    ['Visit the tavern', 'Check the notice board', 'Browse the market stalls'],
+            npc:     ['Ask about local rumours', 'Request a task or errand', 'Say farewell and leave'],
+            combat:  ['Strike with my weapon', 'Attempt to dodge and retreat', 'Look for an advantage'],
+            dungeon: ['Proceed deeper', 'Search for traps or hidden passages', 'Rest and tend to wounds'],
+            camp:    ['Rest until morning', 'Keep watch through the night', 'Tend to wounds and gear'],
+            farm:    ['Speak to the farmhand', 'Inspect the crops and land', 'Head back toward the road'],
+          };
+          ui.setSuggestions(fallback[ctx] || fallback.explore);
         }
 
         return { success: true };
