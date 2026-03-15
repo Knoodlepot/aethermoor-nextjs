@@ -50,7 +50,7 @@ import { SaveSlotModal } from '@/components/modals/SaveSlotModal';
 import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 
 import { CLASSES, STATUS_EFFECTS } from '@/lib/constants';
-import { countItem } from '@/lib/helpers';
+import { countItem, XP_TABLE } from '@/lib/helpers';
 import { generateWorldSeed, INIT_PLAYER } from '@/lib/worldgen';
 
 // ─── Inner component (must live inside ThemeProvider) ─────────────────────────
@@ -454,10 +454,10 @@ function GameContent() {
   // ── XP bar values ──────────────────────────────────────────────────────────
   const playerLevel: number = player?.level ?? 1;
   const playerXp: number = player?.xp ?? 0;
-  const xpFloor = Math.floor(100 * Math.pow(1.4, playerLevel - 2)); // xp at start of current level
-  const xpCeil = xpForNextLevel(playerLevel);
-  const xpProgress = Math.max(0, playerXp - (playerLevel > 1 ? xpFloor : 0));
-  const xpRange = Math.max(1, xpCeil - (playerLevel > 1 ? xpFloor : 0));
+  const xpFloor = XP_TABLE[Math.max(0, playerLevel - 1)] ?? 0;
+  const xpCeil = XP_TABLE[Math.min(playerLevel, XP_TABLE.length - 1)] ?? XP_TABLE[XP_TABLE.length - 1];
+  const xpProgress = Math.max(0, playerXp - xpFloor);
+  const xpRange = Math.max(1, xpCeil - xpFloor);
   const xpPct = Math.min(100, Math.round((xpProgress / xpRange) * 100));
   const rations = player ? countItem(player.inventory ?? [], 'Rations') : 0;
 
@@ -554,99 +554,67 @@ function GameContent() {
     );
   };
 
+  // Clock colour matching legacy: night=blue, dawn=orange, day=green, evening=amber
+  const rawHour = (player as any)?.gameHour ?? 8;
+  const charClockColor = rawHour < 6 || rawHour >= 21 ? '#6878c8'
+    : rawHour < 8  ? '#c09050'
+    : rawHour < 17 ? '#90b848'
+    : '#c07038';
+
   const playerInfoPanel = player ? (
-    <div style={{ background: T.panel, borderBottom: `1px solid ${T.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0, maxHeight: '60%' }}>
-      {/* Identity card — two column: left = icon/name/class, right = HP/XP/attributes */}
-      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 10, display: 'flex', gap: 10 }}>
-        {/* Left: class badge + name + class·level + seed */}
-        <div style={{ textAlign: 'center' as const, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 70 }}>
-          <div style={{ fontSize: 22, marginBottom: 4 }}>{(CLASSES as any)[player.class]?.icon ?? '⚔️'}</div>
-          <div style={{ ...tf, color: T.gold, fontSize: 13 }}>{player.name}</div>
-          <div style={{ color: T.accent, fontSize: 10, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
-          {worldSeed?.seed && (
-            <button
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(worldSeed.seed);
-                  setSeedCopied(true);
-                  setTimeout(() => setSeedCopied(false), 1200);
-                } catch {}
-              }}
-              title="World Seed — a code that identifies your unique world. Share it with friends so they can start a new game in the same world, or use it yourself to replay this adventure."
-              style={{
-                marginTop: 6,
-                background: 'transparent',
-                border: 'none',
-                color: seedCopied ? T.gold : T.textFaint,
-                fontSize: 10,
-                cursor: 'pointer',
-                fontFamily: "'Cinzel',serif",
-                letterSpacing: 0.5,
-                padding: 0,
-                transition: 'color 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = T.gold)}
-              onMouseLeave={e => (e.currentTarget.style.color = seedCopied ? T.gold : T.textFaint)}
-            >
-              {seedCopied ? '✓ Copied' : 'Seed'}
-            </button>
-          )}
-        </div>
-        {/* Divider */}
-        <div style={{ width: 1, background: T.border, flexShrink: 0 }} />
-        {/* Right: HP/XP bars + attributes */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
-          <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
-          <div style={{ fontSize: 10, color: T.textFaint, textAlign: 'right' as const, marginTop: 1, marginBottom: 6 }}>Next: {xpCeil} XP</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-            {([['STR', 'str'], ['AGI', 'agi'], ['INT', 'int'], ['WIL', 'wil']] as [string, string][]).map(([label, key]) => (
-              <StatPill key={key} label={label} statKey={key} value={(player as any)[key] ?? 0} />
-            ))}
-          </div>
-          {(player?.statPoints ?? 0) > 0 && (
-            <div style={{ color: T.gold, fontSize: 11, textAlign: 'center' as const, marginTop: 4, animation: 'pulse 1.5s infinite' }}>
-              ⬆ {player.statPoints} stat points!
-            </div>
-          )}
-          {(player?.statusEffects?.length ?? 0) > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-              {player!.statusEffects!.map((eff: string) => {
-                const info = STATUS_EFFECTS[eff];
-                return (
-                  <span
-                    key={eff}
-                    title={info ? `${info.label}: ${info.description} | Cure: ${info.cure}` : eff}
-                    style={{
-                      fontSize: 10,
-                      padding: '2px 6px',
-                      borderRadius: 3,
-                      border: '1px solid #c0603066',
-                      color: '#c06030',
-                      cursor: 'help',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {info?.icon ?? '❓'} {info?.label ?? eff}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-        </div>
+    <div style={{ background: T.panelAlt, borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
+      {/* ── Identity block: centred, legacy style ── */}
+      <div style={{ padding: '12px 14px 10px', textAlign: 'center' as const }}>
+        <div style={{ fontSize: 28, marginBottom: 4 }}>{(CLASSES as any)[player.class]?.icon ?? '⚔️'}</div>
+        <div style={{ ...tf, color: T.gold, fontSize: 16, letterSpacing: 1 }}>{player.name}</div>
+        <div style={{ color: T.accent, fontSize: 11, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
+        <div style={{ color: charClockColor, fontSize: 11, marginTop: 4, letterSpacing: 1 }}>{clockStr}</div>
       </div>
-      {/* Resources row */}
-      <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 12, display: 'flex', justifyContent: 'space-around' }}>
+
+      {/* ── HP / XP bars ── */}
+      <div style={{ padding: '0 14px 10px' }}>
+        <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
+        <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
+        <div style={{ fontSize: 9, color: T.textFaint, textAlign: 'right' as const, marginTop: 2, marginBottom: 8 }}>
+          Next: {xpCeil} XP
+        </div>
+
+        {/* Stat pills */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+          {([['STR', 'str'], ['AGI', 'agi'], ['INT', 'int'], ['WIL', 'wil']] as [string, string][]).map(([label, key]) => (
+            <StatPill key={key} label={label} statKey={key} value={(player as any)[key] ?? 0} />
+          ))}
+        </div>
+        {(player?.statPoints ?? 0) > 0 && (
+          <div style={{ color: T.gold, fontSize: 11, textAlign: 'center' as const, marginTop: 4, animation: 'pulse 1.5s infinite' }}>
+            ⬆ {player.statPoints} stat points!
+          </div>
+        )}
+        {(player?.statusEffects?.length ?? 0) > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+            {player!.statusEffects!.map((eff: string) => {
+              const info = STATUS_EFFECTS[eff];
+              return (
+                <span key={eff} title={info ? `${info.label}: ${info.description} | Cure: ${info.cure}` : eff}
+                  style={{ fontSize: 10, padding: '2px 6px', borderRadius: 3, border: '1px solid #c0603066', color: '#c06030', cursor: 'help', whiteSpace: 'nowrap' as const }}>
+                  {info?.icon ?? '❓'} {info?.label ?? eff}
+                </span>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Resources row ── */}
+      <div style={{ borderTop: `1px solid ${T.border}`, padding: '8px 14px', display: 'flex', justifyContent: 'space-around' }}>
         {([['🪙', player.gold, 'Gold'], ['🎒', rations, 'Rations']] as [string, any, string][]).map(([icon, val, lbl]) => (
           <div key={lbl} style={{ textAlign: 'center' as const }}>
             <div style={{ color: lbl === 'Rations' ? (val > 0 ? '#80a060' : '#c05050') : T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{val}</div>
             <div style={{ color: T.textMuted, fontSize: 10 }}>{icon} {lbl}</div>
           </div>
         ))}
-        <button
-          onClick={() => ui.toggleModal('standings')}
-          style={{ textAlign: 'center' as const, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-        >
+        <button onClick={() => ui.toggleModal('standings')}
+          style={{ textAlign: 'center' as const, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <div style={{ color: T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{player.reputation ?? 0}</div>
           <div style={{ color: T.textMuted, fontSize: 10 }}>⭐ Rep</div>
         </button>
@@ -851,6 +819,21 @@ function GameContent() {
             style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
           >
             Main Menu
+          </button>
+        )}
+        {worldSeed?.seed && (
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(worldSeed.seed);
+                setSeedCopied(true);
+                setTimeout(() => setSeedCopied(false), 1200);
+              } catch {}
+            }}
+            title="World Seed — share this code with friends so they can start a new game in the same world."
+            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: seedCopied ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'color 0.2s' }}
+          >
+            {seedCopied ? '✓ Copied' : '🌱 Seed'}
           </button>
         )}
         {auth.token && (
