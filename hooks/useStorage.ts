@@ -74,6 +74,10 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
         storageSetJson(`rpg-messages-${s}`, messages);
         storageSet(`rpg-narrative-${s}`, narrative);
         storageSetJson(`rpg-log-${s}`, log);
+        // Persist seed string separately so it can be recovered if missing from worldSeed
+        if ((worldSeed as any).seed) {
+          localStorage.setItem(`rpg-seed-str-${s}`, (worldSeed as any).seed);
+        }
         // Legacy slot 1 compat: also write old keys so existing code still works
         if (slot === 1) {
           storageSetJson('rpg-player', player);
@@ -81,6 +85,9 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
           storageSetJson('rpg-messages', messages);
           storageSet('rpg-narrative', narrative);
           storageSetJson('rpg-log', log);
+          if ((worldSeed as any).seed) {
+            localStorage.setItem('rpg-seed-str', (worldSeed as any).seed);
+          }
         }
       } catch (error) {
         console.error('Failed to save to localStorage:', error);
@@ -98,8 +105,14 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
       // Try slot-keyed first, fall back to legacy keys for slot 1
       const player = storageGetJson<Player>(`rpg-player-${s}`, null as any)
         ?? (slot === 1 ? storageGetJson<Player>('rpg-player', null as any) : null);
-      const worldSeed = storageGetJson<WorldSeed>(`rpg-seed-${s}`, null as any)
+      let worldSeed = storageGetJson<WorldSeed>(`rpg-seed-${s}`, null as any)
         ?? (slot === 1 ? storageGetJson<WorldSeed>('rpg-seed', null as any) : null);
+      // Recover seed string if missing from the worldSeed object
+      if (worldSeed && !(worldSeed as any).seed) {
+        const savedStr = localStorage.getItem(`rpg-seed-str-${s}`)
+          ?? (slot === 1 ? localStorage.getItem('rpg-seed-str') : null);
+        if (savedStr) (worldSeed as any).seed = savedStr;
+      }
       const messages = storageGetJson<any[]>(`rpg-messages-${s}`, []);
       const narrative = storageGet(`rpg-narrative-${s}`) ?? (slot === 1 ? storageGet('rpg-narrative') : '') ?? '';
       const log = storageGetJson<any[]>(`rpg-log-${s}`, []);
@@ -164,9 +177,17 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
       if (res.ok) {
         const data = await res.json();
         if (!data.player_json) return null;
+        const worldSeed: any = JSON.parse(data.seed_json);
+        // Recover seed string from localStorage if missing in cloud data
+        if (worldSeed && !worldSeed.seed) {
+          const s = `slot${slot}`;
+          const savedStr = localStorage.getItem(`rpg-seed-str-${s}`)
+            ?? (slot === 1 ? localStorage.getItem('rpg-seed-str') : null);
+          if (savedStr) worldSeed.seed = savedStr;
+        }
         return {
           player: JSON.parse(data.player_json),
-          worldSeed: JSON.parse(data.seed_json),
+          worldSeed,
           messages: JSON.parse(data.messages_json || '[]'),
           narrative: data.narrative || '',
           log: JSON.parse(data.log_json || '[]'),

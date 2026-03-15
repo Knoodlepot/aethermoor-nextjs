@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Player, WorldSeed } from '../lib/types';
 import { advanceGameTime } from '../lib/helpers';
+import { migrateWorldSeed } from '../lib/worldgen';
 import type { UseStorageReturn } from './useStorage';
 
 export interface GameStateContext {
@@ -39,11 +40,16 @@ export function useGameState(storage: UseStorageReturn): GameStateContext {
         const savedGame = await storage.loadGame();
 
         if (savedGame) {
+          const migrated = migrateWorldSeed(savedGame.worldSeed) as WorldSeed;
           setPlayer(savedGame.player);
-          setWorldSeed(savedGame.worldSeed);
+          setWorldSeed(migrated);
           setMessages(savedGame.messages);
           setNarrative(savedGame.narrative);
           setLog(savedGame.log);
+          // Re-save if the worldSeed was upgraded so future loads are instant
+          if (migrated !== savedGame.worldSeed && savedGame.player) {
+            storage.saveGame(savedGame.player, migrated, savedGame.messages, savedGame.narrative, savedGame.log);
+          }
         }
 
         setIsLoaded(true);

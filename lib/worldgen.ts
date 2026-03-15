@@ -853,6 +853,24 @@ export function generateWorldSeed(seedStr?: string): any {
   return seed;
 }
 
+/**
+ * Migrate an old-format worldSeed to include the new travelMatrix (routes + terrain).
+ * Safe to call on any worldSeed — returns the object unchanged if already up-to-date
+ * or if the seed string is missing and migration is impossible.
+ * Quest/narrative data is never replaced.
+ */
+export function migrateWorldSeed(worldSeed: any): any {
+  if (!worldSeed) return worldSeed;
+  if (worldSeed.travelMatrix?.routes?.length) return worldSeed; // already new format
+  if (!worldSeed.seed) return worldSeed; // can't regenerate without seed string
+  const worldData = generateProceduralWorld(worldSeed.seed);
+  const travelMatrix = buildTravelMatrix(worldData);
+  const worldSettlements = worldData
+    .filter((d: any) => ['capital', 'city', 'town', 'village', 'hamlet'].includes(d.type))
+    .map((d: any) => ({ name: d.name, type: d.type, mapX: d.mapX, mapY: d.mapY }));
+  return { ...worldSeed, travelMatrix, worldData, worldSettlements };
+}
+
 export function initFactionStandings(): Record<string, number> {
   const standings: Record<string, number> = {};
   Object.keys(FACTIONS).forEach((id) => { standings[id] = 0; });

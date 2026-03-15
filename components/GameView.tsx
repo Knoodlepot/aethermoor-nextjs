@@ -279,7 +279,7 @@ function GameContent() {
     void gameLoop.executeCommand(trimmed, gameState);
   };
 
-  // Debug: expose gameState for E2E tests
+  // Debug: expose gameState for manual testing
   useEffect(() => {
     if (gameState.isLoaded) {
       // @ts-ignore
@@ -977,7 +977,7 @@ function GameContent() {
         }}
       >
         <MapView
-          key={gameState.worldSeed?.seed || 'no-seed'}
+          key={gameState.worldSeed?.seed ?? (gameState.worldSeed as any)?.questTitle ?? `slot-${storage.currentSlot}`}
           player={gameState.player as any}
           worldSeed={gameState.worldSeed as any}
           onClose={() => ui.setMapOpen(false)}
