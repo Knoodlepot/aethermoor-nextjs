@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - **Combat damage now actually reduces your HP.** Previously, the narrator described hits and wounds in prose but your health bar never changed — you could fight forever without ever being in danger. This has been fixed: damage dealt by enemies now reduces your HP in real time, and healing (potions, rest, magic) now restores it properly.
-- **Player death is now real.** If your HP reaches zero, you fall in battle. A gravestone is recorded, your death count rises, and you wake up in the nearest safe location at half health — humbled but alive. Death leaves a permanent mark on your character history.
+- **Player death is now real.** If your HP reaches zero, you fall in battle. A gravestone is recorded and your adventure ends — permanently. A dramatic death screen appears with the final moments of your story, a randomly chosen epitaph, and the option to Begin Anew with a fresh character. Death is not a setback. It is an ending.
 - Automated test suite (login, save, shop, narrator tests) now runs cleanly across all three browsers — dev server starts automatically when tests run.
 - Game saves now persist correctly after narrator responses (a database conflict in the narrator's auto-save logic has been resolved).
 

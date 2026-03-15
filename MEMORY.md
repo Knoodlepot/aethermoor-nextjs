@@ -43,10 +43,15 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Permadeath Death Screen**: When a player's HP hits 0, a fullscreen death screen replaces the game.
+  - `components/screens/DeathScreen.tsx`: Dark gothic screen with 10 random tragic verse endings, the final narrator prose excerpt (what killed them), character obituary (name/class/level/day survived), and a "Begin Anew" button.
+  - `hooks/useUI.ts`: Added `'death'` ScreenType, `deathInfo` state, `showDeathScreen()` method.
+  - `hooks/useGameLoop.ts`: On hp ≤ 0, gravestone is saved then the save is wiped (permadeath — no respawn). `ui.showDeathScreen()` is triggered with character info.
+  - `components/GameView.tsx`: Renders `DeathScreen` when `ui.screen === 'death'`; Begin Anew routes to `/game?new=1`.
+
 - **Combat HP Loss Fixed**: Players now actually lose HP in combat. The `hpChange` tag was completely absent from the codebase — damage was described in prose only, never applied to state.
   - `lib/tagParsers.ts`: Added `extractHpChangeTag`, `hpChange: number | null` to `ParsedTags`, wired into `parseAllTags`, handler in `processParsedTags` (clamps to [0, maxHp]), strip regex in `stripContextTag`.
   - `app/api/claude/route.ts`: Narrator now instructed to emit `{"hpChange":-N}` when player takes damage and `{"hpChange":N}` when healed by potion/rest/magic.
-  - `hooks/useGameLoop.ts`: Death handling when `hp <= 0` after narrator response — adds gravestone, increments `deathCount`, respawns at half HP in town, clears combat state, shows death narrative.
 
 - **E2E Test Suite Fixed**: All 12 Playwright tests now pass (4 tests × 3 browsers).
   - `playwright.config.ts`: Added `webServer` block — dev server auto-starts before tests, reuses existing if already running locally.
