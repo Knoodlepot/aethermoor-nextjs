@@ -6,18 +6,14 @@ test.describe('Save Flow', () => {
   test('should allow player to save progress', async ({ page }) => {
     // Assumes session is already authenticated via storageState
     await page.goto(`${BASE_URL}/game`);
-    await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
-    await page.getByRole('button', { name: /save/i }).click();
-    await expect(page.getByText(/progress saved|game saved|success/i, { exact: false })).toBeVisible();
+    // Wait for the Save button (only visible when player is loaded)
+    await expect(page.getByRole('button', { name: /💾 Save/i })).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: /💾 Save/i }).click();
+    // SaveSlotModal opens — verify it appeared
+    await expect(page.getByText('SAVE GAME')).toBeVisible({ timeout: 5000 });
+    // Click slot 1 to save (current slot)
+    await page.getByText('SLOT 1').click();
+    // Modal should close after saving
+    await expect(page.getByText('SAVE GAME')).not.toBeVisible({ timeout: 5000 });
   });
 });
-    test('should allow player to save progress', async ({ page }) => {
-      // Assumes session is already authenticated via storageState
-      await page.goto(`${BASE_URL}/game`);
-      const saveButton = page.getByRole('button', { name: /save/i });
-      await expect(saveButton).toBeVisible();
-      await saveButton.click();
-      // Wait for a unique confirmation, e.g., a toast or alert with "saved"
-      const confirmation = page.locator('[data-testid="save-confirmation"], .Toastify__toast, [class*=Toast]');
-      await expect(confirmation).toContainText(/saved|success/i, { timeout: 5000 });
-    });

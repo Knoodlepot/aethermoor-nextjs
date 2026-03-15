@@ -254,9 +254,9 @@ async function persistCanonicalNarrationState(
 ): Promise<void> {
   await db.query(
     `INSERT INTO game_saves
-     (player_id, player_json, seed_json, messages_json, narrative, log_json, saved_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, COALESCE((SELECT log_json FROM game_saves WHERE player_id = $1), '[]'), NOW(), NOW())
-     ON CONFLICT (player_id) DO UPDATE SET
+     (player_id, slot, player_json, seed_json, messages_json, narrative, log_json, saved_at, updated_at)
+     VALUES ($1, COALESCE((SELECT slot FROM game_saves WHERE player_id = $1 ORDER BY updated_at DESC LIMIT 1), 1), $2, $3, $4, $5, COALESCE((SELECT log_json FROM game_saves WHERE player_id = $1 ORDER BY updated_at DESC LIMIT 1), '[]'), NOW(), NOW())
+     ON CONFLICT (player_id, slot) DO UPDATE SET
        player_json = $2,
        seed_json = $3,
        messages_json = $4,

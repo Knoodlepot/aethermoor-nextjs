@@ -29,8 +29,63 @@ async function globalSetup() {
     await passwordInput.first().waitFor({ state: 'visible' });
     await passwordInput.first().fill(process.env.TEST_PASSWORD);
     await page.getByRole('button', { name: /SIGN IN/i }).click();
-    await page.waitForSelector('text=/logout|main quest|adventurer/i', { timeout: 20000 });
+    await page.waitForURL(`${BASE_URL}/game`, { timeout: 20000 });
+    // Set age verification in localStorage so the game renders past the age gate
+    await page.evaluate(() => {
+      localStorage.setItem('aethermoor_age_verified', '1');
+    });
     await page.context().storageState({ path: 'e2e/auth-state.json' });
+
+    // Create a minimal save so tests start with a fully loaded game (player in town context)
+    const meRes = await page.request.get(`${BASE_URL}/api/auth/me`);
+    if (meRes.ok()) {
+      const me = await meRes.json();
+      const playerId = me.playerId;
+      const player = {
+        id: playerId,
+        name: 'E2E Tester',
+        class: 'Warrior',
+        level: 1,
+        hp: 10, maxHp: 10,
+        str: 5, agi: 5, int: 5, wil: 5,
+        gold: 100,
+        location: 'Aethermoor Capital',
+        reputation: 0,
+        wantedLevel: 0,
+        context: 'town',
+        inventory: [],
+        abilities: [],
+        quests: [],
+        equipped: {},
+        knownNpcs: [],
+        scheduledEvents: [],
+        bestiary: [],
+        unlockedSkills: [],
+        joinedFactions: [],
+        gameHour: 8,
+        gameDay: 1,
+        isAlive: true,
+        canAct: true,
+      };
+      const worldSeed = {
+        seed: 'e2e-seed',
+        locations: ['Aethermoor Capital'],
+        travelMatrix: { locationGrid: {}, edges: [] },
+        mainQuestSeed: { villain: 'The Shadow', ally: 'The Elder', acts: [] },
+        factionStandings: {},
+        locationStandings: {},
+      };
+      await page.request.post(`${BASE_URL}/api/save`, {
+        data: {
+          player_json: JSON.stringify(player),
+          seed_json: JSON.stringify(worldSeed),
+          messages_json: JSON.stringify([]),
+          narrative: 'You stand at the gates of Aethermoor Capital.',
+          log_json: JSON.stringify([]),
+          slot: 1,
+        },
+      });
+    }
   } catch (err) {
     const html = await page.content();
     fs.writeFileSync('e2e/debug-auth.html', html);
