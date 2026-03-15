@@ -25,7 +25,8 @@ export function useGameLoop(
   gameState: GameStateContext,
   ui: UIContext,
   storage: UseStorageReturn,
-  _authToken?: string | null
+  _authToken?: string | null,
+  setTokenBalance?: (balance: number) => void
 ): GameLoopContext {
   const [isLoading, setIsLoading] = useState(false);
   const [combatState, setCombatState] = useState<any | null>(null);
@@ -451,6 +452,11 @@ export function useGameLoop(
           return { success: false, error: narratorResponse.error || 'AI call failed' };
         }
 
+        // Update token balance display from server response
+        if (narratorResponse.tokenBalance != null && setTokenBalance) {
+          setTokenBalance(narratorResponse.tokenBalance);
+        }
+
         // 3. Use server-applied state updates from /api/claude
         const cleanNarrative = narratorResponse.cleanNarrative || narratorResponse.narrative;
         if (narratorResponse.player && narratorResponse.worldSeed) {
@@ -583,6 +589,7 @@ export function useGameLoop(
       player?: Player;
       worldSeed?: WorldSeed;
       suggestions?: string[];
+      tokenBalance?: number;
       error?: string;
     }> => {
       try {
@@ -609,6 +616,7 @@ export function useGameLoop(
             player: data.player,
             worldSeed: data.worldSeed,
             suggestions: data.suggestions,
+            tokenBalance: data.tokenBalance,
           };
         }
 

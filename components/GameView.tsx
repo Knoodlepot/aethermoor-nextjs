@@ -72,7 +72,7 @@ function GameContent() {
   const storage = useStorage(auth.token, initialSlot);
   const gameState = useGameState(storage);
   const ui = useUI();
-  const gameLoop = useGameLoop(gameState, ui, storage, auth.token);
+  const gameLoop = useGameLoop(gameState, ui, storage, auth.token, (bal) => setTokenBalance(bal));
 
   // Guest-mode flag: bypass auth gate without a real JWT
   const [guestMode, setGuestMode] = useState(false);
