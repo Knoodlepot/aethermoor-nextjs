@@ -8,6 +8,7 @@ function buildMockPlayer(): Player {
     level: 2,
     xp: 0,
     statPoints: 0,
+    skillPoints: 0,
     hp: 18,
     maxHp: 20,
     str: 8,

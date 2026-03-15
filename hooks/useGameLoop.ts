@@ -428,6 +428,7 @@ export function useGameLoop(
         gs.setMessages(userMessages);
 
         // 2. Call Claude API for narration
+        const preNarratorLevel = updatedPlayer.level;
         const narratorResponse = await callClaude(userMessages, updatedPlayer, updatedSeed);
 
         if (!narratorResponse.success || !narratorResponse.narrative) {
@@ -442,6 +443,11 @@ export function useGameLoop(
         if (narratorResponse.player && narratorResponse.worldSeed) {
           updatedPlayer = narratorResponse.player;
           updatedSeed = narratorResponse.worldSeed;
+        }
+
+        // 3b. Show level-up notification if the player leveled up
+        if (updatedPlayer.level > preNarratorLevel) {
+          ui.setLevelUpMsg(`LEVEL UP! You are now level ${updatedPlayer.level}! +3 Stat Points, +1 Skill Point!`);
         }
 
         // 3a. Handle player death (hp reached 0 from hpChange tag)

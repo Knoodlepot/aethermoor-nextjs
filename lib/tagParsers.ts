@@ -1,5 +1,5 @@
 import type { Player } from './types';
-import { advanceGameTime, registerNpc } from './helpers';
+import { advanceGameTime, registerNpc, xpToLevel, HP_PER_LEVEL, LEVEL_CAP } from './helpers';
 
 /**
  * Strip all JSON tags from narrative text for display
@@ -35,6 +35,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"addTerrain"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"playerStatus"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"hpChange"\s*:\s*-?\d+\}/g, '');
+  t = t.replace(/\{"xpGain"\s*:\s*\d+\}/g, '');
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
   t = t.replace(/```[a-z]*\s*\{"context"\s*:\s*"\w+"\}\s*```/g, '');
   t = t.replace(/```[a-z]*\s*```/g, '');
@@ -335,6 +336,14 @@ export function extractAddTerrainTag(text: string): any {
 }
 
 /**
+ * Extract XP gain tag: {"xpGain":50}
+ */
+export function extractXpGainTag(text: string): number | null {
+  const m = text.match(/\{"xpGain"\s*:\s*(\d+)\}/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+/**
  * Extract HP change tag: {"hpChange":-12} (negative = damage, positive = healing)
  */
 export function extractHpChangeTag(text: string): number | null {
@@ -383,6 +392,7 @@ export interface ParsedTags {
   addTerrain: any;
   playerStatus: { add?: string; remove?: string } | null;
   hpChange: number | null;
+  xpGain: number | null;
 }
 
 /**
@@ -415,6 +425,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     addTerrain: extractAddTerrainTag(narrative),
     playerStatus: extractPlayerStatusTag(narrative),
     hpChange: extractHpChangeTag(narrative),
+    xpGain: extractXpGainTag(narrative),
   };
 }
 
@@ -679,6 +690,40 @@ export function processParsedTags(
   if (tags.hpChange !== null) {
     const newHp = Math.max(0, Math.min(updatedPlayer.maxHp, (updatedPlayer.hp || 0) + tags.hpChange));
     updatedPlayer = { ...updatedPlayer, hp: newHp };
+  }
+
+  // XP gain — grant XP, check for level-up, apply rewards per level gained
+  if (tags.xpGain !== null && tags.xpGain > 0) {
+    const oldLevel = updatedPlayer.level || 1;
+    const newXp = (updatedPlayer.xp || 0) + tags.xpGain;
+    const newLevel = Math.min(xpToLevel(newXp), LEVEL_CAP);
+    const levelsGained = newLevel - oldLevel;
+
+    let newMaxHp = updatedPlayer.maxHp;
+    let newStatPoints = updatedPlayer.statPoints || 0;
+    let newSkillPoints = updatedPlayer.skillPoints || 0;
+
+    if (levelsGained > 0) {
+      const hpGain = (HP_PER_LEVEL[updatedPlayer.class] ?? 5) * levelsGained;
+      newMaxHp += hpGain;
+      newStatPoints += 3 * levelsGained;
+      newSkillPoints += 1 * levelsGained;
+    }
+
+    updatedPlayer = {
+      ...updatedPlayer,
+      xp: newXp,
+      level: newLevel,
+      maxHp: newMaxHp,
+      // Heal a small amount on level-up
+      hp: levelsGained > 0 ? Math.min(newMaxHp, (updatedPlayer.hp || 0) + (HP_PER_LEVEL[updatedPlayer.class] ?? 5) * levelsGained) : updatedPlayer.hp,
+      statPoints: newStatPoints,
+      skillPoints: newSkillPoints,
+    };
+
+    if (levelsGained > 0) {
+      stateChanges.levelUps = newLevel;
+    }
   }
 
   return {

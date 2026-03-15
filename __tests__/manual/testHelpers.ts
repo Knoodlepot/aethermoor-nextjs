@@ -74,6 +74,7 @@ export function createMockPlayer(overrides: any = {}) {
     location: 'Amberhold Capital',
     reputation: 0,
     statPoints: 0,
+    skillPoints: 0,
     str: 10,
     agi: 10,
     int: 10,

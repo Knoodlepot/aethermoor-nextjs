@@ -7,6 +7,7 @@ export interface Player {
   level: number;
   xp: number;
   statPoints: number;
+  skillPoints: number;
   hp: number;
   maxHp: number;
   str: number;

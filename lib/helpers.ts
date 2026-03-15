@@ -1,3 +1,23 @@
+// XP thresholds for levels 1–20 (cumulative total XP required)
+export const XP_TABLE = [0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250, 3850, 4500, 5200, 5950, 6750, 7600, 8500, 9450, 10500] as const;
+export const LEVEL_CAP = 20;
+
+/** Return level (1–20) for a given cumulative XP total. */
+export function xpToLevel(xp: number): number {
+  for (let i = XP_TABLE.length - 1; i >= 0; i--) {
+    if (xp >= XP_TABLE[i]) return i + 1;
+  }
+  return 1;
+}
+
+/** Max HP gained per level-up, by class. */
+export const HP_PER_LEVEL: Record<string, number> = {
+  Warrior: 10,
+  Cleric: 7,
+  Rogue: 5,
+  Mage: 3,
+};
+
 /**
  * Capitalize the first letter of a string
  */
