@@ -1,37 +1,8 @@
-# Changelog
-
-All notable changes to Aethermoor are documented here.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
 ### Added
-- **XP and leveling now work.** Defeating enemies and completing quest objectives grants experience points. When you accumulate enough XP, your character levels up — shown with a notification and applied immediately.
-- **Class-specific HP growth on level-up.** Warriors are hardiest, gaining 10 max HP per level. Clerics gain 7, Rogues 5, and Mages 3 — reflecting each class's durability. Your HP is also partially restored when you level up.
-- **Stat Points and Skill Points now awarded on level-up.** Each level gained grants +3 Stat Points (spend them in the character panel to raise STR, AGI, INT, or WIL) and +1 Skill Point (for the skill tree).
-
-### Fixed
-- **Combat damage now actually reduces your HP.** Previously, the narrator described hits and wounds in prose but your health bar never changed — you could fight forever without ever being in danger. This has been fixed: damage dealt by enemies now reduces your HP in real time, and healing (potions, rest, magic) now restores it properly.
-- **Player death is now real.** If your HP reaches zero, you fall in battle. A gravestone is recorded and your adventure ends — permanently. A dramatic death screen appears with the final moments of your story, a randomly chosen epitaph, and the option to Begin Anew with a fresh character. Death is not a setback. It is an ending.
-- **Enemies now scale with your level.** Previously the narrator had no anchor for enemy strength — a wolf at level 1 and level 15 could feel identical. Enemies now have concrete HP and damage values that grow with your character, keeping combat dangerous throughout the game. A bloodied enemy (below 30% HP) is now called out so you know when a fight is almost won.
-- Automated test suite (login, save, shop, narrator tests) now runs cleanly across all three browsers — dev server starts automatically when tests run.
-- Game saves now persist correctly after narrator responses (a database conflict in the narrator's auto-save logic has been resolved).
-
-### Added
-- **Six new status effects**: Fear, Bleeding, Cursed, Blinded, Weakened, and Chilled join the existing Poisoned, Burning, and Stunned — bringing the full roster to nine. Each effect now has a proper description and can be applied and removed by the narrator during combat and exploration.
-  - **Fearful** 😨 — dread clouds your mind; you may freeze or hesitate, and attacks are penalised. Your Willpower resists or even blocks this effect entirely at high levels.
-  - **Bleeding** 🩸 — an open wound bleeds steadily, losing 3 HP per turn until you bind it.
-  - **Cursed** 🌑 — dark magic gnaws at your spirit, reducing your Willpower and Intellect.
-  - **Blinded** 🙈 — your vision is stripped away, causing heavy penalties to accuracy and agility.
-  - **Weakened** 💔 — your muscles betray you; Strength is halved until you recover.
-  - **Chilled** ❄️ — cold seeps into your bones, reducing Agility and slowing your initiative.
-- **Status effect tooltips**: Hovering over any status effect badge in the combat panel now shows a tooltip explaining what the effect does and exactly how to cure it.
-- **New cure items**: Six dedicated remedy items have been added — Bandage (stops bleeding), Courage Draught (clears fear), Purification Charm (lifts curses), Eyewash (restores sight), Warming Draught (thaws the chill), and Tonic of Might (restores strength).
-- **Status effects now persist**: Your active status effects are saved with your game and restored when you load — the narrator remembers you are poisoned, bleeding, or cursed between sessions.
-
-
-
+- The world map now features procedural terrain generation, with the largest patch of each terrain type (forest, mountains, etc.) given a unique dark fantasy name. All rivers (15% of routes, mix of long and short) are also named from a themed pool. These names are visible to the narrator and on the map, and will be referenced in narrative and exploration.
 ### Added
 - **Three save slots**: Your progress is now stored across three separate save slots. Click **Save** in the top toolbar to choose which slot to write to — existing saves show your character name, class, level, location, and the date last saved. Empty slots show clearly. Overwriting a different slot asks for confirmation first.
 - **Load Game slot picker**: The Load Game button on the main menu now opens the slot picker so you can choose which adventure to continue.

@@ -16,6 +16,14 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>" && git pus
 ```
 Do this without being asked. Never leave the user to commit manually.
 
+
+## Latest Session Updates
+- Procedural terrain generation now assigns unique dark fantasy names to the largest patch of each terrain type (forest, mountains, etc.) at world generation. All rivers (15% of routes, mix of long and short) are also named from a themed pool. Names are visible to the narrator and map. Fog of war still applies for unexplored features.
+
+| Date       | Summary                                                      |
+|------------|--------------------------------------------------------------|
+| 2026-03-15 | Terrain and river naming, 15% river coverage, worldgen patch |
+
 ## Project Overview
 AI-powered browser RPG built on Next.js.
 - **Game**: https://aethermoor-nextjs.vercel.app/

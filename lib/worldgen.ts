@@ -510,7 +510,7 @@ export function buildTravelMatrix(worldData: any[]): any {
     };
   });
 
-  // Pairwise routes for capital+city tier
+  // Pairwise routes for capital+city tier (existing logic)
   const keyLocs = worldData.filter((s) => ['capital', 'city'].includes(s.type));
   const routes: any[] = [];
   for (let i = 0; i < keyLocs.length; i++) {
@@ -526,7 +526,108 @@ export function buildTravelMatrix(worldData: any[]): any {
     }
   }
 
-  return { locationGrid, routes, terrain: [] };
+  // Assign ~15% of all routes as rivers, with a mix of long and short
+  const riverNamePool = [
+    'The Sableflow', 'Sunshadow River', 'The Whispering Current', 'The Pale Run', 'The Gloamwater',
+    'The Silverstream', 'The Bleak Torrent', 'Hopewell River', 'The Murkmire', 'The Dawnbrook',
+    'The Ashen Wash', 'The Verdant Vein', 'The Lost Channel', 'The Quietwater', 'The Ironbrook',
+    'The Luminous Creek', 'The Withered Branch', 'The Brightwater', 'The Sorrowcourse', 'The Dreaming River'
+  ];
+  const usedRiverNames = new Set();
+  // Only consider routes that are not already roads, sea, or barge
+  const eligible = routes.filter(r => !r.road && !r.sea && !r.barge);
+  // Sort by distance (longest first)
+  const withDist = eligible.map(r => {
+    const from = locationGrid[r.from], to = locationGrid[r.to];
+    const dist = from && to ? Math.sqrt((from.x - to.x) ** 2 + (from.y - to.y) ** 2) : 0;
+    return { ...r, _dist: dist };
+  });
+  withDist.sort((a, b) => b._dist - a._dist);
+  // 15% of all routes, at least 1
+  const riverCount = Math.max(1, Math.round(routes.length * 0.15));
+  // Take half from the longest, half from the shortest
+  const longRivers = withDist.slice(0, Math.ceil(riverCount / 2));
+  const shortRivers = withDist.slice(-Math.floor(riverCount / 2));
+  const riverSet = new Set([...longRivers, ...shortRivers].map(r => r.from + '→' + r.to));
+  routes.forEach(r => {
+    const key = r.from + '→' + r.to;
+    if (riverSet.has(key)) {
+      r.river = true;
+      // Pick a name not already used
+      let name = '';
+      for (let tries = 0; tries < riverNamePool.length; tries++) {
+        const idx = Math.floor(Math.random() * riverNamePool.length);
+        if (!usedRiverNames.has(riverNamePool[idx])) {
+          name = riverNamePool[idx];
+          usedRiverNames.add(name);
+          break;
+        }
+      }
+      if (!name) name = 'The Nameless River';
+      r.name = name;
+    }
+  });
+
+  // Procedural terrain generation
+  // Divide the map into regions and assign terrain types
+  const terrainTypes = [
+    'forest', 'grasslands', 'plains', 'hills', 'mountains', 'tundra', 'swamp'
+  ];
+  const terrain: any[] = [];
+  // Simple approach: create 8-12 terrain patches of random type, size, and position
+  const patchCount = 8 + Math.floor(Math.random() * 5); // 8-12 patches
+  for (let i = 0; i < patchCount; i++) {
+    const type = terrainTypes[Math.floor(Math.random() * terrainTypes.length)];
+    // x/y in map units (0-100), w/h in map units (8-25 wide, 6-18 tall)
+    const x = Math.floor(Math.random() * 80) + 4;
+    const y = Math.floor(Math.random() * 80) + 4;
+    const w = 8 + Math.floor(Math.random() * 18);
+    const h = 6 + Math.floor(Math.random() * 13);
+    terrain.push({ type, x, y, w, h });
+  }
+
+  // Dark fantasy name pools (mix of moody and hopeful)
+  const terrainNamePools: Record<string, string[]> = {
+    forest: [
+      'Thornwood', 'Elderwood', 'The Gloam', 'Witchgrove', 'The Verdant Veil', 'Ashenwild', 'The Whispering Pines', 'Sunshadow Forest', 'The Green Shroud', 'The Sable Canopy', 'Hopegrove', 'The Silver Boughs'
+    ],
+    grasslands: [
+      'The Golden Reach', 'Windmere', 'The Sighing Fields', 'Briarplain', 'The Luminous Steppe', 'The Withered Downs', 'Sunmeadow', 'The Bleak Pasture', 'The Emerald Expanse', 'The Quiet March'
+    ],
+    plains: [
+      'The Pale Expanse', 'Dawnfields', 'The Bleak Table', 'The Open Steppe', 'The Sunlit Flats', 'The Sorrow Flats', 'The Green Table', 'The Lonely Plain', 'The Hopeful Vale'
+    ],
+    hills: [
+      'The Barrow Hills', 'The Rolling Bones', 'The Misty Uplands', 'The Gentle Rise', 'The Sable Downs', 'The Hopeful Heights', 'The Gloaming Barrows', 'The Suncrest Hills', 'The Olden Rise'
+    ],
+    mountains: [
+      'Ironspine Mountains', 'The Black Peaks', 'The Shrouded Crown', 'The Silver Range', 'The Grimspire', 'The Dawnspire', 'The Lost Pinnacle', 'The Hopeful Heights', 'The Pale Teeth', 'The Watcher''s Crest'
+    ],
+    tundra: [
+      'The Bleak Tundra', 'Frostmere', 'The Pale Waste', 'The Silver Barrens', 'The Quiet Frost', 'The Sunlit Tundra', 'The Withered White', 'The Hopeful Snow', 'The Gloaming Ice'
+    ],
+    swamp: [
+      'The Mire', 'The Sable Fen', 'The Withered Bog', 'The Sunken Hope', 'The Whispering Marsh', 'The Gloamfen', 'The Bright Fen', 'The Sorrowmire', 'The Silver Bog'
+    ]
+  };
+
+  // Assign names to the largest patch of each type
+  for (const type of terrainTypes) {
+    const patches = terrain.filter(t => t.type === type);
+    if (patches.length === 0) continue;
+    // Largest by area
+    const largest = patches.reduce((a, b) => (a.w * a.h > b.w * b.h ? a : b));
+    const pool = terrainNamePools[type] || [];
+    if (pool.length > 0) {
+      // Pick a name and remove it from the pool to avoid duplicates
+      const nameIdx = Math.floor(Math.random() * pool.length);
+      const name = pool[nameIdx];
+      largest.name = name;
+      terrainNamePools[type].splice(nameIdx, 1);
+    }
+  }
+
+  return { locationGrid, routes, terrain };
 }
 
 export function generateMainQuestSeed(): any {
