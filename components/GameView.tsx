@@ -230,7 +230,23 @@ function GameContent() {
         // game hasn't been committed to the DB yet. Overlay any tag-based updates
         // from the opening scene but always lock in the core new-game identity fields.
         const finalPlayer = data.player
-          ? { ...player, ...data.player, name: player.name, class: player.class, level: player.level, location: player.location, exploredLocations: player.exploredLocations }
+          ? {
+              ...player,
+              ...data.player,
+              // Always lock new-game identity fields — canonical DB state is the OLD save
+              name: player.name,
+              class: player.class,
+              level: player.level,
+              location: player.location,
+              exploredLocations: player.exploredLocations,
+              quests: player.quests,
+              inventory: player.inventory,
+              gold: player.gold,
+              hp: player.hp,
+              maxHp: player.maxHp,
+              factionStandings: player.factionStandings,
+              statusEffects: player.statusEffects,
+            }
           : player;
         const finalSeed = data.worldSeed
           ? { ...seed, ...data.worldSeed, travelMatrix: seed.travelMatrix, worldData: seed.worldData, worldSettlements: seed.worldSettlements, seed: seed.seed }
