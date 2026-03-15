@@ -20,10 +20,12 @@ jobs:
       TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
+      - name: Opt in to Node.js 24 Actions
+        run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $GITHUB_ENV
       - name: Install dependencies
         run: npm ci
       - name: Lint
