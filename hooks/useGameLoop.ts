@@ -138,6 +138,10 @@ export function useGameLoop(
 
         // ── buy:<name>:<price> ──
         if (command.startsWith('buy:')) {
+          const shopCtx = updatedPlayer.context;
+          if (shopCtx !== 'town' && shopCtx !== 'npc') {
+            return { success: false, error: 'No shop available here — find a settlement or merchant.' };
+          }
           const parts = command.split(':');
           const price = parseInt(parts[parts.length - 1], 10);
           const itemName = parts.slice(1, -1).join(':');
@@ -156,6 +160,10 @@ export function useGameLoop(
 
         // ── sell:<name>:<price> ──
         if (command.startsWith('sell:')) {
+          const sellCtx = updatedPlayer.context;
+          if (sellCtx !== 'town' && sellCtx !== 'npc') {
+            return { success: false, error: 'No shop available here — find a settlement or merchant.' };
+          }
           const parts = command.split(':');
           const price = parseInt(parts[parts.length - 1], 10);
           const itemName = parts.slice(1, -1).join(':');
