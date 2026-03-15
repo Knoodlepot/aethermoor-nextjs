@@ -403,7 +403,7 @@ export function generateProceduralWorld(seed?: string): any[] {
     for (let i = 0; i < count; i++) {
       const ft = farmTypes[Math.floor(Math.random() * farmTypes.length)];
       const config = SETTLEMENT_TYPES[ft];
-      const farmName = pickName() + ' ' + config.label.split(' ').pop();
+      const farmName = proceduralName(ft);
       world.push({
         name: farmName, type: ft, icon: config.icon,
         parentSettlement: settlement.name,
