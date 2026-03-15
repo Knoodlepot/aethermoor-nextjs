@@ -14,8 +14,7 @@
     "verify:all": "npm run verify:runtime && npm run verify:mock-state && npm run verify:narrator",
     "test": "vitest run",
     "verify:unit": "vitest run",
-    "e2e": "playwright test",
-    "verify:e2e": "playwright test"
+    
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -30,7 +29,6 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.37",
@@ -40,7 +38,7 @@
     "@types/redis": "^4.0.10",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "playwright": "^1.58.2",
+    
     "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.0"
