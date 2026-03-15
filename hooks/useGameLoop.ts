@@ -6,7 +6,7 @@ import type { GameStateContext } from './useGameState';
 import type { UIContext } from './useUI';
 import type { UseStorageReturn } from './useStorage';
 import { FACTION_JOIN_OFFERS, PROTECTED_ITEMS, RECIPES, CONSUMABLE_EFFECTS } from '../lib/constants';
-import { getItemSlotEx, formatGameTime } from '../lib/helpers';
+import { getItemSlotEx, formatGameTime, advanceGameTime } from '../lib/helpers';
 
 export interface GameLoopContext {
   executeCommand: (
@@ -470,6 +470,13 @@ export function useGameLoop(
             exploredLocations: (narratorResponse.player as any).exploredLocations
               ?? (gs.player as any).exploredLocations,
           } as typeof gs.player;
+
+          // Advance time automatically on every narrator turn (mirrors legacy behaviour)
+          // Combat: ~5 minutes. All other actions: 30 minutes.
+          const isCombatAction = (updatedPlayer as any).context === 'combat';
+          const baseHours = isCombatAction ? (5 / 60) : 0.5;
+          updatedPlayer = advanceGameTime(updatedPlayer as any, baseHours) as typeof gs.player;
+
           const localSeed = gs.worldSeed as any;
           updatedSeed = {
             ...localSeed,
