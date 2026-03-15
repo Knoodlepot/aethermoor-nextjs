@@ -178,14 +178,8 @@ function GameContent() {
       const neighborNames = routes
         .filter((r: any) => r.from === startLoc || r.to === startLoc)
         .map((r: any) => r.from === startLoc ? r.to : r.from);
-      let initialExplored = Array.from(new Set([startLoc, ...neighborNames]));
-      // Failsafe: if no neighbors, include first 5 settlements
-      if (initialExplored.length === 1) {
-        const settlements = Object.keys(locationGrid).filter(
-          (k) => ['capital','city','town','village','hamlet'].includes(locationGrid[k].type)
-        );
-        initialExplored = [startLoc, ...settlements.slice(0, 5).filter((n) => n !== startLoc)];
-      }
+      // Only the starting location is explored; neighbors show as "?" on the map
+      const initialExplored = [startLoc];
       if (typeof window !== 'undefined') {
         // eslint-disable-next-line no-console
         console.log('[Worldgen Debug - Explored]', {
@@ -215,6 +209,11 @@ function GameContent() {
         },
       ];
       gameState.addMessage('user', introMsg[0].content);
+
+      // Write new game to cloud NOW (fire-and-forget) so the narrator API's
+      // canonical-state lookup finds the new save, not the old one.
+      // DB write is <100ms; Anthropic API takes 1-3s — it will finish in time.
+      storage.saveToCloud(player as any, seed as any, introMsg, '', []);
 
       const res = await fetch('/api/claude', {
         method: 'POST',
