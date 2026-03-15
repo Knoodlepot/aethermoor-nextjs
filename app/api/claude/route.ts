@@ -289,6 +289,31 @@ async function spendTokenSafely(
   return { success, remaining };
 }
 
+/**
+ * Compute enemy HP and damage values scaled to player level.
+ * Base stats match ENEMY_ARCHETYPES in lib/constants.ts.
+ * HP grows by 5 per level, damage by 1 per 2 levels.
+ */
+function buildEnemyScalingBlock(level: number): string {
+  const hpScale  = (level - 1) * 5;
+  const dmgScale = Math.floor((level - 1) / 2);
+
+  // Five tiers matching archetype groups in ENEMY_ARCHETYPES
+  const minion   = { hp: 20 + hpScale, dmg: 4  + dmgScale }; // wolf, cultist
+  const standard = { hp: 28 + hpScale, dmg: 5  + dmgScale }; // bandit, skeleton
+  const tough    = { hp: 40 + hpScale, dmg: 7  + dmgScale }; // zombie, soldier, beast
+  const elite    = { hp: 60 + hpScale, dmg: 9  + dmgScale }; // drake, rogue assassin
+  const boss     = { hp: 80 + hpScale, dmg: 10 + dmgScale }; // named bosses
+
+  return `ENEMY SCALING (Lv.${level}) — use these EXACT HP and damage values in all combat. Track enemy HP consistently across turns so fights have weight:
+- Minion (wolves, cultists, petty thugs): ${minion.hp} HP | ${minion.dmg} dmg/turn
+- Standard (bandits, skeletons, guards): ${standard.hp} HP | ${standard.dmg} dmg/turn
+- Tough (zombies, soldiers, beasts): ${tough.hp} HP | ${tough.dmg} dmg/turn
+- Elite (drakes, assassins, sorcerers): ${elite.hp} HP | ${elite.dmg} dmg/turn
+- Boss (named enemies, dungeon lords): ${boss.hp} HP | ${boss.dmg} dmg/turn
+Variants add ×1.4 HP and dmg for Veteran/named prefix; ×2 for Boss tier. Announce when an enemy is bloodied (≤30% HP left). Do NOT one-shot the player from full health.`;
+}
+
 /** Compute mechanical stat rules injected into the narrator prompt as hard numbers. */
 function buildStatRules(str: number, agi: number, int_: number, wil: number): string {
   const meleeDmg     = 5 + Math.floor(str / 2);
@@ -532,6 +557,8 @@ ${worldEventsStr ? `WORLD EVENTS: ${worldEventsStr}\n` : ''}
 XEPHITA ROLL: ${Math.floor(Math.random() * 10) + 1}
 
 ${buildStatRules(str, agi, int_, wil)}
+
+${buildEnemyScalingBlock(level)}
 
 RULES:
 - Write vivid immersive fantasy prose, 2-3 paragraphs
