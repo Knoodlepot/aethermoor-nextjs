@@ -17,6 +17,7 @@ import { InputBar } from '@/components/panels/InputBar';
 import { CombatPanel } from '@/components/panels/CombatPanel';
 import { MainQuestPanel } from '@/components/panels/MainQuestPanel';
 import { SideQuestPanel } from '@/components/panels/SideQuestPanel';
+import { ContextActionPanel } from '@/components/panels/ContextActionPanel';
 
 // UI
 import { NarrativePanel } from '@/components/ui/NarrativePanel';
@@ -727,6 +728,16 @@ function GameContent() {
         skillPts={skillPts}
         bestiaryCount={bestiaryCount}
       />
+      {/* Context-sensitive action panel — changes template based on explore/town/combat */}
+      {player && (
+        <ContextActionPanel
+          context={(player as any).context || 'explore'}
+          isLoading={gameLoop.isLoading}
+          onAction={(text) => handleFreeText(text)}
+          inventory={(player as any).inventory || []}
+        />
+      )}
+
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {ui.currentEnemy && (
           <CombatPanel
