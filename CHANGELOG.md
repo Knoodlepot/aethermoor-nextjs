@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Fixed
+- **World map now shows the full road network on existing saves.** Previously, characters created before the road network update would see plain dotted lines on the map instead of coloured, styled roads. Your save now automatically upgrades itself the first time you load it, and the proper King's Roads, Merchant Roads, Dirt Roads, Trails, and Farm Tracks will appear. No action needed.
+- **Terrain textures on the map now appear correctly for all saves**, including older characters.
 
 ### Added
 - You can now enter a **World Seed** when starting a new game. Enter a code to replay a world you've seen before, or leave it blank for a random new world. This makes sharing and replaying unique worlds easy.
@@ -95,7 +98,6 @@
 - Tightened protection against browser-side state tampering affecting hidden narrator context.
 - Improved admin endpoint protection with safer header-based authentication paths.
 - Core narrator-driven state updates now resolve server-side first, reducing client-side manipulation risk during progression.
-- Removed disruptive debug popups from the game screen. You will no longer see E2E test alerts while playing.
 
 ## [0.3.1] - 2026-03-14
 

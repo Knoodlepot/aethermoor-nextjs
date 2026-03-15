@@ -18,10 +18,14 @@ Do this without being asked. Never leave the user to commit manually.
 
 
 ## Latest Session Updates
-- Hierarchical, natural road network generation: All map key road types (King’s Road, Merchant Road, Dirt Road, Trail, Farm Track) are now generated at worldgen. Each node connects to its nearest valid neighbors (1–2, within a natural distance). Limited crossroads are created between settlements only. No POI/farm crossroads. All road types are visually distinct on the map.
+- **Map worldSeed migration**: Old saves missing `travelMatrix.routes` (pre-road-network format) now auto-migrate on load. `migrateWorldSeed()` in `lib/worldgen.ts` re-runs `generateProceduralWorld` + `buildTravelMatrix` using the stored seed string without replacing quest/narrative data. Re-saves after migration so future loads are instant.
+- **Seed string recovery**: `useStorage.ts` now persists `worldSeed.seed` separately as `rpg-seed-str-slot{n}` in localStorage. Recovered on load if missing from the worldSeed object (handles saves made before seed string was added).
+- **MapView React key fix**: `GameView.tsx` MapView key now falls back to `questTitle` instead of `’no-seed’`, ensuring React remounts correctly when switching saves/worlds even for old saves where `worldSeed.seed` is undefined.
+- **DB SSL fix**: `lib/db.ts` now always uses `ssl: { rejectUnauthorized: false }` instead of disabling SSL in dev — Railway requires TLS even locally.
 
 | Date       | Summary                                                      |
 |------------|--------------------------------------------------------------|
+| 2026-03-15 | Map worldSeed migration, seed string recovery, MapView key fix, DB SSL fix |
 | 2026-03-15 | Hierarchical road network, all map key road types, natural connections |
 
 ## Project Overview
@@ -78,16 +82,6 @@ AI-powered browser RPG built on Next.js.
   - `lib/tagParsers.ts`: Added `extractHpChangeTag`, `hpChange: number | null` to `ParsedTags`, wired into `parseAllTags`, handler in `processParsedTags` (clamps to [0, maxHp]), strip regex in `stripContextTag`.
   - `app/api/claude/route.ts`: Narrator now instructed to emit `{"hpChange":-N}` when player takes damage and `{"hpChange":N}` when healed by potion/rest/magic.
 
-- **E2E Test Suite Fixed**: All 12 Playwright tests now pass (4 tests × 3 browsers).
-  - `playwright.config.ts`: Added `webServer` block — dev server auto-starts before tests, reuses existing if already running locally.
-  - `instrumentation.ts` (new): Calls `migrateDb()` on server startup via Next.js instrumentation hook — this was never being called, causing `column "slot" does not exist` on all save queries.
-  - `e2e/global-setup.ts`: Fixed `waitForURL('/game')` (was matching auth page heading too early); sets `localStorage.aethermoor_age_verified=1`; creates minimal DB save with `context:'town'` so toolbar is enabled.
-  - `e2e/login.spec.ts`: Uses fresh unauthenticated storageState; clicks age gate button before checking Logout.
-  - `e2e/save.spec.ts`: Clicks slot in SaveSlotModal and verifies modal closes (no success toast exists in UI).
-  - `e2e/shop.spec.ts`: Uses specific emoji selectors `🛒 Shop` / `🏪 SHOP` to avoid strict-mode multi-match.
-  - `e2e/narrator.spec.ts`: Waits for command input to re-enable (signals API round-trip done) instead of fragile text comparison.
-  - All 3 spec files: Removed duplicate bare test blocks outside `test.describe` (was running 21 tests instead of 12).
-  - `app/api/claude/route.ts`: Fixed `persistCanonicalNarrationState` — `ON CONFLICT (player_id)` updated to `ON CONFLICT (player_id, slot)` to match new composite PK.
 
 - **Status Effects Expansion**:Added 6 new status effects (fearful, bleeding, cursed, blinded, weakened, chilled) alongside the existing 3 (poisoned, burning, stunned). Total: 9 status effects.
   - `STATUS_EFFECTS` constant in `lib/constants.ts` — single source of truth for all 9 effects with icon, label, description, and cure text.
