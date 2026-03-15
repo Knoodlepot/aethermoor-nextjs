@@ -856,54 +856,47 @@ function GameContent() {
 
   const desktopLayout = (
     <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-      {/* Left: story + suggestions/input bar (fills all space) */}
+      {/* Left: story + suggestions + input bar (fills all space) */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <NarrativePanel
           narrative={gameState.narrative}
           log={gameState.log}
         />
-        {/* Bottom bar: stacked suggestions (left) + input bar (right) */}
-        <div style={{ display: 'flex', flexShrink: 0, borderTop: `1px solid ${T.border}` }}>
-          {/* Stacked suggestion buttons */}
-          {ui.suggestions.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, borderRight: `1px solid ${T.border}` }}>
-              {ui.suggestions.slice(0, 3).map((s, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleFreeText(s)}
-                  style={{
-                    padding: '0 14px',
-                    flex: 1,
-                    background: 'transparent',
-                    border: 'none',
-                    borderBottom: idx < 2 ? `1px solid ${T.border}` : 'none',
-                    color: T.gold,
-                    cursor: 'pointer',
-                    fontFamily: "'Cinzel',serif",
-                    fontSize: 11,
-                    letterSpacing: 0.5,
-                    textAlign: 'left' as const,
-                    whiteSpace: 'nowrap' as const,
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = T.panelAlt)}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
-          {/* Input bar fills remaining width */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <InputBar
-              player={gameState.player}
-              onFreeText={handleFreeText}
-              isLoading={gameLoop.isLoading}
-              fillInput={ui.fillInput || null}
-            />
+        {/* Suggestion buttons — sit above the input bar in their own row */}
+        {ui.suggestions.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, borderTop: `1px solid ${T.border}` }}>
+            {ui.suggestions.slice(0, 3).map((s, idx) => (
+              <button
+                key={idx}
+                onClick={() => { ui.setSuggestions([]); handleFreeText(s); }}
+                style={{
+                  padding: '9px 16px',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: idx < Math.min(ui.suggestions.length, 3) - 1 ? `1px solid ${T.border}` : 'none',
+                  color: T.gold,
+                  cursor: 'pointer',
+                  fontFamily: "'Cinzel',serif",
+                  fontSize: 11,
+                  letterSpacing: 0.5,
+                  textAlign: 'left' as const,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = T.panelAlt)}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                ▸ {s}
+              </button>
+            ))}
           </div>
-        </div>
+        )}
+        {/* Input bar */}
+        <InputBar
+          player={gameState.player}
+          onFreeText={handleFreeText}
+          isLoading={gameLoop.isLoading}
+          fillInput={ui.fillInput || null}
+        />
       </div>
 
       {rightColumn}
