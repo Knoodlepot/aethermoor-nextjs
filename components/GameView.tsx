@@ -59,6 +59,7 @@ function xpForNextLevel(level: number): number {
   return Math.floor(100 * Math.pow(1.4, level - 1));
 }
 
+
 function GameContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -79,11 +80,14 @@ function GameContent() {
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
   const [showSaveSlot, setShowSaveSlot] = useState(false);
 
+
   // Age gate — persisted in localStorage so it only shows once per browser
-  const [ageVerified, setAgeVerified] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('aethermoor_age_verified') === '1';
-  });
+  const [ageVerified, setAgeVerified] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setAgeVerified(localStorage.getItem('aethermoor_age_verified') === '1');
+    }
+  }, []);
 
   const handleAgeConfirm = () => {
     localStorage.setItem('aethermoor_age_verified', '1');
@@ -93,6 +97,9 @@ function GameContent() {
   // Token balance
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  // Fix: seedCopied state for seed copy-to-clipboard UI (must be at top level)
+  const [seedCopied, setSeedCopied] = useState(false);
 
   // Fetch token balance on mount and after Stripe return
   useEffect(() => {
@@ -477,7 +484,6 @@ function GameContent() {
     );
   };
 
-  const [seedCopied, setSeedCopied] = useState(false);
   const playerInfoPanel = player ? (
     <div style={{ background: T.panel, borderBottom: `1px solid ${T.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, maxHeight: '60%' }}>
       {/* Identity card — two column: left = icon/name/class, right = HP/XP/attributes */}
