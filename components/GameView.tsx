@@ -226,10 +226,12 @@ function GameContent() {
         const narrative = data.cleanNarrative || data.narrative;
         gameState.setNarrative(narrative);
         gameState.addMessage('assistant', narrative);
-        const finalPlayer = data.player ?? player;
-        // The API may return stale canonical data from the DB because the new
-        // save hasn't been written yet at this point. Always keep world-structure
-        // fields from the freshly generated seed so travelMatrix/routes are intact.
+        // The API may return stale canonical data (old save) because the new
+        // game hasn't been committed to the DB yet. Overlay any tag-based updates
+        // from the opening scene but always lock in the core new-game identity fields.
+        const finalPlayer = data.player
+          ? { ...player, ...data.player, name: player.name, class: player.class, level: player.level, location: player.location, exploredLocations: player.exploredLocations }
+          : player;
         const finalSeed = data.worldSeed
           ? { ...seed, ...data.worldSeed, travelMatrix: seed.travelMatrix, worldData: seed.worldData, worldSettlements: seed.worldSettlements, seed: seed.seed }
           : seed;
