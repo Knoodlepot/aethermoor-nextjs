@@ -23,10 +23,13 @@ interface ActionBtn {
 const TOWN_ACTIONS: ActionBtn[] = [
   { icon: '💬', label: 'Talk',         text: 'I approach someone to start a conversation, asking around for local information, news, or gossip.' },
   { icon: '🪙', label: 'Barter',       text: 'barter' },
+  { icon: '🛒', label: 'Shop',         text: 'I browse the local shops and merchants to see what\'s available.' },
   { icon: '📋', label: 'Notice Board', text: 'I walk over to the notice board and read what\'s posted.' },
+  { icon: '🗣️', label: 'Rumours',      text: 'I find a quiet corner and listen in for local rumours, whispers, and gossip.' },
   { icon: '🛏', label: 'Rest',         text: 'I find somewhere comfortable to rest for a few hours.' },
   { icon: '👁', label: 'Look',         text: 'I look around the town, taking in my surroundings.' },
   { icon: '⚒️', label: 'Craft',        text: 'I look for a suitable place to craft and work on my supplies.' },
+  { icon: '🙏', label: 'Pray',         text: 'I seek out the local shrine or temple to pray and pay my respects.' },
 ];
 
 const EXPLORE_ACTIONS: ActionBtn[] = [
