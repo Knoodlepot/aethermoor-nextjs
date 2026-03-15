@@ -68,6 +68,40 @@ function seededRand(seed: number) {
   return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 0xffffffff; };
 }
 
+// Generate organic (irregular blob) control points around a rectangle
+function organicPoints(
+  px: number, py: number, pw: number, ph: number,
+  r: () => number,
+  steps: number = 10
+): Array<{ x: number; y: number }> {
+  const pts: Array<{ x: number; y: number }> = [];
+  const jx = pw * 0.13, jy = ph * 0.13;
+  const nt = Math.max(2, Math.round(steps * pw / (pw + ph)));
+  const ns = Math.max(2, Math.round(steps * ph / (pw + ph)));
+  for (let i = 0; i < nt; i++)
+    pts.push({ x: px + (i / nt) * pw + (r() - 0.5) * jx, y: py + (r() - 0.5) * jy });
+  for (let i = 0; i < ns; i++)
+    pts.push({ x: px + pw + (r() - 0.5) * jx, y: py + (i / ns) * ph + (r() - 0.5) * jy });
+  for (let i = nt; i > 0; i--)
+    pts.push({ x: px + (i / nt) * pw + (r() - 0.5) * jx, y: py + ph + (r() - 0.5) * jy });
+  for (let i = ns; i > 0; i--)
+    pts.push({ x: px + (r() - 0.5) * jx, y: py + (i / ns) * ph + (r() - 0.5) * jy });
+  return pts;
+}
+
+// Draw a smooth bezier curve through organic control points
+function drawOrganic(g: CanvasRenderingContext2D, pts: Array<{ x: number; y: number }>) {
+  if (pts.length < 3) return;
+  g.beginPath();
+  const last = pts[pts.length - 1];
+  g.moveTo((last.x + pts[0].x) / 2, (last.y + pts[0].y) / 2);
+  for (let i = 0; i < pts.length; i++) {
+    const c = pts[i], n = pts[(i + 1) % pts.length];
+    g.quadraticCurveTo(c.x, c.y, (c.x + n.x) / 2, (c.y + n.y) / 2);
+  }
+  g.closePath();
+}
+
 export function MapView({ player, worldSeed, onClose, inline = false, onCommand }: MapViewProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const [selectedDest, setSelectedDest] = React.useState<string | null>(null);
@@ -196,9 +230,12 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
       const s1 = toScreen(x, y), s2 = toScreen(x + w, y + h);
       const px = s1.x, py = s1.y, pw = s2.x - s1.x, ph = s2.y - s1.y;
       if (pw <= 0 || ph <= 0) return;
-      const r = seededRand(ti * 999983 + (type.charCodeAt(0) || 0) * 7);
+      const sr = seededRand(ti * 888131 + (type.charCodeAt(0) || 0) * 17);
+      const r  = seededRand(ti * 999983 + (type.charCodeAt(0) || 0) * 7);
+      const pts = organicPoints(px, py, pw, ph, sr);
       g.save();
-      g.beginPath(); g.rect(px, py, pw, ph); g.clip();
+      drawOrganic(g, pts);
+      g.clip();
 
       if (type === 'forest' || type === 'woodland' || type === 'glade') {
         g.fillStyle = 'rgba(10,32,8,0.55)'; g.fillRect(px, py, pw, ph);
@@ -274,6 +311,14 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
           g.beginPath(); g.arc(px + r() * pw, py + r() * ph, 1 + r() * 3, 0, Math.PI * 2); g.fill();
         }
       }
+      g.restore();
+      // Soft parchment border traces the organic edge
+      g.save();
+      drawOrganic(g, pts);
+      g.strokeStyle = 'rgba(180,155,80,0.18)';
+      g.lineWidth = 1.5;
+      g.setLineDash([]);
+      g.stroke();
       g.restore();
     });
 
