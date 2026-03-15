@@ -124,11 +124,38 @@ function GameContent() {
     try {
       const seed = generateWorldSeed(seedStr);
       const worldData = seed.worldData ?? [];
-      // Pick a random village/hamlet as starting location
+      // Use seeded RNG for starting location
+      const mulberry32 = (a: number) => {
+        return function() {
+          var t = a += 0x6D2B79F5;
+          t = Math.imul(t ^ t >>> 15, t | 1);
+          t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        }
+      };
+      const stringToSeed = (str: string) => {
+        let h = 2166136261 >>> 0;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+      };
+      const rng = mulberry32(stringToSeed(seed.seed || seedStr || ''));
       const starters = worldData.filter((d: any) => d.type === 'village' || d.type === 'hamlet');
       const startLoc: string = starters.length > 0
-        ? starters[Math.floor(Math.random() * starters.length)].name
+        ? starters[Math.floor(rng() * starters.length)].name
         : 'Aethermoor Capital';
+      // Debug log for settlements and routes
+      if (typeof window !== 'undefined') {
+        // eslint-disable-next-line no-console
+        console.log('[Worldgen Debug]', {
+          settlements: worldData.filter((d: any) => ['capital','city','town','village','hamlet'].includes(d.type)).length,
+          routes: seed.travelMatrix?.routes?.length,
+          startLoc,
+          seed: seed.seed,
+        });
+      }
 
       const mainQuestEntry = {
         id: 'main_' + Date.now(),
