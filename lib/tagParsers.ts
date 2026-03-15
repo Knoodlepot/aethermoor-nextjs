@@ -36,6 +36,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"playerStatus"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"hpChange"\s*:\s*-?\d+\}/g, '');
   t = t.replace(/\{"xpGain"\s*:\s*\d+\}/g, '');
+  t = t.replace(/\{"bestiary"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
   t = t.replace(/```[a-z]*\s*\{"context"\s*:\s*"\w+"\}\s*```/g, '');
   t = t.replace(/```[a-z]*\s*```/g, '');
@@ -344,6 +345,19 @@ export function extractXpGainTag(text: string): number | null {
 }
 
 /**
+ * Extract bestiary kill tag: {"bestiary":{"archetypeId":"goblin","name":"Goblin","icon":"👺","tier":1}}
+ */
+export function extractBestiaryTag(text: string): any {
+  const m = text.match(/\{"bestiary"\s*:\s*(\{[\s\S]+?\})\}/);
+  if (!m) return null;
+  try {
+    return JSON.parse(m[1]);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Extract HP change tag: {"hpChange":-12} (negative = damage, positive = healing)
  */
 export function extractHpChangeTag(text: string): number | null {
@@ -393,6 +407,7 @@ export interface ParsedTags {
   playerStatus: { add?: string; remove?: string } | null;
   hpChange: number | null;
   xpGain: number | null;
+  bestiary: any;
 }
 
 /**
@@ -426,6 +441,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     playerStatus: extractPlayerStatusTag(narrative),
     hpChange: extractHpChangeTag(narrative),
     xpGain: extractXpGainTag(narrative),
+    bestiary: extractBestiaryTag(narrative),
   };
 }
 
@@ -724,6 +740,34 @@ export function processParsedTags(
     if (levelsGained > 0) {
       stateChanges.levelUps = newLevel;
     }
+  }
+
+  // Bestiary — upsert kill record keyed by archetypeId
+  if (tags.bestiary && tags.bestiary.archetypeId) {
+    const entry = tags.bestiary;
+    const currentDay = (updatedPlayer as any).gameDay || 1;
+    const existing: any[] = (updatedPlayer as any).bestiary || [];
+    const idx = existing.findIndex((b: any) => b.archetypeId === entry.archetypeId);
+    let newBestiary: any[];
+    if (idx >= 0) {
+      newBestiary = existing.map((b: any, i: number) =>
+        i === idx
+          ? { ...b, timesKilled: (b.timesKilled || 0) + 1, lastKilledDay: currentDay }
+          : b
+      );
+    } else {
+      const newEntry = {
+        archetypeId: entry.archetypeId,
+        name: entry.name || entry.archetypeId,
+        icon: entry.icon || '👾',
+        tier: entry.tier ?? 1,
+        timesKilled: 1,
+        firstKilledDay: currentDay,
+        lastKilledDay: currentDay,
+      };
+      newBestiary = [...existing, newEntry];
+    }
+    updatedPlayer = { ...updatedPlayer, bestiary: newBestiary } as any;
   }
 
   return {
