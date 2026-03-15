@@ -445,7 +445,6 @@ export function useGameLoop(
         }
 
         // 3a. Handle player death (hp reached 0 from hpChange tag)
-        let deathNarrative: string | null = null;
         if (updatedPlayer.hp <= 0) {
           const gravestone = {
             name: updatedPlayer.name,
@@ -454,32 +453,40 @@ export function useGameLoop(
             day: updatedPlayer.gameDay || 1,
             epitaph: `Fell in battle on Day ${updatedPlayer.gameDay || 1}.`,
           };
-          updatedPlayer = {
+          const deadPlayer = {
             ...updatedPlayer,
-            hp: Math.floor(updatedPlayer.maxHp / 2),
-            context: 'town',
-            combat: { inCombat: false, currentEnemy: null },
+            hp: 0,
             deathCount: (updatedPlayer.deathCount || 0) + 1,
             gravestones: [...(updatedPlayer.gravestones || []), gravestone],
           };
-          deathNarrative = `⚰️ **You have fallen.**\n\nDarkness takes you. When you wake, you find yourself back in safety — battered, humbled, and half-healed. Death has left its mark.\n\n*Deaths: ${updatedPlayer.deathCount}*`;
+          // Save the gravestone record before wiping the save
+          await storage.saveGame(deadPlayer, updatedSeed, [], cleanNarrative, gs.log);
+          storage.clearAllSaves();
+          ui.showDeathScreen({
+            name: updatedPlayer.name,
+            cls: updatedPlayer.class,
+            level: updatedPlayer.level,
+            gameDay: updatedPlayer.gameDay || 1,
+            finalNarrative: cleanNarrative,
+          });
+          return { success: true };
         }
 
         // 4. Update all game state
         gs.setPlayer(updatedPlayer);
         gs.setWorldSeed(updatedSeed);
-        gs.setNarrative(deathNarrative || cleanNarrative);
-        gs.addMessage('assistant', deathNarrative || cleanNarrative);
+        gs.setNarrative(cleanNarrative);
+        gs.addMessage('assistant', cleanNarrative);
         ui.setPlayerStatusEffects(updatedPlayer.statusEffects || []);
 
         // 5. Add to game log
         gs.addLogEntry('action', command);
-        gs.addLogEntry('response', (deathNarrative || cleanNarrative).substring(0, 100));
+        gs.addLogEntry('response', cleanNarrative.substring(0, 100));
 
         // 6. Save game state — include assistant response in saved history
         const fullMessages = [
           ...userMessages,
-          { role: 'assistant', content: deathNarrative || cleanNarrative },
+          { role: 'assistant', content: cleanNarrative },
         ];
         await storage.saveGame(updatedPlayer, updatedSeed, fullMessages, cleanNarrative, gs.log);
 

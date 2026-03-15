@@ -38,6 +38,7 @@ import { CraftingScreen } from '@/components/screens/CraftingScreen';
 import { NGPlusScreen } from '@/components/screens/NGPlusScreen';
 import { PatchNotesScreen } from '@/components/screens/PatchNotesScreen';
 import { OutOfTokensScreen } from '@/components/screens/OutOfTokensScreen';
+import { DeathScreen } from '@/components/screens/DeathScreen';
 import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 
 // Modals
@@ -902,6 +903,23 @@ function GameContent() {
           ui.openModal('tokenShop');
         }}
         onReturnToTitle={() => router.push('/')}
+      />
+    );
+  }
+
+  // Death — fullscreen permadeath screen
+  if (ui.screen === 'death' && ui.deathInfo) {
+    return (
+      <DeathScreen
+        name={ui.deathInfo.name}
+        cls={ui.deathInfo.cls}
+        level={ui.deathInfo.level}
+        gameDay={ui.deathInfo.gameDay}
+        finalNarrative={ui.deathInfo.finalNarrative}
+        onBeginAnew={() => {
+          ui.setScreen('game');
+          router.push('/game?new=1');
+        }}
       />
     );
   }

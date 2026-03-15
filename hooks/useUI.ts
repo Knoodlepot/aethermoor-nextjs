@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import type { Enemy } from '../lib/types';
 
-export type ScreenType = 'loading' | 'title' | 'game' | 'out_of_tokens';
+export type ScreenType = 'loading' | 'title' | 'game' | 'out_of_tokens' | 'death';
 
 export interface UIContext {
   // Screen management
@@ -82,6 +82,10 @@ export interface UIContext {
   questLogInitialId: string | null;
   openQuestLogAt: (questId: string) => void;
   clearQuestLogInitialId: () => void;
+
+  // Death screen
+  deathInfo: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string } | null;
+  showDeathScreen: (info: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string }) => void;
 }
 
 /**
@@ -148,6 +152,14 @@ export function useUI(): UIContext {
 
   const clearQuestLogInitialId = useCallback(() => {
     setQuestLogInitialId(null);
+  }, []);
+
+  // Death screen
+  const [deathInfo, setDeathInfo] = useState<{ name: string; cls: string; level: number; gameDay: number; finalNarrative: string } | null>(null);
+
+  const showDeathScreen = useCallback((info: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string }) => {
+    setDeathInfo(info);
+    setScreen('death');
   }, []);
 
   /**
@@ -316,5 +328,7 @@ export function useUI(): UIContext {
     questLogInitialId,
     openQuestLogAt,
     clearQuestLogInitialId,
+    deathInfo,
+    showDeathScreen,
   };
 }
