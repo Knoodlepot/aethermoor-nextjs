@@ -60,6 +60,7 @@ async function testClaudeSuccess(): Promise<void> {
       const hasBalance = assertHasField(response.data, 'tokenBalance', `${testName} — has tokenBalance`);
       results.push(hasBalance);
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     results.push({
       name: testName,
