@@ -531,20 +531,19 @@ function GameContent() {
           <div style={{
             position: 'absolute' as const,
             bottom: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            marginBottom: 6,
+            right: 0,
+            marginBottom: 4,
             background: '#0a0805',
             border: `1px solid ${T.accent}`,
-            padding: '8px 10px',
+            padding: '6px 8px',
             zIndex: 100,
-            minWidth: 150,
+            width: 130,
             pointerEvents: 'none' as const,
             boxShadow: '0 4px 16px #00000088',
           }}>
-            <div style={{ ...tf, color: T.accent, fontSize: 9, letterSpacing: 1.5, marginBottom: 5 }}>{label} MECHANICS</div>
+            <div style={{ ...tf, color: T.accent, fontSize: 8, letterSpacing: 1, marginBottom: 4 }}>{label} MECHANICS</div>
             {lines.map((line, i) => (
-              <div key={i} style={{ fontSize: 11, color: T.text, lineHeight: 1.6 }}>· {line}</div>
+              <div key={i} style={{ fontSize: 10, color: T.text, lineHeight: 1.5 }}>· {line}</div>
             ))}
           </div>
         )}
