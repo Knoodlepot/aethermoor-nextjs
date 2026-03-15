@@ -551,6 +551,13 @@ export function processParsedTags(
             tracked: true,
           }],
         };
+        // Grant upfront gold payment immediately if included in quest tag
+        if (tags.newQuest.rewardGold && tags.newQuest.rewardGold > 0) {
+          updatedPlayer = {
+            ...updatedPlayer,
+            gold: (updatedPlayer.gold || 0) + tags.newQuest.rewardGold,
+          };
+        }
       }
     }
   }
