@@ -873,7 +873,6 @@ function GameContent() {
                   padding: '9px 16px',
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: idx < Math.min(ui.suggestions.length, 3) - 1 ? `1px solid ${T.border}` : 'none',
                   color: T.gold,
                   cursor: 'pointer',
                   fontFamily: "'Cinzel',serif",
