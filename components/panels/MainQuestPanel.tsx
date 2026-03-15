@@ -38,7 +38,7 @@ export function MainQuestPanel({ worldSeed, onOpen }: MainQuestPanelProps) {
         background: T.panelAlt,
         border: `1px solid ${col}44`,
         padding: 10,
-        marginBottom: 8,
+        marginBottom: 0,
         cursor: onOpen ? 'pointer' : 'default',
         transition: 'all 0.2s',
         opacity: onOpen ? 1 : 1,
