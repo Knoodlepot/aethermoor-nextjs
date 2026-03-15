@@ -132,10 +132,19 @@ function GameContent() {
         templateIcon: seed.templateIcon,
       };
 
+
+      // Reveal all directly connected locations (neighbors) at game start
+      const locationGrid = seed.travelMatrix?.locationGrid || {};
+      const routes = seed.travelMatrix?.routes || [];
+      const neighborNames = routes
+        .filter((r: any) => r.from === startLoc || r.to === startLoc)
+        .map((r: any) => r.from === startLoc ? r.to : r.from);
+      const initialExplored = Array.from(new Set([startLoc, ...neighborNames]));
+
       const player = {
         ...INIT_PLAYER(name, cls, startLoc, worldData),
         location: startLoc,
-        exploredLocations: [startLoc],
+        exploredLocations: initialExplored,
         quests: [mainQuestEntry],
       };
 
