@@ -43,6 +43,11 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
+- **Combat HP Loss Fixed**: Players now actually lose HP in combat. The `hpChange` tag was completely absent from the codebase — damage was described in prose only, never applied to state.
+  - `lib/tagParsers.ts`: Added `extractHpChangeTag`, `hpChange: number | null` to `ParsedTags`, wired into `parseAllTags`, handler in `processParsedTags` (clamps to [0, maxHp]), strip regex in `stripContextTag`.
+  - `app/api/claude/route.ts`: Narrator now instructed to emit `{"hpChange":-N}` when player takes damage and `{"hpChange":N}` when healed by potion/rest/magic.
+  - `hooks/useGameLoop.ts`: Death handling when `hp <= 0` after narrator response — adds gravestone, increments `deathCount`, respawns at half HP in town, clears combat state, shows death narrative.
+
 - **E2E Test Suite Fixed**: All 12 Playwright tests now pass (4 tests × 3 browsers).
   - `playwright.config.ts`: Added `webServer` block — dev server auto-starts before tests, reuses existing if already running locally.
   - `instrumentation.ts` (new): Calls `migrateDb()` on server startup via Next.js instrumentation hook — this was never being called, causing `column "slot" does not exist` on all save queries.
