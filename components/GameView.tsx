@@ -553,49 +553,47 @@ function GameContent() {
   };
 
   const playerInfoPanel = player ? (
-    <div style={{ background: T.panel, borderBottom: `1px solid ${T.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, maxHeight: '60%' }}>
+    <div style={{ background: T.panel, borderBottom: `1px solid ${T.border}`, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0, maxHeight: '60%' }}>
       {/* Identity card — two column: left = icon/name/class, right = HP/XP/attributes */}
       <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: 10, display: 'flex', gap: 10 }}>
-        {/* Left: class badge + name + class·level */}
+        {/* Left: class badge + name + class·level + seed */}
         <div style={{ textAlign: 'center' as const, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 70 }}>
           <div style={{ fontSize: 22, marginBottom: 4 }}>{(CLASSES as any)[player.class]?.icon ?? '⚔️'}</div>
           <div style={{ ...tf, color: T.gold, fontSize: 13 }}>{player.name}</div>
           <div style={{ color: T.accent, fontSize: 10, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
+          {worldSeed?.seed && (
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(worldSeed.seed);
+                  setSeedCopied(true);
+                  setTimeout(() => setSeedCopied(false), 1200);
+                } catch {}
+              }}
+              title="World Seed — a code that identifies your unique world. Share it with friends so they can start a new game in the same world, or use it yourself to replay this adventure."
+              style={{
+                marginTop: 6,
+                background: 'transparent',
+                border: 'none',
+                color: seedCopied ? T.gold : T.textFaint,
+                fontSize: 10,
+                cursor: 'pointer',
+                fontFamily: "'Cinzel',serif",
+                letterSpacing: 0.5,
+                padding: 0,
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = T.gold)}
+              onMouseLeave={e => (e.currentTarget.style.color = seedCopied ? T.gold : T.textFaint)}
+            >
+              {seedCopied ? '✓ Copied' : 'Seed'}
+            </button>
+          )}
         </div>
         {/* Divider */}
         <div style={{ width: 1, background: T.border, flexShrink: 0 }} />
         {/* Right: HP/XP bars + attributes */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          {/* World Seed display and copy */}
-          {worldSeed?.seed && (
-            <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 11, color: T.textMuted, letterSpacing: 1 }}>Seed:</span>
-              <span style={{ fontSize: 12, color: T.accent, fontFamily: 'monospace', background: T.panelAlt, padding: '2px 8px', borderRadius: 4, border: `1px solid ${T.border}` }}>{worldSeed.seed}</span>
-              <button
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(worldSeed.seed);
-                    setSeedCopied(true);
-                    setTimeout(() => setSeedCopied(false), 1200);
-                  } catch {}
-                }}
-                style={{
-                  background: seedCopied ? T.gold : T.panelAlt,
-                  color: seedCopied ? '#0d0d1a' : T.textMuted,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 4,
-                  fontSize: 11,
-                  padding: '2px 8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  marginLeft: 2,
-                }}
-                title="Copy seed to clipboard"
-              >
-                {seedCopied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-          )}
           <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
           <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
           <div style={{ fontSize: 10, color: T.textFaint, textAlign: 'right' as const, marginTop: 1, marginBottom: 6 }}>Next: {xpCeil} XP</div>
