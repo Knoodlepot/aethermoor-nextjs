@@ -445,14 +445,15 @@ export function useGameLoop(
           // Always preserve world-structure fields from the current local seed.
           // The canonical state from the DB may be stale (e.g. old save format
           // without travelMatrix.routes), so we never let it overwrite these.
+          const localSeed = gs.worldSeed as any;
           updatedSeed = {
-            ...gs.worldSeed,
+            ...localSeed,
             ...narratorResponse.worldSeed,
-            travelMatrix: (gs.worldSeed as any).travelMatrix,
-            worldData: (gs.worldSeed as any).worldData,
-            worldSettlements: (gs.worldSeed as any).worldSettlements,
-            seed: (gs.worldSeed as any).seed,
-          };
+            travelMatrix: localSeed.travelMatrix,
+            worldData: localSeed.worldData,
+            worldSettlements: localSeed.worldSettlements,
+            seed: localSeed.seed,
+          } as typeof gs.worldSeed;
         }
 
         // 3b. Show level-up notification if the player leveled up
