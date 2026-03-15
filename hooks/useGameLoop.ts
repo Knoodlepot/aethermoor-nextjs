@@ -455,9 +455,14 @@ export function useGameLoop(
           updatedPlayer = {
             ...gs.player,
             ...narratorResponse.player,
+            // Lock identity fields against stale canonical DB data
             name: (gs.player as any).name,
             class: (gs.player as any).class,
-            location: (gs.player as any).location,
+            // Allow location/exploredLocations from server when narrator emitted travelTo tag;
+            // otherwise fall back to local state so stale canonical saves don't revert position.
+            location: (narratorResponse.player as any).location !== (gs.player as any).location
+              ? (narratorResponse.player as any).location
+              : (gs.player as any).location,
             exploredLocations: (narratorResponse.player as any).exploredLocations
               ?? (gs.player as any).exploredLocations,
           } as typeof gs.player;

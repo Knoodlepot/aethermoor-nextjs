@@ -37,6 +37,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"hpChange"\s*:\s*-?\d+\}/g, '');
   t = t.replace(/\{"xpGain"\s*:\s*\d+\}/g, '');
   t = t.replace(/\{"bestiary"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"travelTo"\s*:\s*"[^"]+"\}/g, '');
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
   t = t.replace(/```[a-z]*\s*\{"context"\s*:\s*"\w+"\}\s*```/g, '');
   t = t.replace(/```[a-z]*\s*```/g, '');
@@ -345,6 +346,15 @@ export function extractXpGainTag(text: string): number | null {
 }
 
 /**
+ * Extract travel arrival tag: {"travelTo":"LocationName"}
+ * Emitted by narrator when player arrives at a new named location.
+ */
+export function extractTravelToTag(text: string): string | null {
+  const m = text.match(/\{"travelTo"\s*:\s*"([^"]+)"\}/);
+  return m ? m[1] : null;
+}
+
+/**
  * Extract bestiary kill tag: {"bestiary":{"archetypeId":"goblin","name":"Goblin","icon":"👺","tier":1}}
  */
 export function extractBestiaryTag(text: string): any {
@@ -408,6 +418,7 @@ export interface ParsedTags {
   hpChange: number | null;
   xpGain: number | null;
   bestiary: any;
+  travelTo: string | null;
 }
 
 /**
@@ -442,6 +453,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     hpChange: extractHpChangeTag(narrative),
     xpGain: extractXpGainTag(narrative),
     bestiary: extractBestiaryTag(narrative),
+    travelTo: extractTravelToTag(narrative),
   };
 }
 
@@ -471,6 +483,19 @@ export function processParsedTags(
   if (tags.context) {
     stateChanges.context = tags.context;
     updatedPlayer = { ...updatedPlayer, context: tags.context };
+  }
+
+  // Travel arrival — update location and mark as explored
+  if (tags.travelTo) {
+    const dest = tags.travelTo;
+    const explored = new Set<string>((updatedPlayer as any).exploredLocations || [(updatedPlayer as any).location]);
+    explored.add(dest);
+    updatedPlayer = {
+      ...updatedPlayer,
+      location: dest,
+      exploredLocations: Array.from(explored),
+    } as any;
+    stateChanges.travelTo = dest;
   }
 
   // NPC registration — properly call registerNpc to update knownNpcs
