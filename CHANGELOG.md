@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Automated test suite (login, save, shop, narrator tests) now runs cleanly across all three browsers — dev server starts automatically when tests run.
+- Game saves now persist correctly after narrator responses (a database conflict in the narrator's auto-save logic has been resolved).
+
 ### Added
 - **Six new status effects**: Fear, Bleeding, Cursed, Blinded, Weakened, and Chilled join the existing Poisoned, Burning, and Stunned — bringing the full roster to nine. Each effect now has a proper description and can be applied and removed by the narrator during combat and exploration.
   - **Fearful** 😨 — dread clouds your mind; you may freeze or hesitate, and attacks are penalised. Your Willpower resists or even blocks this effect entirely at high levels.

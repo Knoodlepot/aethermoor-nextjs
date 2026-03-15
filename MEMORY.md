@@ -43,7 +43,18 @@ AI-powered browser RPG built on Next.js.
 
 
 ## Latest Session Updates (current)
-- **Status Effects Expansion**: Added 6 new status effects (fearful, bleeding, cursed, blinded, weakened, chilled) alongside the existing 3 (poisoned, burning, stunned). Total: 9 status effects.
+- **E2E Test Suite Fixed**: All 12 Playwright tests now pass (4 tests × 3 browsers).
+  - `playwright.config.ts`: Added `webServer` block — dev server auto-starts before tests, reuses existing if already running locally.
+  - `instrumentation.ts` (new): Calls `migrateDb()` on server startup via Next.js instrumentation hook — this was never being called, causing `column "slot" does not exist` on all save queries.
+  - `e2e/global-setup.ts`: Fixed `waitForURL('/game')` (was matching auth page heading too early); sets `localStorage.aethermoor_age_verified=1`; creates minimal DB save with `context:'town'` so toolbar is enabled.
+  - `e2e/login.spec.ts`: Uses fresh unauthenticated storageState; clicks age gate button before checking Logout.
+  - `e2e/save.spec.ts`: Clicks slot in SaveSlotModal and verifies modal closes (no success toast exists in UI).
+  - `e2e/shop.spec.ts`: Uses specific emoji selectors `🛒 Shop` / `🏪 SHOP` to avoid strict-mode multi-match.
+  - `e2e/narrator.spec.ts`: Waits for command input to re-enable (signals API round-trip done) instead of fragile text comparison.
+  - All 3 spec files: Removed duplicate bare test blocks outside `test.describe` (was running 21 tests instead of 12).
+  - `app/api/claude/route.ts`: Fixed `persistCanonicalNarrationState` — `ON CONFLICT (player_id)` updated to `ON CONFLICT (player_id, slot)` to match new composite PK.
+
+- **Status Effects Expansion**:Added 6 new status effects (fearful, bleeding, cursed, blinded, weakened, chilled) alongside the existing 3 (poisoned, burning, stunned). Total: 9 status effects.
   - `STATUS_EFFECTS` constant in `lib/constants.ts` — single source of truth for all 9 effects with icon, label, description, and cure text.
   - `statusEffects?: string[]` added to the `Player` type — effects now persist in saves.
   - New `{"playerStatus":{"add":"X"}}` / `{"playerStatus":{"remove":"X"}}` narrator tag, wired end-to-end through `tagParsers.ts` / `processParsedTags` / `applyNarrationState`.
