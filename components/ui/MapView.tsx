@@ -138,6 +138,14 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
 
   // ── Draw ──
   React.useEffect(() => {
+    // Debug: log redraws and key props
+    // eslint-disable-next-line no-console
+    console.log('[MapView Redraw]', {
+      playerLoc: player?.location,
+      explored: player?.exploredLocations,
+      worldSeed: worldSeed?.seed,
+      worldSeedObj: worldSeed,
+    });
     const canvas = canvasRef.current;
     if (!canvas) return;
     const g = canvas.getContext('2d');

@@ -149,9 +149,13 @@ function GameContent() {
       // Debug log for settlements and routes
       if (typeof window !== 'undefined') {
         // eslint-disable-next-line no-console
+        const settlements = worldData.filter((d: any) => ['capital','city','town','village','hamlet'].includes(d.type));
+        const routes = seed.travelMatrix?.routes || [];
         console.log('[Worldgen Debug]', {
-          settlements: worldData.filter((d: any) => ['capital','city','town','village','hamlet'].includes(d.type)).length,
-          routes: seed.travelMatrix?.routes?.length,
+          settlementsCount: settlements.length,
+          settlements: settlements.map((s: any) => ({ name: s.name, type: s.type })),
+          routesCount: routes.length,
+          routes: routes.map((r: any) => ({ from: r.from, to: r.to, roadType: r.roadType })),
           startLoc,
           seed: seed.seed,
         });
@@ -973,6 +977,7 @@ function GameContent() {
         }}
       >
         <MapView
+          key={gameState.worldSeed?.seed || 'no-seed'}
           player={gameState.player as any}
           worldSeed={gameState.worldSeed as any}
           onClose={() => ui.setMapOpen(false)}
