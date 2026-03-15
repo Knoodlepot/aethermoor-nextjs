@@ -174,7 +174,22 @@ function GameContent() {
       const neighborNames = routes
         .filter((r: any) => r.from === startLoc || r.to === startLoc)
         .map((r: any) => r.from === startLoc ? r.to : r.from);
-      const initialExplored = Array.from(new Set([startLoc, ...neighborNames]));
+      let initialExplored = Array.from(new Set([startLoc, ...neighborNames]));
+      // Failsafe: if no neighbors, include first 5 settlements
+      if (initialExplored.length === 1) {
+        const settlements = Object.keys(locationGrid).filter(
+          (k) => ['capital','city','town','village','hamlet'].includes(locationGrid[k].type)
+        );
+        initialExplored = [startLoc, ...settlements.slice(0, 5).filter((n) => n !== startLoc)];
+      }
+      if (typeof window !== 'undefined') {
+        // eslint-disable-next-line no-console
+        console.log('[Worldgen Debug - Explored]', {
+          startLoc,
+          neighborNames,
+          initialExplored,
+        });
+      }
 
       const player = {
         ...INIT_PLAYER(name, cls, startLoc, worldData),
