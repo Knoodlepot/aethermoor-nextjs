@@ -61,6 +61,7 @@ async function testClaudeSuccess(): Promise<void> {
       results.push(hasBalance);
     }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     results.push({
       name: testName,
