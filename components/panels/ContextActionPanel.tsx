@@ -9,13 +9,14 @@ interface ContextActionPanelProps {
   onAction: (text: string) => void;
   playerClass?: string;
   inventory?: string[];
+  location?: string;
+  locationGrid?: Record<string, any>;
 }
 
 interface ActionBtn {
   icon: string;
   label: string;
   text: string;
-  /** If set, button is greyed out with this tooltip */
   requiresItem?: string;
   hasItem?: boolean;
 }
@@ -40,18 +41,34 @@ const EXPLORE_ACTIONS: ActionBtn[] = [
   { icon: '🔥', label: 'Camp',        text: 'I make camp here for the night.' },
   { icon: '🌿', label: 'Forage',      text: 'I forage carefully for edible plants, herbs, and useful supplies in the nearby wild.' },
   { icon: '🌾', label: 'Farm',        text: 'I look for nearby fields and work the land to gather useful crops.' },
-  { icon: '🪓', label: 'Chop Wood',   text: 'I gather timber from nearby trees for shelter and supplies.', requiresItem: "Woodcutter Hatchet" },
+  { icon: '🪓', label: 'Chop Wood',   text: 'I gather timber from nearby trees for shelter and supplies.', requiresItem: 'Woodcutter Hatchet' },
   { icon: '⛏',  label: 'Mine Ore',   text: 'I search rocky ground and mine for ore and useful stone.', requiresItem: "Miner's Pickaxe" },
 ];
 
 const COMBAT_ACTIONS: ActionBtn[] = [
-  { icon: '⚔️', label: 'Attack',    text: 'I attack!' },
-  { icon: '🛡',  label: 'Defend',   text: 'I take a defensive stance, bracing for the next blow.' },
-  { icon: '💨', label: 'Dodge',     text: 'I dodge and look for an opening.' },
-  { icon: '✨', label: 'Spell',     text: 'I cast a spell.' },
-  { icon: '🎒', label: 'Use Item',  text: 'I reach into my pack and use an item.' },
-  { icon: '🏃', label: 'Flee',      text: 'I attempt to flee!' },
+  { icon: '⚔️', label: 'Attack',   text: 'I attack!' },
+  { icon: '🛡',  label: 'Defend',  text: 'I take a defensive stance, bracing for the next blow.' },
+  { icon: '💨', label: 'Dodge',    text: 'I dodge and look for an opening.' },
+  { icon: '✨', label: 'Spell',    text: 'I cast a spell.' },
+  { icon: '🎒', label: 'Use Item', text: 'I reach into my pack and use an item.' },
+  { icon: '🏃', label: 'Flee',     text: 'I attempt to flee!' },
 ];
+
+// Chance of bystander help by settlement type
+const HELP_CHANCE: Record<string, number> = {
+  capital: 0.70,
+  city:    0.60,
+  town:    0.50,
+  village: 0.35,
+  hamlet:  0.20,
+};
+
+function getSettlementType(location: string | undefined, locationGrid: Record<string, any> | undefined): string | null {
+  if (!location || !locationGrid) return null;
+  const entry = locationGrid[location];
+  if (!entry?.type) return null;
+  return HELP_CHANCE[entry.type] !== undefined ? entry.type : null;
+}
 
 function getTemplateFor(context: string): { label: string; color: string; actions: ActionBtn[] } {
   if (context === 'combat') {
@@ -60,11 +77,10 @@ function getTemplateFor(context: string): { label: string; color: string; action
   if (context === 'town' || context === 'npc' || context === 'farm') {
     return { label: 'IN TOWN', color: '#c0a030', actions: TOWN_ACTIONS };
   }
-  // explore, camp, dungeon, default
   return { label: 'EXPLORING', color: '#4a8a60', actions: EXPLORE_ACTIONS };
 }
 
-export function ContextActionPanel({ context, isLoading, onAction, inventory = [] }: ContextActionPanelProps) {
+export function ContextActionPanel({ context, isLoading, onAction, inventory = [], location, locationGrid }: ContextActionPanelProps) {
   const { T, tf } = useTheme();
 
   const { label, color, actions } = getTemplateFor(context);
@@ -72,11 +88,23 @@ export function ContextActionPanel({ context, isLoading, onAction, inventory = [
   // Resolve per-button item requirements
   const resolvedActions = actions.map((a) => {
     if (!a.requiresItem) return { ...a, hasItem: true };
-    const has = inventory.some((i) =>
-      i.toLowerCase().includes(a.requiresItem!.toLowerCase())
-    );
+    const has = inventory.some((i) => i.toLowerCase().includes(a.requiresItem!.toLowerCase()));
     return { ...a, hasItem: has };
   });
+
+  // Call for Help — combat in a settlement only
+  const settlementType = context === 'combat' ? getSettlementType(location, locationGrid) : null;
+  const helpChance = settlementType ? HELP_CHANCE[settlementType] : 0;
+  const helpPct = Math.round(helpChance * 100);
+
+  const handleCallForHelp = () => {
+    const success = Math.random() < helpChance;
+    if (success) {
+      onAction(`I shout for help! Someone from the ${settlementType} hears my cries and rushes to intervene. [HELP SUCCESS - a bystander or guard intervenes on my behalf]`);
+    } else {
+      onAction(`I shout for help but no one comes to my aid — the ${settlementType} goes on, indifferent to my struggle. [HELP FAILED - I am alone in this fight]`);
+    }
+  };
 
   return (
     <div
@@ -87,15 +115,7 @@ export function ContextActionPanel({ context, isLoading, onAction, inventory = [
       }}
     >
       {/* Header */}
-      <div
-        style={{
-          ...tf,
-          fontSize: 8,
-          color,
-          letterSpacing: 2,
-          marginBottom: 6,
-        }}
-      >
+      <div style={{ ...tf, fontSize: 8, color, letterSpacing: 2, marginBottom: 6 }}>
         {label} ACTIONS
       </div>
 
@@ -144,6 +164,49 @@ export function ContextActionPanel({ context, isLoading, onAction, inventory = [
             </button>
           );
         })}
+
+        {/* Call for Help — only in settlements during combat */}
+        {settlementType && (
+          <button
+            disabled={isLoading}
+            title={`Call for Help (${helpPct}% chance in this ${settlementType})`}
+            onClick={() => !isLoading && handleCallForHelp()}
+            style={{
+              gridColumn: '1 / -1',
+              background: 'transparent',
+              border: `1px solid #7060a088`,
+              color: isLoading ? T.textFaint : '#b090d0',
+              padding: '5px 4px',
+              fontSize: 10,
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              fontFamily: "'Cinzel','Palatino Linotype',serif",
+              letterSpacing: 0.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              transition: 'border-color 0.15s, color 0.15s',
+              opacity: isLoading ? 0.45 : 1,
+              borderRadius: 2,
+            }}
+            onMouseEnter={(e) => {
+              if (!isLoading) {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#b090d0cc';
+                (e.currentTarget as HTMLButtonElement).style.color = '#c8a8e8';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isLoading) {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#7060a088';
+                (e.currentTarget as HTMLButtonElement).style.color = '#b090d0';
+              }
+            }}
+          >
+            <span style={{ fontSize: 14, lineHeight: 1 }}>📣</span>
+            <span>Call for Help</span>
+            <span style={{ fontSize: 8, opacity: 0.7, marginLeft: 2 }}>{helpPct}%</span>
+          </button>
+        )}
       </div>
     </div>
   );

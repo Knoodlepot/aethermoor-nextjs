@@ -735,6 +735,8 @@ function GameContent() {
           isLoading={gameLoop.isLoading}
           onAction={(text) => handleFreeText(text)}
           inventory={(player as any).inventory || []}
+          location={(player as any).location}
+          locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
         />
       )}
 
