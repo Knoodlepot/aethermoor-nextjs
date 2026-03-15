@@ -117,19 +117,6 @@ export function MainQuestPanel({ worldSeed, onOpen }: MainQuestPanelProps) {
         </div>
       )}
 
-      {/* Hint text */}
-      {!done && hint && (
-        <div style={{ fontSize: 9, color: T.textMuted, marginTop: 6, fontStyle: 'italic', lineHeight: 1.4 }}>
-          💡 {hint}
-        </div>
-      )}
-
-      {/* Clickable hint */}
-      {onOpen && (
-        <div style={{ fontSize: 8, color: T.textMuted, marginTop: 3, textAlign: 'center' }}>
-          Click to view quest log
-        </div>
-      )}
     </div>
   );
 }
