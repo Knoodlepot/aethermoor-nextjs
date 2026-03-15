@@ -18,15 +18,19 @@ Do this without being asked. Never leave the user to commit manually.
 
 
 ## Latest Session Updates
-- **Map worldSeed migration**: Old saves missing `travelMatrix.routes` (pre-road-network format) now auto-migrate on load. `migrateWorldSeed()` in `lib/worldgen.ts` re-runs `generateProceduralWorld` + `buildTravelMatrix` using the stored seed string without replacing quest/narrative data. Re-saves after migration so future loads are instant.
-- **Seed string recovery**: `useStorage.ts` now persists `worldSeed.seed` separately as `rpg-seed-str-slot{n}` in localStorage. Recovered on load if missing from the worldSeed object (handles saves made before seed string was added).
-- **MapView React key fix**: `GameView.tsx` MapView key now falls back to `questTitle` instead of `’no-seed’`, ensuring React remounts correctly when switching saves/worlds even for old saves where `worldSeed.seed` is undefined.
-- **DB SSL fix**: `lib/db.ts` now always uses `ssl: { rejectUnauthorized: false }` instead of disabling SSL in dev — Railway requires TLS even locally.
+- **Bestiary tag pipeline**: Fully implemented. Narrator now emits `{"bestiary":{"archetypeId":"...","name":"...","icon":"...","tier":1}}` on every kill. `lib/tagParsers.ts` has `extractBestiaryTag()`, `ParsedTags.bestiary`, `parseAllTags` entry, `processParsedTags` handler (upserts by `archetypeId`, increments `timesKilled`, sets `firstKilledDay`/`lastKilledDay`). `stripContextTag` regex added. `app/api/claude/route.ts` narrator rule added after XP rule.
+- **Map worldSeed migration**: Old saves missing `travelMatrix.routes` now auto-migrate on load. `migrateWorldSeed()` in `lib/worldgen.ts` re-runs world generation without replacing quest/narrative data.
+- **Seed string recovery**: `useStorage.ts` persists `worldSeed.seed` separately as `rpg-seed-str-slot{n}`.
+- **MapView React key fix**: Falls back to `questTitle` instead of `’no-seed’` for stable remounting.
+- **Canonical state contamination fixes**: New game `finalPlayer`/`finalSeed` merges lock identity fields; cloud save awaited before narrator call.
+- **Organic terrain**: MapView uses bezier blob shapes for terrain patches instead of rectangles.
+- **Shop context guard**: `buy:`/`sell:` handlers require `context === ‘town’ || ‘npc’`.
+- **DB SSL fix**: `lib/db.ts` always uses `ssl: { rejectUnauthorized: false }`.
 
 | Date       | Summary                                                      |
 |------------|--------------------------------------------------------------|
-| 2026-03-15 | Map worldSeed migration, seed string recovery, MapView key fix, DB SSL fix |
-| 2026-03-15 | Hierarchical road network, all map key road types, natural connections |
+| 2026-03-15 | Bestiary kill tracking pipeline (narrator rule + full tag pipeline) |
+| 2026-03-15 | Map worldSeed migration, seed string recovery, MapView key fix, DB SSL fix, canonical state fixes, organic terrain, shop context guard |
 
 ## Project Overview
 AI-powered browser RPG built on Next.js.

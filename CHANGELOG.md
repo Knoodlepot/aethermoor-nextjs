@@ -1,6 +1,9 @@
 ## [Unreleased]
 
 ### Fixed
+- **Bestiary now updates when you kill enemies.** The Bestiary was not recording kills. Each time you defeat a creature the narrator now logs it — tracking which enemy types you've slain, how many times, and when you first and last encountered them. The kill count badge on the Bestiary button will now increase as you fight.
+
+### Fixed
 - **World map now shows the full road network on existing saves.** Previously, characters created before the road network update would see plain dotted lines on the map instead of coloured, styled roads. Your save now automatically upgrades itself the first time you load it, and the proper King's Roads, Merchant Roads, Dirt Roads, Trails, and Farm Tracks will appear. No action needed.
 - **Terrain textures on the map now appear correctly for all saves**, including older characters.
 
