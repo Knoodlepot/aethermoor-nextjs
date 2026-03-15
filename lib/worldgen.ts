@@ -510,21 +510,93 @@ export function buildTravelMatrix(worldData: any[]): any {
     };
   });
 
-  // Pairwise routes for capital+city tier (existing logic)
-  const keyLocs = worldData.filter((s) => ['capital', 'city'].includes(s.type));
+  // --- Hierarchical road network generation ---
   const routes: any[] = [];
-  for (let i = 0; i < keyLocs.length; i++) {
-    for (let j = i + 1; j < keyLocs.length; j++) {
-      const a = keyLocs[i];
-      const b = keyLocs[j];
-      const ax = locationGrid[a.name]?.x ?? a.mapX;
-      const ay = locationGrid[a.name]?.y ?? a.mapY;
-      const bx = locationGrid[b.name]?.x ?? b.mapX;
-      const by = locationGrid[b.name]?.y ?? b.mapY;
-      const hours = Math.max(4, Math.round(Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2) * 1.5));
-      routes.push({ from: a.name, to: b.name, hours, road: true, barge: false, sea: false });
-    }
+  const getDist = (a: any, b: any) => {
+    const ax = locationGrid[a.name]?.x ?? a.mapX;
+    const ay = locationGrid[a.name]?.y ?? a.mapY;
+    const bx = locationGrid[b.name]?.x ?? b.mapX;
+    const by = locationGrid[b.name]?.y ?? b.mapY;
+    return Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2);
+  };
+
+  // Helper: connect node to N nearest of validTypes, with distance limit
+  function connectNearest(nodes: any[], validTypes: string[], roadType: string, maxLinks = 2, maxDist = 30) {
+    nodes.forEach((node) => {
+      // Find nearest valid neighbors
+      const candidates = worldData.filter(
+        (n) => n.name !== node.name && validTypes.includes(n.type)
+      );
+      const sorted = candidates
+        .map((n) => ({ n, d: getDist(node, n) }))
+        .filter(({ d }) => d <= maxDist)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, maxLinks);
+      sorted.forEach(({ n, d }) => {
+        // Avoid duplicate routes
+        if (!routes.some(r => (r.from === node.name && r.to === n.name) || (r.from === n.name && r.to === node.name))) {
+          routes.push({
+            from: node.name,
+            to: n.name,
+            hours: Math.max(4, Math.round(d * 1.5)),
+            road: true,
+            barge: false,
+            sea: false,
+            roadType
+          });
+        }
+      });
+    });
   }
+
+  // 1. King's Road: Capital ↔ nearest city
+  const capitals = worldData.filter((s) => s.type === 'capital');
+  const cities = worldData.filter((s) => s.type === 'city');
+  connectNearest(capitals, ['city'], 'highway', 1, 40);
+
+  // 2. Merchant Road: City ↔ nearest towns
+  const towns = worldData.filter((s) => s.type === 'town');
+  connectNearest(cities, ['town'], 'road', 2, 28);
+
+  // 3. Dirt Road: Town ↔ nearest village/hamlet
+  const villages = worldData.filter((s) => s.type === 'village');
+  const hamlets = worldData.filter((s) => s.type === 'hamlet');
+  connectNearest(towns, ['village', 'hamlet'], 'dirt', 2, 18);
+
+  // 4. Trail: POI ↔ nearest POIs (no crossroads with settlements)
+  const pois = worldData.filter((s) => s.isPOI);
+  connectNearest(pois, pois.map(p => p.type), 'trail', 2, 20);
+
+  // 5. Farm Track: Farm ↔ nearest farms
+  const farms = worldData.filter((s) => s.type && s.type.startsWith('farm'));
+  connectNearest(farms, farms.map(f => f.type), 'track', 2, 10);
+
+  // 6. Crossroads: a few extra settlement-settlement links (no POIs/farms)
+  const settlements = worldData.filter((s) => ['capital','city','town','village','hamlet'].includes(s.type));
+  // For each, connect to 1 extra nearest settlement (not already connected)
+  settlements.forEach((node) => {
+    const candidates = settlements.filter((n) => n.name !== node.name);
+    const sorted = candidates
+      .map((n) => ({ n, d: getDist(node, n) }))
+      .filter(({ d }) => d > 6 && d <= 28)
+      .sort((a, b) => a.d - b.d);
+    let added = 0;
+    for (const { n, d } of sorted) {
+      if (added >= 1) break;
+      if (!routes.some(r => (r.from === node.name && r.to === n.name) || (r.from === n.name && r.to === node.name))) {
+        routes.push({
+          from: node.name,
+          to: n.name,
+          hours: Math.max(4, Math.round(d * 1.5)),
+          road: true,
+          barge: false,
+          sea: false,
+          roadType: 'road'
+        });
+        added++;
+      }
+    }
+  });
 
   // Assign ~15% of all routes as rivers, with a mix of long and short
   const riverNamePool = [
