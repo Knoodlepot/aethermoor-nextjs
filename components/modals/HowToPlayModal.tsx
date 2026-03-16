@@ -36,7 +36,7 @@ const SECTIONS = [
   {
     icon: '🧙',
     title: 'CHARACTER & STATS',
-    body: 'Your hero has four core stats: STR (Strength) for physical attacks and carrying, AGI (Agility) for speed and stealth, INT (Intelligence) for magic and knowledge, and WIL (Willpower) for resistance and healing. Gain stat points and skill points each time you level up — spend them in the Character screen.',
+    body: 'Your hero has four core stats: STR (Strength) for physical attacks and melee power, AGI (Agility) for speed and stealth, INT (Intelligence) for magic and knowledge, and WIL (Willpower) for resistance and healing. Gain stat points and skill points each time you level up — spend them in the Character screen.',
   },
   {
     icon: '🏰',
