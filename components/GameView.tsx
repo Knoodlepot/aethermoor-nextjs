@@ -755,7 +755,7 @@ function GameContent() {
       }}
     >
       <div style={{ ...tf, color: T.gold, fontSize: 18, letterSpacing: 3 }}>⚔ AETHERMOOR</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', flexShrink: 1, msOverflowStyle: 'none' } as React.CSSProperties}>
         {ui.levelUpMsg && (
           <div style={{ color: '#ffffff', fontSize: 13, animation: 'pulse 1s infinite', ...tf, textShadow: `0 0 12px ${T.gold}` }}>
             {ui.levelUpMsg}
@@ -902,7 +902,7 @@ function GameContent() {
   const mobileLayout = (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Narrative (scrollable) */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <NarrativePanel
           narrative={gameState.narrative}
           log={gameState.log}
@@ -950,12 +950,16 @@ function GameContent() {
             onOpen={() => ui.toggleModal('questLog')}
           />
         )}
-        <MobileCommandPanel
-          player={gameState.player}
-          onCommand={handleCommand}
-          isLoading={gameLoop.isLoading}
-          isDyslexic={isDyslexic}
-        />
+        {player && (
+          <ContextActionPanel
+            context={(player as any).context || 'explore'}
+            isLoading={gameLoop.isLoading}
+            onAction={(text) => handleFreeText(text)}
+            inventory={(player as any).inventory || []}
+            location={(player as any).location}
+            locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
+          />
+        )}
       </div>
 
       {/* Input bar — fixed to screen bottom */}

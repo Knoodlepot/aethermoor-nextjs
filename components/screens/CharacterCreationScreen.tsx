@@ -26,7 +26,7 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
     <div
       style={{
         background: T.bg,
-        minHeight: '100dvh',
+        height: '100dvh',
         padding: 24,
         display: 'flex',
         flexDirection: 'column',
@@ -200,7 +200,7 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
           >
             CHOOSE YOUR CLASS
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
             {Object.entries(CLASSES).map(([cls, data]) => {
               const active = selClass === cls;
               return (
