@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ThemeProvider, useTheme } from '@/components/providers/ThemeProvider';
 import { useAuth } from '@/hooks/useAuth';
@@ -103,6 +103,8 @@ function GameContent() {
   const [seedCopied, setSeedCopied] = useState(false);
   const [playerIdCopied, setPlayerIdCopied] = useState(false);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
+  const prevGoldRef = useRef<number | null>(null);
+  const [goldFlash, setGoldFlash] = useState<'gain' | 'loss' | null>(null);
 
   // Fetch token balance on mount and after Stripe return
   useEffect(() => {
@@ -287,6 +289,18 @@ function GameContent() {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, [setIsMobile]);
+
+  // Gold change flash
+  useEffect(() => {
+    if (!player) return;
+    const prev = prevGoldRef.current;
+    prevGoldRef.current = player.gold;
+    if (prev !== null && player.gold !== prev) {
+      setGoldFlash(player.gold > prev ? 'gain' : 'loss');
+      const t = setTimeout(() => setGoldFlash(null), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [player?.gold]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Command handlers ────────────────────────────────────────────────────────
 
@@ -606,12 +620,14 @@ function GameContent() {
 
       {/* ── Resources row ── */}
       <div style={{ borderTop: `1px solid ${T.border}`, padding: '4px 6px', display: 'flex', justifyContent: 'space-around' }}>
-        {([['🪙', player.gold, 'Gold'], ['🎒', rations, 'Rations']] as [string, any, string][]).map(([icon, val, lbl]) => (
-          <div key={lbl} style={{ textAlign: 'center' as const }}>
-            <div style={{ color: lbl === 'Rations' ? (val > 0 ? '#80a060' : '#c05050') : T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{val}</div>
-            <div style={{ color: T.textMuted, fontSize: 10 }}>{icon} {lbl}</div>
-          </div>
-        ))}
+        <div style={{ textAlign: 'center' as const }}>
+          <div style={{ color: goldFlash === 'gain' ? '#60c060' : goldFlash === 'loss' ? '#c04040' : T.gold, fontSize: 17, lineHeight: '1.2', ...tf, transition: 'color 0.3s' }}>{player.gold}</div>
+          <div style={{ color: T.textMuted, fontSize: 10 }}>🪙 Gold</div>
+        </div>
+        <div style={{ textAlign: 'center' as const }}>
+          <div style={{ color: rations > 0 ? '#80a060' : '#c05050', fontSize: 17, lineHeight: '1.2', ...tf }}>{rations}</div>
+          <div style={{ color: T.textMuted, fontSize: 10 }}>🎒 Rations</div>
+        </div>
         <button onClick={() => ui.toggleModal('standings')}
           style={{ textAlign: 'center' as const, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <div style={{ color: T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{player.reputation ?? 0}</div>

@@ -123,6 +123,7 @@ export interface ScheduledEvent {
 export interface NPC {
   name: string;
   role: string;
+  location?: string;
   relationship: "neutral" | "friendly" | "hostile";
   notes: string;
   questGiver: boolean;
