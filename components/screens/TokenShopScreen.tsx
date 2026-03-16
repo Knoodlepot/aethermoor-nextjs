@@ -211,7 +211,7 @@ export function TokenShopScreen({ tokenBalance, paymentSuccess, onClose }: Token
           fontFamily: "'Crimson Text',serif",
         }}
       >
-        Each turn uses 1 token · Tokens never expire · New players receive 100 free tokens
+        Each turn uses 1 token · Tokens never expire · New players receive 50 free tokens
       </div>
     </div>
   );

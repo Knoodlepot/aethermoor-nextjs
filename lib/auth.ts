@@ -104,7 +104,7 @@ export async function registerAccount(
     await query(
       `INSERT INTO players (player_id, account_id, tokens)
        VALUES ($1, $2, $3)`,
-      [playerId, accountId, 100] // Bonus tokens for new players
+      [playerId, accountId, 50] // Bonus tokens for new players
     );
 
     // Issue JWT

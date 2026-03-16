@@ -15,18 +15,28 @@ const SECTIONS = [
   },
   {
     icon: '🕹',
-    title: 'HOW TO PLAY',
-    body: 'Use the action buttons in the command panel to interact with the world. Type freely in the input bar to speak with NPCs, explore, or take custom actions. The narrator responds to everything.',
+    title: 'ACTION BUTTONS',
+    body: 'The Actions panel on the right changes depending on where you are and what you\'re doing. Three different sets of buttons are available:\n\n• Exploration — when travelling the wilds: Move, Rest, Search, Scout, Camp, and more.\n• Town — when inside a settlement: Talk, Shop, Notice Board, Visit Tavern, and others. The Shop button opens the merchant directly.\n• Combat — when fighting an enemy: Attack, Ability, Defend, and Flee.\n\nYou can also type anything freely in the input bar — the narrator responds to every action.',
   },
   {
-    icon: '🧙',
-    title: 'CHARACTER & STATS',
-    body: 'Your hero has four core stats that determine success: STR (Strength) for physical attacks and carrying, AGI (Agility) for speed and stealth, INT (Intelligence) for magic and knowledge, and WIL (Willpower) for magic resistance and healing.',
+    icon: '🧭',
+    title: 'EXPLORATION',
+    body: 'Between towns and dungeons you are in the wilderness. Use the exploration buttons to move through the world, search for hidden items or locations, rest to recover HP, or scout the area ahead. Open the map to fast-travel to anywhere you\'ve already visited.',
+  },
+  {
+    icon: '🏘',
+    title: 'TOWNS & SETTLEMENTS',
+    body: 'Arriving at a hamlet, village, town, city, or capital switches your Actions panel to town mode automatically. Visit the Notice Board to pick up side quests, talk to locals for information, browse the Shop for supplies and gear, or head to the Tavern to rest and hear rumours. Larger settlements stock better equipment.',
   },
   {
     icon: '⚔️',
     title: 'COMBAT',
-    body: 'Each combat turn offers four choices: Attack (deal damage), Ability (use your class skill), Defend (reduce incoming damage), or Flee (escape based on AGI). Watch your HP — if it hits 0, you die and lose progress.',
+    body: 'When you encounter an enemy the Actions panel switches to combat mode. Four buttons appear:\n\n• Attack — deal damage based on your class and STR/AGI.\n• Ability — use your class skill (costs nothing but may have cooldowns).\n• Defend — brace for impact, reducing damage taken this turn.\n• Flee — attempt to escape; success depends on your AGI.\n\nWatch your HP — if it hits 0 you die and lose progress.',
+  },
+  {
+    icon: '🧙',
+    title: 'CHARACTER & STATS',
+    body: 'Your hero has four core stats: STR (Strength) for physical attacks and carrying, AGI (Agility) for speed and stealth, INT (Intelligence) for magic and knowledge, and WIL (Willpower) for resistance and healing. Gain stat points and skill points each time you level up — spend them in the Character screen.',
   },
   {
     icon: '🏰',
@@ -36,7 +46,7 @@ const SECTIONS = [
   {
     icon: '🪙',
     title: 'TOKENS',
-    body: 'Each action costs 1 token. Tokens power the AI narrator. You start with a free balance — purchase more in the Token Shop when you run low. Your balance is shown at the top of the screen.',
+    body: 'Each action costs 1 token. Tokens power the AI narrator. New players start with 50 free tokens — purchase more in the Token Shop when you run low. Your balance is shown at the top of the screen.',
   },
   {
     icon: '💾',
@@ -148,6 +158,7 @@ export function HowToPlayModal({ onClose }: HowToPlayModalProps) {
                   color: T.text,
                   lineHeight: 1.65,
                   paddingLeft: 28,
+                  whiteSpace: 'pre-line',
                 }}
               >
                 {sec.body}

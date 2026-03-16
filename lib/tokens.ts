@@ -33,18 +33,18 @@ export async function ensurePlayerRow(playerId: string): Promise<void> {
     );
 
     if (existing.rows.length === 0) {
-      // Create new player with 100 bonus tokens
+      // Create new player with 50 bonus tokens
       await query(
         `INSERT INTO players (player_id, tokens, created_at, updated_at)
          VALUES ($1, $2, NOW(), NOW())`,
-        [playerId, 100]
+        [playerId, 50]
       );
 
       // Log the token award
       await query(
         `INSERT INTO token_log (player_id, change, reason, created_at)
          VALUES ($1, $2, $3, NOW())`,
-        [playerId, 100, 'New player bonus']
+        [playerId, 50, 'New player bonus']
       );
     }
   } catch (error) {
