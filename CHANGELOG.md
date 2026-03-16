@@ -1,6 +1,12 @@
 ## [Unreleased]
 
 ### Added
+- **How to Play updated**: The How to Play guide now has dedicated sections explaining the three context-sensitive Action panels — Exploration (Move, Rest, Search, Scout), Town (Talk, Shop, Notice Board, Tavern), and Combat (Attack, Ability, Defend, Flee). Each section explains what to expect and when it appears.
+
+### Changed
+- **Free starting tokens reduced to 50**: New players now receive 50 free tokens instead of 100.
+
+### Added
 - **Shop button in town opens the shop directly**: Clicking Shop in the Actions panel now opens the shop screen immediately rather than sending a message to the narrator.
 - **Barter button in the shop**: A Barter button appears in the shop header. Clicking it closes the shop and lets you negotiate with the merchant through the narrator — haggle for better prices or trade goods instead of paying full coin.
 
