@@ -1,5 +1,34 @@
 ## [Unreleased]
 
+### Added
+- **Shop button in town opens the shop directly**: Clicking Shop in the Actions panel now opens the shop screen immediately rather than sending a message to the narrator.
+- **Barter button in the shop**: A Barter button appears in the shop header. Clicking it closes the shop and lets you negotiate with the merchant through the narrator — haggle for better prices or trade goods instead of paying full coin.
+
+### Changed
+- **Actions panel now matches your location**: When you arrive at a hamlet, village, town, city, or capital, the Actions panel automatically switches to town actions (Talk, Shop, Notice Board, etc.). Entering the wilderness switches back to exploration actions. No longer sticks on the wrong set of actions.
+- **Shop stock now matches settlement size**: Hamlets stock only bare essentials (rations, torch, rope). Villages add potions and basic gear. Towns carry weapons and armour. Cities stock enchanted gear and scrolls. Capitals carry everything including rare items.
+- **Fast travel correctly sets your context on arrival**: Travelling to a settlement via the map now correctly registers you as being in town, so the Actions panel updates immediately.
+- **Bestiary kill count now shows total enemies slain**: The badge on the Bestiary button now shows your total kill count across all enemy types, not just the number of distinct creatures encountered.
+- **Bestiary kills now register more reliably**: The game now tracks kills directly from the narrator's response as a fallback, so enemy entries are recorded even if there was a brief data mismatch between sessions.
+
+### Fixed
+- **Copy Player ID button**: A small copy button now appears in the toolbar (and on the main menu next to the Account button). Click it to copy your Player ID to clipboard instantly — useful for support requests. It briefly shows a confirmation tick after copying.
+- **Spend Attribute Points directly**: When you level up and have unspent Attribute Points, each stat card (Strength, Agility, Intelligence, Willpower) shows + and − buttons so you can preview your allocation before committing. A confirmation banner appears at the top of the Attributes tab — hit **Confirm** to apply all changes at once.
+
+### Changed
+- **Mobile layout rebuilt from the ground up**: On phones, the narrative now fills the full screen with no cluttered panels blocking it. A compact character bar sits above the story showing your name, level, and HP/XP bars. All action buttons, character details, quests, and the map are accessible via the new **☰** menu button in the top-right, which slides in a panel from the right side of the screen. Tap the backdrop or ✕ to close.
+- **Level-up no longer shows a text banner**: Instead, the **Character** button in the toolbar glows and pulses gold when you have unspent stat or skill points. The Skills tab pulses when skill points are available; the Attributes tab pulses when stat points are available. No more intrusive pop-up.
+- **Side Quest panel redesigned**: Now shows a fixed 6-slot compact grid. Empty slots display as dashed placeholders so you can always see capacity at a glance. Track toggle stays; the abandon button has been removed (use the Quest Log to manage quests).
+- **Quest panel streamlined**: Removed the hint text and footer link from the Main Quest panel — just the quest info, nothing else.
+- **Toolbar decluttered**: Clock and Logout button removed from the toolbar. Bestiary, Character, and Dungeon buttons now sit in a clean 3-column row.
+- **Rations counter fixed**: The Rations count in the character panel now correctly tallies all items with "ration" in the name, including named variants.
+- **Right panel padding removed**: Character info, quest panels, and the mini-map now use the full available width with no extra padding.
+- **Desktop scrollbar hidden**: The right-side panel no longer shows a visible scrollbar on desktop.
+
+### Fixed
+- **Admin — Player lookup now works for legacy accounts**: Player IDs in the old `player_XXXX` format and email-based searches both resolve correctly. Sub-queries (token log, moderation incidents) now always use the resolved player ID.
+- **Admin — Active players now shows all recent players**, including those who haven't consumed tokens. Activity is now tracked by save activity rather than token usage.
+
 ### Fixed
 - **Bestiary now updates when you kill enemies.** The Bestiary was not recording kills. Each time you defeat a creature the narrator now logs it — tracking which enemy types you've slain, how many times, and when you first and last encountered them. The kill count badge on the Bestiary button will now increase as you fight.
 
