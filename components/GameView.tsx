@@ -760,10 +760,10 @@ function GameContent() {
         userSelect: 'none' as const,
       }}
     >
-      <div style={{ ...tf, color: T.gold, fontSize: 18, letterSpacing: 3 }}>⚔ AETHERMOOR</div>
+      <div style={{ ...tf, color: T.gold, fontSize: ui.isMobile ? 14 : 18, letterSpacing: ui.isMobile ? 2 : 3 }}>⚔ AETHERMOOR</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', flexShrink: 1, msOverflowStyle: 'none' } as React.CSSProperties}>
-        {/* Token balance display — always visible */}
-        {tokenBalance !== null && (
+        {/* Token balance display — desktop only; mobile shows it in the compact char bar */}
+        {tokenBalance !== null && !ui.isMobile && (
           <div
             onClick={() => ui.openModal('tokenShop')}
             title="Buy more tokens"
@@ -930,9 +930,31 @@ function GameContent() {
             <span style={{ ...tf, color: T.gold, fontSize: 11 }}>
               {player.name} · {player.class} Lv.{playerLevel}
             </span>
-            {((player.statPoints ?? 0) > 0 || (player.skillPoints ?? 0) > 0) && (
-              <span style={{ color: '#f0c060', fontSize: 10, animation: 'pulse 1s infinite' }}>⬆ Points!</span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {((player.statPoints ?? 0) > 0 || (player.skillPoints ?? 0) > 0) && (
+                <span style={{ color: '#f0c060', fontSize: 10, animation: 'pulse 1s infinite' }}>⬆ Points!</span>
+              )}
+              {tokenBalance !== null && (
+                <div
+                  onClick={(e) => { e.stopPropagation(); ui.openModal('tokenShop'); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer',
+                    padding: '1px 5px', border: `1px solid ${tokenBorderColor(tokenBalance)}`,
+                    borderRadius: 4, background: tokenBalance <= 10 ? '#e0404022' : 'transparent',
+                  }}
+                >
+                  <span style={{ fontSize: 10 }}>🪙</span>
+                  <span style={{
+                    fontSize: 11, color: tokenColor(tokenBalance),
+                    fontWeight: tokenBalance <= 20 ? 'bold' : 'normal',
+                    animation: tokenBalance <= 10 ? 'pulse 1s infinite' : 'none',
+                    fontFamily: "'Cinzel','Palatino Linotype',serif",
+                  }}>
+                    {tokenBalance}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
             <div style={{ flex: 1, height: 4, background: T.border, borderRadius: 2, overflow: 'hidden' }}>
