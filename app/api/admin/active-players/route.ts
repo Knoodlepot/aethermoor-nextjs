@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
     const clampedMinutes = Math.min(Math.max(minutes, 1), 1440); // 1 min to 24 hours
 
     const result = await query(
-      `SELECT tl.player_id, a.email, COUNT(*) AS api_calls,
-              MAX(tl.created_at) AS last_active
-       FROM token_log tl
-       JOIN players p ON p.player_id = tl.player_id
-       JOIN accounts a ON a.id = p.account_id
-       WHERE tl.created_at > NOW() - ($1 || ' minutes')::INTERVAL
-       GROUP BY tl.player_id, a.email
+      `SELECT gs.player_id, a.email,
+              MAX(gs.updated_at) AS last_active,
+              COUNT(DISTINCT gs.slot) AS save_slots
+       FROM game_saves gs
+       JOIN accounts a ON a.player_id = gs.player_id
+       WHERE gs.updated_at > NOW() - ($1 || ' minutes')::INTERVAL
+       GROUP BY gs.player_id, a.email
        ORDER BY last_active DESC
        LIMIT 100`,
       [clampedMinutes]

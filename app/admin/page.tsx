@@ -552,7 +552,7 @@ export default function AdminPage() {
                     <tr>
                       <th style={S.th}>PLAYER ID</th>
                       <th style={S.th}>EMAIL</th>
-                      <th style={S.th}>API CALLS</th>
+                      <th style={S.th}>SAVES</th>
                       <th style={S.th}>LAST ACTIVE</th>
                     </tr>
                   </thead>
@@ -562,7 +562,7 @@ export default function AdminPage() {
                         onClick={() => { setLookupId(p.player_id); setTab(0); setTimeout(fetchPlayer, 50); }}>
                         <td style={S.td}><span style={{ color: '#c9a84c', fontFamily: 'monospace', fontSize: 11 }}>{p.player_id.slice(0, 12)}…</span></td>
                         <td style={S.td}>{p.email}</td>
-                        <td style={S.td}>{p.api_calls}</td>
+                        <td style={S.td}>{(p as any).save_slots ?? '-'}</td>
                         <td style={S.td}>{fmtDate(p.last_active)}</td>
                       </tr>
                     ))}
@@ -577,11 +577,11 @@ export default function AdminPage() {
             <div style={S.cardTitle}>LOOK UP PLAYER</div>
             <div style={S.row}>
               <div style={S.field}>
-                <label style={S.label}>PLAYER ID</label>
+                <label style={S.label}>PLAYER ID OR EMAIL</label>
                 <input style={S.input} type="text" value={lookupId}
                   onChange={(e) => setLookupId(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && fetchPlayer()}
-                  placeholder="player_…" />
+                  placeholder="player_… or email@example.com" />
               </div>
               <button style={S.btn} onClick={fetchPlayer}>LOOKUP</button>
             </div>

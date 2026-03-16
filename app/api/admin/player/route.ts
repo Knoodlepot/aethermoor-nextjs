@@ -21,12 +21,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'playerId required' }, { status: 400 });
     }
 
-    // Player + account info
+    // Player + account info — search by player_id OR email
     const playerResult = await query(
       `SELECT p.player_id, p.tokens, p.total_spent, a.email, a.verified, a.created_at
        FROM players p
        JOIN accounts a ON a.id = p.account_id
-       WHERE p.player_id = $1`,
+       WHERE p.player_id = $1
+          OR LOWER(a.email) = LOWER($1)`,
       [playerId]
     );
 
