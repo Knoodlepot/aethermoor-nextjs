@@ -1008,8 +1008,32 @@ function GameContent() {
         transform: showMobilePanel ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 0.25s ease',
       }}>
-        {/* Close button */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 10px', borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
+        {/* Panel header: game buttons + close */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderBottom: `1px solid ${T.border}`, flexShrink: 0, gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button
+              onClick={() => { setShowMobilePanel(false); setShowNewGameConfirm(true); }}
+              style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+            >
+              New Game
+            </button>
+            {player && (
+              <button
+                onClick={() => { setShowMobilePanel(false); setShowSaveSlot(true); }}
+                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+              >
+                💾 Save
+              </button>
+            )}
+            {auth.token && (
+              <button
+                onClick={() => { setShowMobilePanel(false); router.push('/'); }}
+                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+              >
+                Menu
+              </button>
+            )}
+          </div>
           <button onClick={() => setShowMobilePanel(false)} style={{ background: 'none', border: 'none', color: T.textMuted, fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>✕</button>
         </div>
         {playerInfoPanel}
