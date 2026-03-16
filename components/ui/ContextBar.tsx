@@ -21,15 +21,9 @@ interface ContextBarProps {
   bestiaryCount?: number;
 }
 
-export function ContextBar({ player, isLoading, isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount = 0 }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount = 0 }: ContextBarProps) {
   const { T } = useTheme();
   const ctx = player?.context || 'explore';
-
-  const tf = {
-    fontFamily: isDyslexic
-      ? "'OpenDyslexic',Arial,sans-serif"
-      : "'Cinzel','Palatino Linotype',serif",
-  };
 
   const ctxInfo: Record<string, { label: string; color: string; icon: string }> = {
     explore: { label: 'Exploring',   color: '#4a8040', icon: '🌲' },
@@ -51,30 +45,23 @@ export function ContextBar({ player, isLoading, isDyslexic, onShop: _onShop, onS
         background: ctxData.color + '18',
       }}
     >
-      {/* Left: context status only */}
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4px 8px', gap: 2 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: 11 }}>{ctxData.icon}</span>
-          <span style={{ ...tf, color: ctxData.color, fontSize: 8, letterSpacing: 1 }}>
-            {ctxData.label.toUpperCase()}
-          </span>
-        </div>
-        {isLoading && (
+      {/* Left: loading indicator only */}
+      {isLoading && (
+        <div style={{ display: 'flex', alignItems: 'center', padding: '4px 8px' }}>
           <span style={{ color: T.textFaint, fontSize: 8, fontStyle: 'italic', fontFamily: 'Crimson Text,serif' }}>
             weaving story...
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Right: buttons */}
       {(onDungeon || onGear || onBestiary) && (
         <div style={{ flex: 1, borderLeft: `1px solid ${T.border}`, padding: '4px', display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
             {onBestiary && (
               <button
                 onClick={onBestiary}
                 style={{
-                  gridColumn: '1 / -1',
                   background: 'transparent', border: `1px solid ${T.accent}`,
                   color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
                   fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,

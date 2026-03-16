@@ -566,7 +566,6 @@ function GameContent() {
     <div style={{ background: T.panelAlt, borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
       {/* ── Identity block: centred, legacy style ── */}
       <div style={{ padding: '12px 14px 10px', textAlign: 'center' as const }}>
-        <div style={{ fontSize: 28, marginBottom: 4 }}>{(CLASSES as any)[player.class]?.icon ?? '⚔️'}</div>
         <div style={{ ...tf, color: T.gold, fontSize: 16, letterSpacing: 1 }}>{player.name}</div>
         <div style={{ color: T.accent, fontSize: 11, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
         <div style={{ color: charClockColor, fontSize: 11, marginTop: 4, letterSpacing: 1 }}>{clockStr}</div>
@@ -762,7 +761,6 @@ function GameContent() {
             {ui.levelUpMsg}
           </div>
         )}
-        <div style={{ ...tf, color: clockColor, fontSize: 12, letterSpacing: 1 }}>{clockStr}</div>
         {/* Token balance display */}
         {tokenBalance !== null && (
           <div
@@ -844,14 +842,6 @@ function GameContent() {
             style={{ background: 'transparent', border: `1px solid ${T.border}`, color: playerIdCopied ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'color 0.2s' }}
           >
             {playerIdCopied ? '✓ ID Copied' : '🪪 Player ID'}
-          </button>
-        )}
-        {auth.token && (
-          <button
-            onClick={() => void auth.logout()}
-            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
-          >
-            Logout
           </button>
         )}
       </div>
