@@ -22,10 +22,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Player + account info — search by player_id OR email
+    // Use accounts.player_id for the join (account_id on players can be NULL for legacy rows)
     const playerResult = await query(
       `SELECT p.player_id, p.tokens, p.total_spent, a.email, a.verified, a.created_at
        FROM players p
-       JOIN accounts a ON a.id = p.account_id
+       LEFT JOIN accounts a ON a.player_id = p.player_id
        WHERE p.player_id = $1
           OR LOWER(a.email) = LOWER($1)`,
       [playerId]
@@ -35,18 +36,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Player not found' }, { status: 404 });
     }
 
+    const resolvedId = playerResult.rows[0].player_id;
+
     // Token log
     const tokenLog = await query(
       `SELECT id, change, reason, created_at FROM token_log
        WHERE player_id = $1 ORDER BY created_at DESC LIMIT 20`,
-      [playerId]
+      [resolvedId]
     );
 
     // Moderation incidents
     const incidents = await query(
       `SELECT id, source, reason, trigger_text, status, created_at FROM moderation_incidents
        WHERE player_id = $1 ORDER BY created_at DESC LIMIT 10`,
-      [playerId]
+      [resolvedId]
     );
 
     return NextResponse.json({
