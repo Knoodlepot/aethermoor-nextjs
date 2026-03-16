@@ -33,6 +33,7 @@ export interface ResetPasswordConfirmRequest {
 export function useAuth() {
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [playerId, setPlayerId] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<'loading' | 'authed' | 'unauthed'>('loading');
 
   /**
@@ -46,16 +47,19 @@ export function useAuth() {
         const data = await res.json();
         setToken('cookie-session');
         setEmail(data.email || null);
+        setPlayerId(data.playerId ? String(data.playerId) : null);
         setAuthStatus('authed');
       } else {
         setToken(null);
         setEmail(null);
+        setPlayerId(null);
         setAuthStatus('unauthed');
       }
     } catch (error) {
       console.error('Session verification error:', error);
       setToken(null);
       setEmail(null);
+      setPlayerId(null);
       setAuthStatus('unauthed');
     }
   }, []);
@@ -236,6 +240,7 @@ export function useAuth() {
   return {
     token,
     email,
+    playerId,
     authStatus,
     register,
     login,

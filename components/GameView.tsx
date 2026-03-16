@@ -101,6 +101,7 @@ function GameContent() {
 
   // Fix: seedCopied state for seed copy-to-clipboard UI (must be at top level)
   const [seedCopied, setSeedCopied] = useState(false);
+  const [playerIdCopied, setPlayerIdCopied] = useState(false);
 
   // Fetch token balance on mount and after Stripe return
   useEffect(() => {
@@ -828,6 +829,21 @@ function GameContent() {
             style={{ background: 'transparent', border: `1px solid ${T.border}`, color: seedCopied ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'color 0.2s' }}
           >
             {seedCopied ? '✓ Copied' : '🌱 Seed'}
+          </button>
+        )}
+        {auth.token && auth.playerId && (
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(auth.playerId!);
+                setPlayerIdCopied(true);
+                setTimeout(() => setPlayerIdCopied(false), 1500);
+              } catch {}
+            }}
+            title="Your Player ID — share with support or friends."
+            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: playerIdCopied ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'color 0.2s' }}
+          >
+            {playerIdCopied ? '✓ ID Copied' : '🪪 Player ID'}
           </button>
         )}
         {auth.token && (

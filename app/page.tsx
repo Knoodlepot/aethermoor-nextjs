@@ -15,12 +15,19 @@ export default function Home() {
   const [showLoadSlot, setShowLoadSlot] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('standard');
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+  const [playerId, setPlayerId] = useState<string | null>(null);
+  const [playerIdCopied, setPlayerIdCopied] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     fetch('/api/tokens/balance', { credentials: 'include' })
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d?.balance != null) setTokenBalance(d.balance); })
+      .catch(() => {});
+
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.playerId != null) setPlayerId(String(d.playerId)); })
       .catch(() => {});
 
     if (window.location.search.includes('payment=success')) {
@@ -165,6 +172,21 @@ export default function Home() {
           <a href="/auth" style={secondaryButtonStyle}>
             Account
           </a>
+          {playerId && (
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(playerId);
+                  setPlayerIdCopied(true);
+                  setTimeout(() => setPlayerIdCopied(false), 1500);
+                } catch {}
+              }}
+              title="Your Player ID — share with support or friends."
+              style={{ ...secondaryButtonStyle, color: playerIdCopied ? '#c9a84c' : '#b8925a', borderColor: playerIdCopied ? '#c9a84c' : '#7a6040', transition: 'color 0.2s, border-color 0.2s' }}
+            >
+              {playerIdCopied ? '✓ ID Copied' : '🪪 Player ID'}
+            </button>
+          )}
 
           {tokenBalance !== null && (
             <div
