@@ -8,6 +8,7 @@ interface ContextActionPanelProps {
   context: string;
   isLoading: boolean;
   onAction: (text: string) => void;
+  onOpenShop?: () => void;
   playerClass?: string;
   inventory?: string[];
   location?: string;
@@ -116,7 +117,7 @@ function getTemplateFor(
   return { label: 'EXPLORING', color: '#4a8a60', actions: EXPLORE_ACTIONS };
 }
 
-export function ContextActionPanel({ context, isLoading, onAction, inventory = [], location, locationGrid }: ContextActionPanelProps) {
+export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, inventory = [], location, locationGrid }: ContextActionPanelProps) {
   const { T, tf } = useTheme();
 
   const { label, color, actions } = getTemplateFor(context, location, locationGrid);
@@ -173,7 +174,11 @@ export function ContextActionPanel({ context, isLoading, onAction, inventory = [
               key={btn.label}
               title={btn.hasItem === false ? `Requires: ${btn.requiresItem}` : btn.label}
               disabled={disabled}
-              onClick={() => !disabled && onAction(btn.text)}
+              onClick={() => {
+                if (disabled) return;
+                if (btn.label === 'Shop' && onOpenShop) { onOpenShop(); return; }
+                onAction(btn.text);
+              }}
               style={{
                 background: 'transparent',
                 border: `1px solid ${disabled ? T.border : color + '66'}`,

@@ -697,6 +697,7 @@ function GameContent() {
           context={(player as any).context || 'explore'}
           isLoading={gameLoop.isLoading}
           onAction={(text) => handleFreeText(text)}
+          onOpenShop={() => ui.toggleModal('shop')}
           inventory={(player as any).inventory || []}
           location={(player as any).location}
           locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
@@ -1016,6 +1017,7 @@ function GameContent() {
             context={(player as any).context || 'explore'}
             isLoading={gameLoop.isLoading}
             onAction={(text) => { handleFreeText(text); setShowMobilePanel(false); }}
+            onOpenShop={() => { ui.toggleModal('shop'); setShowMobilePanel(false); }}
             inventory={(player as any).inventory || []}
             location={(player as any).location}
             locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
@@ -1153,6 +1155,10 @@ function GameContent() {
             handleCommand(`sell:${itemName}:${price}`)
           }
           onClose={() => ui.closeModal('shop')}
+          onBarter={() => {
+            ui.closeModal('shop');
+            handleFreeText('I try to barter with the merchant, offering to negotiate a better price or trade goods instead of paying full coin.');
+          }}
         />
       )}
 
