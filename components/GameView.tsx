@@ -565,14 +565,14 @@ function GameContent() {
   const playerInfoPanel = player ? (
     <div style={{ background: T.panelAlt, borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
       {/* ── Identity block: centred, legacy style ── */}
-      <div style={{ padding: '12px 14px 10px', textAlign: 'center' as const }}>
+      <div style={{ padding: '4px 6px 4px', textAlign: 'center' as const }}>
         <div style={{ ...tf, color: T.gold, fontSize: 16, letterSpacing: 1 }}>{player.name}</div>
         <div style={{ color: T.accent, fontSize: 11, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
         <div style={{ color: charClockColor, fontSize: 11, marginTop: 4, letterSpacing: 1 }}>{clockStr}</div>
       </div>
 
       {/* ── HP / XP bars ── */}
-      <div style={{ padding: '0 14px 10px' }}>
+      <div style={{ padding: '0 6px 4px' }}>
         <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
         <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
         <div style={{ fontSize: 9, color: T.textFaint, textAlign: 'right' as const, marginTop: 2, marginBottom: 8 }}>
@@ -600,7 +600,7 @@ function GameContent() {
       </div>
 
       {/* ── Resources row ── */}
-      <div style={{ borderTop: `1px solid ${T.border}`, padding: '8px 14px', display: 'flex', justifyContent: 'space-around' }}>
+      <div style={{ borderTop: `1px solid ${T.border}`, padding: '4px 6px', display: 'flex', justifyContent: 'space-around' }}>
         {([['🪙', player.gold, 'Gold'], ['🎒', rations, 'Rations']] as [string, any, string][]).map(([icon, val, lbl]) => (
           <div key={lbl} style={{ textAlign: 'center' as const }}>
             <div style={{ color: lbl === 'Rations' ? (val > 0 ? '#80a060' : '#c05050') : T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{val}</div>

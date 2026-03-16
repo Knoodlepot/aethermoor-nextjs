@@ -31,7 +31,7 @@ export function SideQuestPanel({ quests, onOpenQuest, onToggleTrack, onOpenLog }
       style={{
         background: T.panelAlt,
         border: `1px solid #3090c044`,
-        padding: 8,
+        padding: 4,
       }}
     >
       {/* Header */}

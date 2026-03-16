@@ -28,7 +28,7 @@ export function MiniMap({ player, worldSeed, onOpenMap }: MiniMapProps) {
   const [hovered, setHovered] = React.useState(false);
 
   return (
-    <div style={{ padding: '0 8px 8px' }}>
+    <div style={{ padding: 0 }}>
       {/* Outer clip container — full sidebar width, taller height */}
       <div
         style={{
