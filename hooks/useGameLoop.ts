@@ -392,11 +392,15 @@ export function useGameLoop(
           const exploredSet = new Set(updatedPlayer.exploredLocations ?? [updatedPlayer.location]);
           exploredSet.add(dest);
 
+          const TOWN_TYPES = new Set(['hamlet', 'village', 'town', 'city', 'capital']);
+          const destNode = lg[dest];
+          const arrivalContext = TOWN_TYPES.has(destNode?.type) ? 'town' : 'explore';
+
           updatedPlayer = {
             ...updatedPlayer,
             gold: (updatedPlayer.gold ?? 0) - cost,
             location: dest,
-            context: 'explore',
+            context: arrivalContext,
             gameHour: newHour,
             gameDay: newDay,
             exploredLocations: Array.from(exploredSet),
