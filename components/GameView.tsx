@@ -702,6 +702,7 @@ function GameContent() {
           isLoading={gameLoop.isLoading}
           onAction={(text) => handleFreeText(text)}
           onOpenShop={() => ui.toggleModal('shop')}
+          onOpenCraft={() => ui.toggleModal('crafting')}
           inventory={(player as any).inventory || []}
           location={(player as any).location}
           locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
@@ -1068,6 +1069,7 @@ function GameContent() {
             isLoading={gameLoop.isLoading}
             onAction={(text) => { handleFreeText(text); setShowMobilePanel(false); }}
             onOpenShop={() => { ui.toggleModal('shop'); setShowMobilePanel(false); }}
+            onOpenCraft={() => { ui.toggleModal('crafting'); setShowMobilePanel(false); }}
             inventory={(player as any).inventory || []}
             location={(player as any).location}
             locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}

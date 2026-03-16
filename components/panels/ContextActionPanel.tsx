@@ -9,6 +9,7 @@ interface ContextActionPanelProps {
   isLoading: boolean;
   onAction: (text: string) => void;
   onOpenShop?: () => void;
+  onOpenCraft?: () => void;
   playerClass?: string;
   inventory?: string[];
   location?: string;
@@ -117,7 +118,7 @@ function getTemplateFor(
   return { label: 'EXPLORING', color: '#4a8a60', actions: EXPLORE_ACTIONS };
 }
 
-export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, inventory = [], location, locationGrid }: ContextActionPanelProps) {
+export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, onOpenCraft, inventory = [], location, locationGrid }: ContextActionPanelProps) {
   const { T, tf } = useTheme();
 
   const { label, color, actions } = getTemplateFor(context, location, locationGrid);
@@ -177,6 +178,7 @@ export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, i
               onClick={() => {
                 if (disabled) return;
                 if (btn.label === 'Shop' && onOpenShop) { onOpenShop(); return; }
+                if (btn.label === 'Craft' && onOpenCraft) { onOpenCraft(); return; }
                 onAction(btn.text);
               }}
               style={{
