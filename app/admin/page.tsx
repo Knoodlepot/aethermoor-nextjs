@@ -276,7 +276,12 @@ export default function AdminPage() {
   const [gbpRate, setGbpRate] = React.useState(0.80);
 
   // Support
-  const [supportLoaded, setSupportLoaded] = React.useState(false);
+  const [supportQuery, setSupportQuery] = React.useState('');
+  const [supportProfile, setSupportProfile] = React.useState<PlayerProfile | null>(null);
+  const [supportMsg, setSupportMsg] = React.useState('');
+  const [supportGift, setSupportGift] = React.useState('');
+  const [supportGiftNote, setSupportGiftNote] = React.useState('');
+  const [supportGiftMsg, setSupportGiftMsg] = React.useState('');
 
   // Settings
   const [settingsSecret, setSettingsSecret] = React.useState('');
@@ -805,20 +810,145 @@ export default function AdminPage() {
 
       {/* ── SUPPORT ── */}
       {tab === 3 && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          {!supportLoaded ? (
-            <div style={{ padding: 40, textAlign: 'center' }}>
-              <button style={S.btn} onClick={() => setSupportLoaded(true)}>LOAD SUPPORT DASHBOARD</button>
-              <div style={{ fontSize: 11, color: '#5a4a2a', marginTop: 12 }}>
-                Requires <code>aethermoor-support-dashboard.html</code> in <code>/public/</code>
+        <div style={S.scrollContent}>
+          <div style={S.card}>
+            <div style={S.cardTitle}>PLAYER SUPPORT LOOKUP</div>
+            <div style={S.row}>
+              <div style={{ ...S.field, flex: 1 }}>
+                <label style={S.label}>SEARCH BY EMAIL OR PLAYER ID</label>
+                <input style={S.input} type="text" value={supportQuery}
+                  onChange={(e) => setSupportQuery(e.target.value)}
+                  onKeyDown={async (e) => {
+                    if (e.key !== 'Enter' || !supportQuery.trim()) return;
+                    setSupportMsg('Loading...');
+                    setSupportProfile(null);
+                    const data = await adminGet('/api/admin/player', { playerId: supportQuery.trim() });
+                    if (data.error) { setSupportMsg(`Not found: ${data.error}`); return; }
+                    setSupportProfile(data);
+                    setSupportMsg('');
+                  }}
+                  placeholder="email@example.com or player_…" />
               </div>
+              <button style={{ ...S.btn, alignSelf: 'flex-end' }} onClick={async () => {
+                if (!supportQuery.trim()) return;
+                setSupportMsg('Loading...');
+                setSupportProfile(null);
+                const data = await adminGet('/api/admin/player', { playerId: supportQuery.trim() });
+                if (data.error) { setSupportMsg(`Not found: ${data.error}`); return; }
+                setSupportProfile(data);
+                setSupportMsg('');
+              }}>SEARCH</button>
             </div>
-          ) : (
-            <iframe
-              src="/aethermoor-support-dashboard.html"
-              style={{ flex: 1, border: 'none', width: '100%', minHeight: '80vh' }}
-              title="Support Dashboard"
-            />
+            {supportMsg && <div style={{ marginTop: 10, fontSize: 12, color: supportMsg.startsWith('Not') ? '#c04040' : '#8a7a5a' }}>{supportMsg}</div>}
+          </div>
+
+          {supportProfile && (
+            <>
+              <div style={S.card}>
+                <div style={S.cardTitle}>ACCOUNT DETAILS</div>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    {([
+                      ['Player ID', supportProfile.player.player_id],
+                      ['Email', supportProfile.player.email],
+                      ['Tokens', supportProfile.player.tokens],
+                      ['Total Spent', supportProfile.player.total_spent],
+                      ['Verified', supportProfile.player.verified ? 'Yes' : 'No'],
+                      ['Registered', fmtDate(supportProfile.player.created_at)],
+                    ] as [string, any][]).map(([k, v]) => (
+                      <tr key={k}>
+                        <td style={{ ...S.td, color: '#8a7a5a', width: 140, fontFamily: "'Cinzel',serif", fontSize: 10, letterSpacing: 1 }}>{k}</td>
+                        <td style={{ ...S.td, fontFamily: 'monospace', fontSize: 12 }}>{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={S.card}>
+                <div style={S.cardTitle}>GIFT TOKENS</div>
+                <div style={S.row}>
+                  <div style={S.field}>
+                    <label style={S.label}>AMOUNT</label>
+                    <input style={S.input} type="number" min="1" value={supportGift}
+                      onChange={(e) => setSupportGift(e.target.value)} placeholder="50" />
+                  </div>
+                  <div style={{ ...S.field, flex: 2 }}>
+                    <label style={S.label}>NOTE</label>
+                    <input style={S.input} type="text" value={supportGiftNote}
+                      onChange={(e) => setSupportGiftNote(e.target.value)} placeholder="Support compensation" />
+                  </div>
+                  <button style={{ ...S.btn, alignSelf: 'flex-end' }} onClick={async () => {
+                    if (!supportProfile || !supportGift) return;
+                    const amount = parseInt(supportGift, 10);
+                    if (isNaN(amount) || amount <= 0) { setSupportGiftMsg('Enter a valid amount.'); return; }
+                    const data = await adminPost('/api/admin/add-tokens', {
+                      secret,
+                      playerId: supportProfile.player.player_id,
+                      amount,
+                      reason: supportGiftNote || 'Support grant',
+                    });
+                    if (data.error) { setSupportGiftMsg(`Error: ${data.error}`); return; }
+                    setSupportGiftMsg(`✓ ${amount} tokens added`);
+                    setSupportGift('');
+                    setSupportGiftNote('');
+                    const refreshed = await adminGet('/api/admin/player', { playerId: supportProfile.player.player_id });
+                    if (!refreshed.error) setSupportProfile(refreshed);
+                  }}>GIFT</button>
+                </div>
+                {supportGiftMsg && <div style={{ marginTop: 8, fontSize: 12, color: supportGiftMsg.startsWith('✓') ? '#60a060' : '#c04040' }}>{supportGiftMsg}</div>}
+              </div>
+
+              {supportProfile.tokenLog.length > 0 && (
+                <div style={S.card}>
+                  <div style={S.cardTitle}>RECENT TOKEN HISTORY</div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={S.th}>CHANGE</th>
+                        <th style={S.th}>REASON</th>
+                        <th style={S.th}>DATE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {supportProfile.tokenLog.map((t) => (
+                        <tr key={t.id}>
+                          <td style={{ ...S.td, color: t.change > 0 ? '#60a060' : '#c04040', fontFamily: 'monospace' }}>{t.change > 0 ? '+' : ''}{t.change}</td>
+                          <td style={S.td}>{t.reason}</td>
+                          <td style={S.td}>{fmtDate(t.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {supportProfile.incidents.length > 0 && (
+                <div style={S.card}>
+                  <div style={S.cardTitle}>MODERATION INCIDENTS</div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={S.th}>SOURCE</th>
+                        <th style={S.th}>REASON</th>
+                        <th style={S.th}>STATUS</th>
+                        <th style={S.th}>DATE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {supportProfile.incidents.map((inc) => (
+                        <tr key={inc.id}>
+                          <td style={S.td}>{inc.source}</td>
+                          <td style={S.td}>{inc.reason}</td>
+                          <td style={{ ...S.td, color: inc.status === 'blocked' ? '#c04040' : '#c9a84c' }}>{inc.status}</td>
+                          <td style={S.td}>{fmtDate(inc.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
