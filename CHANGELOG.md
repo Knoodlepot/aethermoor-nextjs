@@ -1,6 +1,11 @@
 ## [Unreleased]
 
 ### Added
+- **Crafting — locked recipes now visible**: Recipes you can't yet make (missing ingredients, wrong location, or level too low) appear below your available recipes, dimmed and marked with a lock. You can see what to work toward at a glance.
+- **Gold change flash**: When your gold goes up or down the number briefly flashes green (gained) or red (spent), making it obvious when a transaction has gone through.
+- **NPC names are now unique across settlements**: The narrator now tracks where each named NPC lives. It won't reuse a known NPC's name for a new character in a different town, and won't mix up which innkeeper or merchant belongs to which settlement.
+
+### Added
 - **How to Play updated**: The How to Play guide now has dedicated sections explaining the three context-sensitive Action panels — Exploration (Move, Rest, Search, Scout), Town (Talk, Shop, Notice Board, Tavern), and Combat (Attack, Ability, Defend, Flee). Each section explains what to expect and when it appears.
 
 ### Changed
