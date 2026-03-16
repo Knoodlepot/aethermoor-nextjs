@@ -93,12 +93,25 @@ function getSettlementType(location: string | undefined, locationGrid: Record<st
   return HELP_CHANCE[entry.type] !== undefined ? entry.type : null;
 }
 
-function getTemplateFor(context: string): { label: string; color: string; actions: ActionBtn[] } {
+const SETTLEMENT_TYPES = new Set(['hamlet', 'village', 'town', 'city', 'capital']);
+
+function getTemplateFor(
+  context: string,
+  location?: string,
+  locationGrid?: Record<string, any>
+): { label: string; color: string; actions: ActionBtn[] } {
   if (context === 'combat') {
     return { label: 'COMBAT', color: '#c04030', actions: COMBAT_ACTIONS };
   }
   if (context === 'town' || context === 'npc' || context === 'farm') {
     return { label: 'IN TOWN', color: '#c0a030', actions: TOWN_ACTIONS };
+  }
+  // Infer town context from location type when narrator hasn't set it explicitly
+  if (location && locationGrid) {
+    const entry = locationGrid[location];
+    if (entry?.type && SETTLEMENT_TYPES.has(entry.type)) {
+      return { label: 'IN TOWN', color: '#c0a030', actions: TOWN_ACTIONS };
+    }
   }
   return { label: 'EXPLORING', color: '#4a8a60', actions: EXPLORE_ACTIONS };
 }
@@ -106,7 +119,7 @@ function getTemplateFor(context: string): { label: string; color: string; action
 export function ContextActionPanel({ context, isLoading, onAction, inventory = [], location, locationGrid }: ContextActionPanelProps) {
   const { T, tf } = useTheme();
 
-  const { label, color, actions } = getTemplateFor(context);
+  const { label, color, actions } = getTemplateFor(context, location, locationGrid);
   const locIcon = locationIcon(location, locationGrid);
 
   // Resolve per-button item requirements

@@ -228,7 +228,9 @@ async function loadCanonicalNarrationState(
   const result = await db.query(
     `SELECT player_json, seed_json
      FROM game_saves
-     WHERE player_id = $1`,
+     WHERE player_id = $1
+     ORDER BY updated_at DESC
+     LIMIT 1`,
     [playerId]
   );
 
