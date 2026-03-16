@@ -7,6 +7,7 @@ import type { UIContext } from './useUI';
 import type { UseStorageReturn } from './useStorage';
 import { FACTION_JOIN_OFFERS, PROTECTED_ITEMS, RECIPES, CONSUMABLE_EFFECTS } from '../lib/constants';
 import { getItemSlotEx, formatGameTime, advanceGameTime, xpToLevel, HP_PER_LEVEL, LEVEL_CAP } from '../lib/helpers';
+import { extractBestiaryTag } from '../lib/tagParsers';
 
 export interface GameLoopContext {
   executeCommand: (
@@ -480,6 +481,43 @@ export function useGameLoop(
             exploredLocations: (narratorResponse.player as any).exploredLocations
               ?? (gs.player as any).exploredLocations,
           } as typeof gs.player;
+
+          // Client-side bestiary fallback: parse raw narrative in case server missed the tag.
+          // Only applies if the server's returned bestiary doesn't already reflect this kill.
+          {
+            const rawNarrative = narratorResponse.narrative || '';
+            const bestiaryEntry = extractBestiaryTag(rawNarrative);
+            if (bestiaryEntry?.archetypeId) {
+              const priorBestiary: any[] = (gs.player as any).bestiary || [];
+              const mergedBestiary: any[] = (updatedPlayer as any).bestiary || [];
+              const priorEntry = priorBestiary.find((b: any) => b.archetypeId === bestiaryEntry.archetypeId);
+              const mergedEntry = mergedBestiary.find((b: any) => b.archetypeId === bestiaryEntry.archetypeId);
+              const serverAlreadyUpdated =
+                mergedEntry && (!priorEntry || mergedEntry.timesKilled > (priorEntry.timesKilled || 0));
+              if (!serverAlreadyUpdated) {
+                const currentDay = (updatedPlayer as any).gameDay || 1;
+                let newBestiary: any[];
+                if (mergedEntry) {
+                  newBestiary = mergedBestiary.map((b: any) =>
+                    b.archetypeId === bestiaryEntry.archetypeId
+                      ? { ...b, timesKilled: (b.timesKilled || 0) + 1, lastKilledDay: currentDay }
+                      : b
+                  );
+                } else {
+                  newBestiary = [...mergedBestiary, {
+                    archetypeId: bestiaryEntry.archetypeId,
+                    name: bestiaryEntry.name || bestiaryEntry.archetypeId,
+                    icon: bestiaryEntry.icon || '👾',
+                    tier: bestiaryEntry.tier ?? 1,
+                    timesKilled: 1,
+                    firstKilledDay: currentDay,
+                    lastKilledDay: currentDay,
+                  }];
+                }
+                updatedPlayer = { ...updatedPlayer, bestiary: newBestiary } as typeof gs.player;
+              }
+            }
+          }
 
           // Advance time automatically on every narrator turn (mirrors legacy behaviour)
           // Combat: ~5 minutes. All other actions: 30 minutes.
