@@ -21,7 +21,8 @@
 - **Side Quest panel redesigned**: Now shows a fixed 6-slot compact grid. Empty slots display as dashed placeholders so you can always see capacity at a glance. Track toggle stays; the abandon button has been removed (use the Quest Log to manage quests).
 - **Quest panel streamlined**: Removed the hint text and footer link from the Main Quest panel — just the quest info, nothing else.
 - **Toolbar decluttered**: Clock and Logout button removed from the toolbar. Bestiary, Character, and Dungeon buttons now sit in a clean 3-column row.
-- **Rations counter fixed**: The Rations count in the character panel now correctly tallies all items with "ration" in the name, including named variants.
+- **Rations counter fixed**: The Rations count in the character panel now correctly tallies all items with "ration" in the name, including named variants and stacked entries (e.g. "Rations x3" counts as 3).
+- **Multiple items granted in one scene now all appear in your inventory**: Previously, if the narrator granted more than one item in the same message, only the first was added. All items are now properly received.
 - **Right panel padding removed**: Character info, quest panels, and the mini-map now use the full available width with no extra padding.
 - **Desktop scrollbar hidden**: The right-side panel no longer shows a visible scrollbar on desktop.
 
