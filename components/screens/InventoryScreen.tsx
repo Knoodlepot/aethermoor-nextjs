@@ -253,7 +253,7 @@ export function InventoryScreen({ player, onEquip, onUnequip, onUse, onDrop, onU
   const TABS = [
     { id: 'equipped' as const, label: 'Equipped' },
     { id: 'items' as const, label: `Pack (${inventory.length})` },
-    { id: 'skills' as const, label: skillPoints > 0 ? `Skills ✦` : 'Skills' },
+    { id: 'skills' as const, label: 'Skills' },
     { id: 'attributes' as const, label: 'Attributes' },
   ];
 
@@ -342,6 +342,12 @@ export function InventoryScreen({ player, onEquip, onUnequip, onUse, onDrop, onU
               }}
             >
               {t.label}
+              {t.id === 'skills' && (player.skillPoints ?? 0) > 0 && (
+                <span style={{ marginLeft: 4, color: '#f0c060', fontSize: 8, animation: 'pulse 1s infinite' }}>✦ {player.skillPoints}</span>
+              )}
+              {t.id === 'attributes' && (player.statPoints ?? 0) > 0 && (
+                <span style={{ marginLeft: 4, color: '#f0c060', fontSize: 8, animation: 'pulse 1s infinite' }}>●</span>
+              )}
             </button>
           ))}
         </div>

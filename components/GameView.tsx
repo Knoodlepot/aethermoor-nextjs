@@ -102,6 +102,7 @@ function GameContent() {
   // Fix: seedCopied state for seed copy-to-clipboard UI (must be at top level)
   const [seedCopied, setSeedCopied] = useState(false);
   const [playerIdCopied, setPlayerIdCopied] = useState(false);
+  const [showMobilePanel, setShowMobilePanel] = useState(false);
 
   // Fetch token balance on mount and after Stripe return
   useEffect(() => {
@@ -702,7 +703,7 @@ function GameContent() {
         />
       )}
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div className="ae-right-col" style={{ flex: 1, overflowY: 'auto' }}>
         {ui.currentEnemy && (
           <CombatPanel
             enemy={ui.currentEnemy}
@@ -756,12 +757,7 @@ function GameContent() {
     >
       <div style={{ ...tf, color: T.gold, fontSize: 18, letterSpacing: 3 }}>⚔ AETHERMOOR</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', flexShrink: 1, msOverflowStyle: 'none' } as React.CSSProperties}>
-        {ui.levelUpMsg && (
-          <div style={{ color: '#ffffff', fontSize: 13, animation: 'pulse 1s infinite', ...tf, textShadow: `0 0 12px ${T.gold}` }}>
-            {ui.levelUpMsg}
-          </div>
-        )}
-        {/* Token balance display */}
+        {/* Token balance display — always visible */}
         {tokenBalance !== null && (
           <div
             onClick={() => ui.openModal('tokenShop')}
@@ -792,56 +788,68 @@ function GameContent() {
             </span>
           </div>
         )}
-        <button
-          onClick={() => setShowNewGameConfirm(true)}
-          style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
-        >
-          New Game
-        </button>
-        {player && (
-          <button
-            onClick={() => setShowSaveSlot(true)}
-            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
-          >
-            💾 Save
-          </button>
+        {!ui.isMobile && (
+          <>
+            <button
+              onClick={() => setShowNewGameConfirm(true)}
+              style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+            >
+              New Game
+            </button>
+            {player && (
+              <button
+                onClick={() => setShowSaveSlot(true)}
+                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+              >
+                💾 Save
+              </button>
+            )}
+            {auth.token && (
+              <button
+                onClick={() => router.push('/')}
+                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+              >
+                Main Menu
+              </button>
+            )}
+            {worldSeed?.seed && (
+              <button
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(worldSeed.seed);
+                    setSeedCopied(true);
+                    setTimeout(() => setSeedCopied(false), 1200);
+                  } catch {}
+                }}
+                title="World Seed — share this code with friends so they can start a new game in the same world."
+                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: seedCopied ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'color 0.2s' }}
+              >
+                {seedCopied ? '✓ Copied' : '🌱 Seed'}
+              </button>
+            )}
+            {auth.token && auth.playerId && (
+              <button
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(auth.playerId!);
+                    setPlayerIdCopied(true);
+                    setTimeout(() => setPlayerIdCopied(false), 1500);
+                  } catch {}
+                }}
+                title="Your Player ID — share with support or friends."
+                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: playerIdCopied ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'color 0.2s' }}
+              >
+                {playerIdCopied ? '✓ ID Copied' : '🪪 Player ID'}
+              </button>
+            )}
+          </>
         )}
-        {auth.token && (
+        {ui.isMobile && (
           <button
-            onClick={() => router.push('/')}
-            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+            onClick={() => setShowMobilePanel(true)}
+            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 16, cursor: 'pointer', letterSpacing: 1 }}
           >
-            Main Menu
-          </button>
-        )}
-        {worldSeed?.seed && (
-          <button
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(worldSeed.seed);
-                setSeedCopied(true);
-                setTimeout(() => setSeedCopied(false), 1200);
-              } catch {}
-            }}
-            title="World Seed — share this code with friends so they can start a new game in the same world."
-            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: seedCopied ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'color 0.2s' }}
-          >
-            {seedCopied ? '✓ Copied' : '🌱 Seed'}
-          </button>
-        )}
-        {auth.token && auth.playerId && (
-          <button
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(auth.playerId!);
-                setPlayerIdCopied(true);
-                setTimeout(() => setPlayerIdCopied(false), 1500);
-              } catch {}
-            }}
-            title="Your Player ID — share with support or friends."
-            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: playerIdCopied ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'color 0.2s' }}
-          >
-            {playerIdCopied ? '✓ ID Copied' : '🪪 Player ID'}
+            ☰
           </button>
         )}
       </div>
@@ -901,7 +909,38 @@ function GameContent() {
 
   const mobileLayout = (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Narrative (scrollable) */}
+      {/* Compact character bar */}
+      {player && (
+        <div
+          onClick={() => ui.toggleModal('inventory')}
+          style={{
+            background: T.panelAlt,
+            borderBottom: `1px solid ${T.border}`,
+            padding: '4px 10px',
+            flexShrink: 0,
+            cursor: 'pointer',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+            <span style={{ ...tf, color: T.gold, fontSize: 11 }}>
+              {player.name} · {player.class} Lv.{playerLevel}
+            </span>
+            {((player.statPoints ?? 0) > 0 || (player.skillPoints ?? 0) > 0) && (
+              <span style={{ color: '#f0c060', fontSize: 10, animation: 'pulse 1s infinite' }}>⬆ Points!</span>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <div style={{ flex: 1, height: 4, background: T.border, borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${Math.round((hp / maxHp) * 100)}%`, background: T.hpColor }} />
+            </div>
+            <div style={{ flex: 1, height: 4, background: T.border, borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${xpRange > 0 ? Math.round((xpProgress / xpRange) * 100) : 0}%`, background: T.xpColor }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Narrative (scrollable, fills remaining space) */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <NarrativePanel
           narrative={gameState.narrative}
@@ -909,60 +948,7 @@ function GameContent() {
         />
       </div>
 
-      {/* Context/location bar */}
-      <ContextBar
-        player={gameState.player}
-        isLoading={gameLoop.isLoading}
-        isDyslexic={isDyslexic}
-        locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
-        onShop={() => ui.toggleModal('shop')}
-        onSkills={() => ui.toggleModal('skillTree')}
-        onQuests={() => ui.toggleModal('questLog')}
-        onDungeon={() => dungeonAvailable ? handleCommand('enter_dungeon') : !atCapital ? showDungeonHint() : undefined}
-        dungeonAvailable={dungeonAvailable}
-        onCraft={() => ui.toggleModal('crafting')}
-        onGear={() => ui.toggleModal('inventory')}
-        onBestiary={() => ui.toggleModal('bestiary')}
-        activeQuestCount={activeQuestCount}
-        skillPts={skillPts}
-        bestiaryCount={bestiaryCount}
-      />
-      <div
-        style={{
-          padding: '10px 12px',
-          background: T.panelAlt,
-          borderTop: `1px solid ${T.border}`,
-          overflowY: 'auto',
-          maxHeight: '42vh',
-        }}
-      >
-        {ui.currentEnemy && (
-          <CombatPanel
-            enemy={ui.currentEnemy}
-            combatLog={ui.combatLog}
-            playerStatusEffects={ui.playerStatusEffects}
-            playerDefending={ui.playerDefending}
-          />
-        )}
-        {worldSeed && (
-          <MainQuestPanel
-            worldSeed={gameState.worldSeed}
-            onOpen={() => ui.toggleModal('questLog')}
-          />
-        )}
-        {player && (
-          <ContextActionPanel
-            context={(player as any).context || 'explore'}
-            isLoading={gameLoop.isLoading}
-            onAction={(text) => handleFreeText(text)}
-            inventory={(player as any).inventory || []}
-            location={(player as any).location}
-            locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
-          />
-        )}
-      </div>
-
-      {/* Input bar — fixed to screen bottom */}
+      {/* Input bar */}
       <InputBar
         player={gameState.player}
         onFreeText={handleFreeText}
@@ -971,6 +957,93 @@ function GameContent() {
       />
     </div>
   );
+
+  // ── Mobile slide-in panel ────────────────────────────────────────────────────
+  const mobilePanelOverlay = ui.isMobile ? (
+    <>
+      <div
+        onClick={() => setShowMobilePanel(false)}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 150,
+          background: '#00000077',
+          opacity: showMobilePanel ? 1 : 0,
+          pointerEvents: showMobilePanel ? 'auto' : 'none',
+          transition: 'opacity 0.25s ease',
+        }}
+      />
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0,
+        width: '85%', zIndex: 151,
+        background: T.bg,
+        borderLeft: `1px solid ${T.border}`,
+        display: 'flex', flexDirection: 'column',
+        overflowY: 'auto',
+        transform: showMobilePanel ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.25s ease',
+      }}>
+        {/* Close button */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 10px', borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
+          <button onClick={() => setShowMobilePanel(false)} style={{ background: 'none', border: 'none', color: T.textMuted, fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+        </div>
+        {playerInfoPanel}
+        <ContextBar
+          player={gameState.player}
+          isLoading={gameLoop.isLoading}
+          isDyslexic={isDyslexic}
+          locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
+          onShop={() => ui.toggleModal('shop')}
+          onSkills={() => ui.toggleModal('skillTree')}
+          onQuests={() => ui.toggleModal('questLog')}
+          onDungeon={() => dungeonAvailable ? handleCommand('enter_dungeon') : !atCapital ? showDungeonHint() : undefined}
+          dungeonAvailable={dungeonAvailable}
+          onCraft={() => ui.toggleModal('crafting')}
+          onGear={() => { ui.toggleModal('inventory'); setShowMobilePanel(false); }}
+          onBestiary={() => { ui.toggleModal('bestiary'); setShowMobilePanel(false); }}
+          activeQuestCount={activeQuestCount}
+          skillPts={skillPts}
+          bestiaryCount={bestiaryCount}
+        />
+        {ui.currentEnemy && (
+          <CombatPanel
+            enemy={ui.currentEnemy}
+            combatLog={ui.combatLog}
+            playerStatusEffects={ui.playerStatusEffects}
+            playerDefending={ui.playerDefending}
+          />
+        )}
+        {player && (
+          <ContextActionPanel
+            context={(player as any).context || 'explore'}
+            isLoading={gameLoop.isLoading}
+            onAction={(text) => { handleFreeText(text); setShowMobilePanel(false); }}
+            inventory={(player as any).inventory || []}
+            location={(player as any).location}
+            locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
+          />
+        )}
+        {worldSeed && (
+          <MainQuestPanel
+            worldSeed={gameState.worldSeed}
+            onOpen={() => { ui.toggleModal('questLog'); setShowMobilePanel(false); }}
+          />
+        )}
+        <SideQuestPanel
+          quests={gameState.player?.quests || []}
+          onOpenQuest={(questId) => { ui.openQuestLogAt(questId); setShowMobilePanel(false); }}
+          onToggleTrack={(questId) => handleCommand('toggle_quest_track:' + questId)}
+          onAbandon={(questId) => handleCommand('abandon_quest:' + questId)}
+          onOpenLog={() => { ui.openModal('questLog'); setShowMobilePanel(false); }}
+        />
+        {player && worldSeed && (
+          <MiniMap
+            player={player}
+            worldSeed={worldSeed}
+            onOpenMap={() => { ui.setMapOpen(true); setShowMobilePanel(false); }}
+          />
+        )}
+      </div>
+    </>
+  ) : null;
 
   // ── Map overlay ─────────────────────────────────────────────────────────────
 
@@ -1043,43 +1116,13 @@ function GameContent() {
     >
       {toolbar}
 
-      {/* Level-up banner */}
-      {ui.levelUpMsg && (
-        <div
-          style={{
-            background: T.accent + '22',
-            border: `1px solid ${T.accent}`,
-            padding: '8px 16px',
-            textAlign: 'center',
-            ...tf,
-            color: T.gold,
-            fontSize: 13,
-            letterSpacing: 2,
-            flexShrink: 0,
-          }}
-        >
-          {ui.levelUpMsg}
-          <button
-            onClick={() => ui.setLevelUpMsg('')}
-            style={{
-              marginLeft: 12,
-              background: 'none',
-              border: 'none',
-              color: T.textFaint,
-              cursor: 'pointer',
-              fontSize: 14,
-            }}
-          >
-            ×
-          </button>
-        </div>
-      )}
-
       {/* Main content area — desktop or mobile layout */}
       {ui.isMobile ? mobileLayout : desktopLayout}
 
       {/* Map overlay */}
       {mapOverlay}
+
+      {mobilePanelOverlay}
 
       {/* ─── Screens & Modals ─── */}
 

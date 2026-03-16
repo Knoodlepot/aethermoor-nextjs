@@ -71,3 +71,6 @@ button {
   }
 }
 
+/* Hide right column scrollbar */
+.ae-right-col::-webkit-scrollbar { display: none; }
+.ae-right-col { scrollbar-width: none; -ms-overflow-style: none; }
