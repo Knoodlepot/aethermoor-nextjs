@@ -29,18 +29,6 @@ export function MiniMap({ player, worldSeed, onOpenMap }: MiniMapProps) {
 
   return (
     <div style={{ padding: '0 8px 8px' }}>
-      {/* Label */}
-      <div style={{
-        fontFamily: 'Cinzel, serif',
-        fontSize: 9,
-        letterSpacing: 1,
-        color: '#c9a84c',
-        padding: '6px 4px 4px',
-        textTransform: 'uppercase',
-      }}>
-        World Map
-      </div>
-
       {/* Outer clip container — full sidebar width, taller height */}
       <div
         style={{

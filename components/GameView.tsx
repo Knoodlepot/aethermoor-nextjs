@@ -460,7 +460,7 @@ function GameContent() {
   const xpProgress = Math.max(0, playerXp - xpFloor);
   const xpRange = Math.max(1, xpCeil - xpFloor);
   const xpPct = Math.min(100, Math.round((xpProgress / xpRange) * 100));
-  const rations = player ? countItem(player.inventory ?? [], 'Rations') : 0;
+  const rations = player ? (player.inventory ?? []).filter((i: string) => i.toLowerCase().includes('ration')).length : 0;
 
   // ── StatBar helper ─────────────────────────────────────────────────────────
   const StatBar = ({ label, value, max, color }: { label: string; value: number; max: number; color: string }) => {
@@ -746,7 +746,7 @@ function GameContent() {
       style={{
         background: T.panelAlt,
         borderBottom: `1px solid ${T.border}`,
-        padding: '10px 20px',
+        padding: '4px 12px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
