@@ -126,6 +126,16 @@ export function extractGrantTag(text: string): any {
   }
 }
 
+export function extractAllGrantTags(text: string): any[] {
+  const results: any[] = [];
+  const re = /\{"grant"\s*:\s*(\{[^}]+\})\}/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    try { results.push(JSON.parse(m[1])); } catch { /* skip malformed */ }
+  }
+  return results;
+}
+
 /**
  * Extract item removal tag
  */
@@ -396,6 +406,7 @@ export interface ParsedTags {
   npcUpdate: any;
   npcGift: any;
   grant: any;
+  grants: any[];
   remove: any;
   newQuest: any;
   suggestions: string[] | null;
@@ -431,6 +442,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     npcUpdate: extractNpcUpdateTag(narrative),
     npcGift: extractNpcGiftTag(narrative),
     grant: extractGrantTag(narrative),
+    grants: extractAllGrantTags(narrative),
     remove: extractRemoveTag(narrative),
     newQuest: extractNewQuestTag(narrative),
     suggestions: extractSuggestionsTag(narrative),
@@ -516,12 +528,16 @@ export function processParsedTags(
     };
   }
 
-  // Item grants
-  if (tags.grant && tags.grant.item) {
-    updatedPlayer = {
-      ...updatedPlayer,
-      inventory: [...(updatedPlayer.inventory || []), tags.grant.item],
-    };
+  // Item grants — apply all grant tags (narrator may emit multiple)
+  const allGrants = (tags.grants && tags.grants.length > 0) ? tags.grants : (tags.grant ? [tags.grant] : []);
+  if (allGrants.length > 0) {
+    const newItems = allGrants.filter((g) => g?.item).map((g) => g.item as string);
+    if (newItems.length > 0) {
+      updatedPlayer = {
+        ...updatedPlayer,
+        inventory: [...(updatedPlayer.inventory || []), ...newItems],
+      };
+    }
   }
 
   // Item removal

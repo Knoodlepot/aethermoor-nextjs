@@ -461,7 +461,11 @@ function GameContent() {
   const xpProgress = Math.max(0, playerXp - xpFloor);
   const xpRange = Math.max(1, xpCeil - xpFloor);
   const xpPct = Math.min(100, Math.round((xpProgress / xpRange) * 100));
-  const rations = player ? (player.inventory ?? []).filter((i: string) => i.toLowerCase().includes('ration')).length : 0;
+  const rations = player ? (player.inventory ?? []).reduce((sum: number, i: string) => {
+    if (!i.toLowerCase().includes('ration')) return sum;
+    const qtyMatch = i.match(/[x×](\d+)$/i) || i.match(/\((\d+)\)$/) || i.match(/^(\d+)[x×\s]/i);
+    return sum + (qtyMatch ? parseInt(qtyMatch[1], 10) : 1);
+  }, 0) : 0;
 
   // ── StatBar helper ─────────────────────────────────────────────────────────
   const StatBar = ({ label, value, max, color }: { label: string; value: number; max: number; color: string }) => {
