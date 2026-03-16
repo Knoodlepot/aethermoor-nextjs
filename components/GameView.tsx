@@ -1087,6 +1087,11 @@ function GameContent() {
           onUse={(item: string) => handleCommand('use:' + item)}
           onDrop={(item: string) => handleCommand('drop:' + item)}
           onUnlock={(skillId: string) => handleCommand('unlock_skill:' + skillId)}
+          onSpendStats={(allocs: Record<string, number>) => {
+            Object.entries(allocs).forEach(([stat, count]) => {
+              for (let i = 0; i < count; i++) handleCommand('stat_point:' + stat);
+            });
+          }}
           onClose={() => ui.closeModal('inventory')}
         />
       )}

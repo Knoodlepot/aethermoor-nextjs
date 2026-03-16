@@ -224,15 +224,17 @@ interface InventoryScreenProps {
   onUse: (itemName: string) => void;
   onDrop: (itemName: string) => void;
   onUnlock: (skillId: string) => void;
+  onSpendStats: (allocations: Record<string, number>) => void;
   onClose: () => void;
 }
 
-export function InventoryScreen({ player, onEquip, onUnequip, onUse, onDrop, onUnlock, onClose }: InventoryScreenProps) {
+export function InventoryScreen({ player, onEquip, onUnequip, onUse, onDrop, onUnlock, onSpendStats, onClose }: InventoryScreenProps) {
   const { T, tf, bf } = useTheme();
   const [tab, setTab] = React.useState<'equipped' | 'items' | 'skills' | 'attributes'>('equipped');
   const [dropConfirm, setDropConfirm] = React.useState<string | null>(null);
   const [expandedItem, setExpandedItem] = React.useState<string | null>(null);
   const [skillSubTab, setSkillSubTab] = React.useState<'tree' | 'abilities' | 'professions'>('tree');
+  const [pendingStats, setPendingStats] = React.useState<Record<string, number>>({ str: 0, agi: 0, int: 0, wil: 0 });
 
   const equipped = player.equipped || {};
   const inventory = player.inventory || [];
@@ -873,15 +875,41 @@ export function InventoryScreen({ player, onEquip, onUnequip, onUse, onDrop, onU
           )}
 
           {/* ── ATTRIBUTES TAB ── */}
-          {tab === 'attributes' && (
+          {tab === 'attributes' && (() => {
+            const availablePoints = (player.statPoints ?? 0);
+            const pendingTotal = Object.values(pendingStats).reduce((a, b) => a + b, 0);
+            const remaining = availablePoints - pendingTotal;
+            return (
             <div style={{ padding: 16 }}>
+              {/* Unspent points banner */}
+              {availablePoints > 0 && (
+                <div style={{ marginBottom: 12, padding: '8px 12px', background: '#1a2a1a', border: '1px solid #60a06066',
+                  fontSize: 11, color: '#60a060', ...tf, letterSpacing: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>⬆ {remaining} point{remaining !== 1 ? 's' : ''} remaining to spend</span>
+                  {pendingTotal > 0 && (
+                    <button
+                      onClick={() => {
+                        onSpendStats(pendingStats);
+                        setPendingStats({ str: 0, agi: 0, int: 0, wil: 0 });
+                      }}
+                      style={{ background: '#60a060', border: 'none', color: '#0d0d1a', padding: '4px 14px',
+                        ...tf, fontSize: 10, letterSpacing: 1, cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      CONFIRM
+                    </button>
+                  )}
+                </div>
+              )}
+
               {/* Stat cards */}
               {(['str', 'agi', 'int', 'wil'] as const).map((key) => {
                 const info = ATTR_INFO[key];
-                const value: number = (player as any)[key] ?? 0;
+                const base: number = (player as any)[key] ?? 0;
+                const pending = pendingStats[key] ?? 0;
+                const displayed = base + pending;
                 return (
-                  <div key={key} style={{ background: T.panelAlt, border: `1px solid ${T.border}`,
-                    padding: '12px 14px', marginBottom: 10 }}>
+                  <div key={key} style={{ background: T.panelAlt, border: `1px solid ${pending > 0 ? '#60a06066' : T.border}`,
+                    padding: '12px 14px', marginBottom: 10, transition: 'border-color 0.2s' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                       <span style={{ fontSize: 22 }}>{info.icon}</span>
                       <div style={{ flex: 1 }}>
@@ -891,7 +919,33 @@ export function InventoryScreen({ player, onEquip, onUnequip, onUse, onDrop, onU
                         </div>
                         <div style={{ fontSize: 11, color: T.textMuted, marginTop: 1 }}>{info.desc}</div>
                       </div>
-                      <div style={{ ...tf, color: T.gold, fontSize: 22, minWidth: 32, textAlign: 'right' as const }}>{value}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {availablePoints > 0 && (
+                          <button
+                            onClick={() => pending > 0 && setPendingStats((p) => ({ ...p, [key]: p[key] - 1 }))}
+                            disabled={pending === 0}
+                            style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted,
+                              width: 22, height: 22, cursor: pending > 0 ? 'pointer' : 'default',
+                              fontSize: 14, lineHeight: '1', opacity: pending > 0 ? 1 : 0.3,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >−</button>
+                        )}
+                        <div style={{ ...tf, color: pending > 0 ? '#60a060' : T.gold, fontSize: 22, minWidth: 32, textAlign: 'center' as const }}>
+                          {displayed}{pending > 0 && <span style={{ fontSize: 11, color: '#60a060' }}> (+{pending})</span>}
+                        </div>
+                        {availablePoints > 0 && (
+                          <button
+                            onClick={() => remaining > 0 && setPendingStats((p) => ({ ...p, [key]: p[key] + 1 }))}
+                            disabled={remaining === 0}
+                            style={{ background: remaining > 0 ? '#1a3a1a' : 'transparent',
+                              border: `1px solid ${remaining > 0 ? '#60a060' : T.border}`,
+                              color: remaining > 0 ? '#60a060' : T.textMuted,
+                              width: 22, height: 22, cursor: remaining > 0 ? 'pointer' : 'default',
+                              fontSize: 14, lineHeight: '1', opacity: remaining > 0 ? 1 : 0.3,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >+</button>
+                        )}
+                      </div>
                     </div>
                     <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 8 }}>
                       {info.effects.map((effect, i) => (
@@ -920,15 +974,10 @@ export function InventoryScreen({ player, onEquip, onUnequip, onUse, onDrop, onU
                   <span style={{ color: T.accent }}>›</span>
                   <span>+{HP_PER_LEVEL[player.class] ?? 5} Max HP <span style={{ color: T.textFaint }}>({player.class} class bonus)</span></span>
                 </div>
-                {(player.statPoints ?? 0) > 0 && (
-                  <div style={{ marginTop: 10, padding: '6px 10px', background: '#1a2a1a', border: '1px solid #60a06055',
-                    fontSize: 11, color: '#60a060', ...tf, letterSpacing: 1, animation: 'pulse 1.5s infinite' }}>
-                    ⬆ You have {player.statPoints} unspent stat point{(player.statPoints ?? 0) !== 1 ? 's' : ''}!
-                  </div>
-                )}
               </div>
             </div>
-          )}
+            );
+          })()}
 
         </div>
       </div>
