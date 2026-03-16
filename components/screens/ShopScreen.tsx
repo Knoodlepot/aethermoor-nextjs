@@ -8,7 +8,7 @@ import { getProfessionLevel } from '@/lib/helpers';
 import * as helpers from '@/lib/helpers';
 
 // ── Helpers not yet in helpers.ts — accessed via module cast ──
-const generateShopStock = (helpers as any).generateShopStock as ((loc: string, player: any) => any[]) | undefined;
+const generateShopStock = (helpers as any).generateShopStock as ((loc: string, player: any, locationGrid?: Record<string, any>) => any[]) | undefined;
 const getCompactPerks = (helpers as any).getCompactPerks as ((player: any) => any) | undefined;
 const getItemInfo = (helpers as any).getItemInfo as ((name: string) => any) | undefined;
 
@@ -78,9 +78,10 @@ interface ShopScreenProps {
   onClose: () => void;
   onBarter?: () => void;
   shopPriceOverrides?: Record<string, number>;
+  locationGrid?: Record<string, any>;
 }
 
-export function ShopScreen({ player, onBuy, onSell, onClose, onBarter, shopPriceOverrides }: ShopScreenProps) {
+export function ShopScreen({ player, onBuy, onSell, onClose, onBarter, shopPriceOverrides, locationGrid }: ShopScreenProps) {
   const { T, tf, bf } = useTheme();
   const [tab, setTab] = React.useState<'buy' | 'sell'>('buy');
   const [sellConfirm, setSellConfirm] = React.useState<string | null>(null);
@@ -100,7 +101,7 @@ export function ShopScreen({ player, onBuy, onSell, onClose, onBarter, shopPrice
   const rawStock: any[] = React.useMemo(() => {
     if (generateShopStock) {
       try {
-        return generateShopStock(player.location, player) || [];
+        return generateShopStock(player.location, player, locationGrid) || [];
       } catch {
         return [];
       }

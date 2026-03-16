@@ -620,7 +620,7 @@ function GameContent() {
   // ── Bottom action buttons (right column, legacy style) ─────────────────────
 
   const activeQuestCount = (player?.quests ?? []).filter((q: any) => q.status === 'active').length;
-  const bestiaryCount = (player?.bestiary ?? []).length;
+  const bestiaryCount = (player?.bestiary ?? []).reduce((sum: number, b: any) => sum + (b.timesKilled || 1), 0);
   const skillPts = player?.skillPoints ?? 0;
   const atCapital = player?.location === 'Aethermoor Capital';
   const inDungeon = ((player as any)?.dungeon?.floor ?? 0) > 0;
@@ -1148,6 +1148,7 @@ function GameContent() {
       {ui.showShop && player && (
         <ShopScreen
           player={player}
+          locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
           onBuy={(item: any, price: number) =>
             handleCommand(`buy:${(item as any)?.name ?? String(item)}:${price}`)
           }

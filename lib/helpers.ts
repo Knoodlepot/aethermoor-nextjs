@@ -653,8 +653,9 @@ const SHOP_STOCK_BY_TIER: Record<string, { name: string; price: number }[]> = {
  * Returns an array of { name, price, icon, type, desc }.
  * Includes tiered gear based on player level and location tier.
  */
-export function generateShopStock(location: string, _player: any): { name: string; price: number; icon: string; type: string; desc: string }[] {
-  const tier = (LOCATION_TIERS[location] || 'town').toLowerCase();
+export function generateShopStock(location: string, _player: any, locationGrid?: Record<string, any>): { name: string; price: number; icon: string; type: string; desc: string }[] {
+  const gridType = locationGrid?.[location]?.type;
+  const tier = (gridType || LOCATION_TIERS[location] || 'town').toLowerCase();
   const stock = SHOP_STOCK_BY_TIER[tier] || SHOP_STOCK_BY_TIER.town;
   const playerLevel: number = _player?.level || 1;
 
