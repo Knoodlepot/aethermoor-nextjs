@@ -1,6 +1,13 @@
 ## [Unreleased]
 
 ### Added
+- **Combat, explore, and town action buttons now always visible on mobile**: All action buttons (Attack, Flee, Shop, Notice Board, Move, Rest, etc.) appear directly below the input bar on mobile — no need to open the side menu during a fight or while exploring.
+- **Suggestion chips on mobile**: After each narrator response, three suggested actions appear as tappable buttons below the input bar, helping you decide what to do next.
+- **HP bar flashes on change**: When you take damage the HP bar briefly flashes red. When you heal (rest, potion, or magic) it briefly flashes green — so you can see at a glance that something changed.
+- **Faction standings in the character panel**: If you have any standing with a faction it now appears directly in the right panel — name and rank — without opening the full Standings screen. Tap it to see the details.
+- **Equipped gear shown in the character panel**: Your currently equipped weapon, body armour, and helmet are shown as a one-line summary under your name and level on both desktop and mobile.
+
+### Added
 - **Crafting — locked recipes now visible**: Recipes you can't yet make (missing ingredients, wrong location, or level too low) appear below your available recipes, dimmed and marked with a lock. You can see what to work toward at a glance.
 - **Gold change flash**: When your gold goes up or down the number briefly flashes green (gained) or red (spent), making it obvious when a transaction has gone through.
 - **NPC names are now unique across settlements**: The narrator now tracks where each named NPC lives. It won't reuse a known NPC's name for a new character in a different town, and won't mix up which innkeeper or merchant belongs to which settlement.
