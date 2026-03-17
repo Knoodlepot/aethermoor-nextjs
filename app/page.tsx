@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
+import { OptionsModal, type ModelTier } from '@/components/modals/OptionsModal';
 import { PatchNotesScreen } from '@/components/screens/PatchNotesScreen';
 import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 import { SaveSlotModal } from '@/components/modals/SaveSlotModal';
@@ -11,6 +12,9 @@ import type { SlotSummary } from '@/hooks/useStorage';
 export default function Home() {
   const [showGuide, setShowGuide] = useState(false);
   const [showPatches, setShowPatches] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [optionsTier, setOptionsTier] = useState<ModelTier>('haiku');
+  const [optionsLanguage, setOptionsLanguage] = useState('English');
   const [showTokenShop, setShowTokenShop] = useState(false);
   const [showLoadSlot, setShowLoadSlot] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('standard');
@@ -36,6 +40,27 @@ export default function Home() {
       setTimeout(() => setPaymentSuccess(false), 8000);
     }
   }, []);
+
+  const openOptions = () => {
+    try {
+      const raw = localStorage.getItem('rpg-player-slot1');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p.modelTier) setOptionsTier(p.modelTier);
+        if (p.language) setOptionsLanguage(p.language);
+      }
+    } catch {}
+    setShowOptions(true);
+  };
+
+  const saveOption = (key: 'modelTier' | 'language', value: string) => {
+    try {
+      const raw = localStorage.getItem('rpg-player-slot1');
+      const p = raw ? JSON.parse(raw) : {};
+      p[key] = value;
+      localStorage.setItem('rpg-player-slot1', JSON.stringify(p));
+    } catch {}
+  };
 
   const loadSlots = async (): Promise<SlotSummary[]> => {
     try {
@@ -156,6 +181,9 @@ export default function Home() {
           <button onClick={() => setShowPatches(true)} style={secondaryButtonStyle}>
             Patch Notes
           </button>
+          <button onClick={openOptions} style={secondaryButtonStyle}>
+            Options
+          </button>
         </div>
 
         {/* Account & Theme */}
@@ -267,6 +295,15 @@ export default function Home() {
       </div>
 
       {/* Modals */}
+      {showOptions && (
+        <OptionsModal
+          currentTier={optionsTier}
+          currentLanguage={optionsLanguage}
+          onSelectTier={(t) => { setOptionsTier(t); saveOption('modelTier', t); }}
+          onSelectLanguage={(l) => { setOptionsLanguage(l); saveOption('language', l); }}
+          onClose={() => setShowOptions(false)}
+        />
+      )}
       {showGuide && <HowToPlayModal onClose={() => setShowGuide(false)} />}
       {showPatches && <PatchNotesScreen onClose={() => setShowPatches(false)} />}
       {showTokenShop && (

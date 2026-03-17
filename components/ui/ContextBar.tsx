@@ -16,13 +16,12 @@ interface ContextBarProps {
   onCraft?: () => void;
   onGear?: () => void;
   onBestiary?: () => void;
-  onSettings?: () => void;
   activeQuestCount?: number;
   skillPts?: number;
   bestiaryCount?: number;
 }
 
-export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, onSettings, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount = 0 }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount = 0 }: ContextBarProps) {
   const { T } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -59,21 +58,7 @@ export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop:
       {/* Right: buttons */}
       {(onDungeon || onGear || onBestiary) && (
         <div style={{ flex: 1, borderLeft: `1px solid ${T.border}`, padding: '4px', display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2 }}>
-            {onSettings && (
-              <button
-                onClick={onSettings}
-                title="AI Narrator settings — choose your model tier"
-                style={{
-                  background: 'transparent', border: `1px solid ${T.accent}`,
-                  color: T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer',
-                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5,
-                  whiteSpace: 'nowrap' as const, textAlign: 'center' as const,
-                }}
-              >
-                ⚙ AI
-              </button>
-            )}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
             {onBestiary && (
               <button
                 onClick={onBestiary}

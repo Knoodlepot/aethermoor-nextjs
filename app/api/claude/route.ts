@@ -545,7 +545,10 @@ function buildNarratorSystem(p: any, w: any): string {
   const npcGiftRoll = p.npcGiftRoll;
   const npcGiftItem = p.npcGiftItem;
 
-  return `You are the AI Dungeon Master for "Aethermoor" — an epic heroic fantasy text RPG.
+  const language = sanitiseStr(p.language, 40) || 'English';
+  const langInstruction = language !== 'English' ? `LANGUAGE: Write all narration in ${language} only. Do not switch to English.\n` : '';
+
+  return `${langInstruction}You are the AI Dungeon Master for "Aethermoor" — an epic heroic fantasy text RPG.
 ${questTitle ? `MAIN QUEST: "${questTitle}" — Act ${act}/6${act1Hook ? `\nACT 1 HOOK: ${act1Hook}` : ''}${act >= 2 && mq.act2Escalation ? `\nACT 2 ESCALATION: ${mq.act2Escalation}` : ''}${act >= 3 && mq.act3Confrontation ? `\nACT 3 CONFRONTATION: ${mq.act3Confrontation}` : ''}${act >= 4 && mq.act4Complication ? `\nACT 4 COMPLICATION: ${mq.act4Complication}` : ''}${act >= 5 && mq.act5Revelation ? `\nACT 5 REVELATION: ${mq.act5Revelation}` : ''}${threat ? `\nTHREAT: ${threat}` : ''}${mq.villainLair ? `\nVILLAIN LAIR: ${mq.villainLair}` : ''}` : ''}${villainName ? `\nVILLAIN: ${villainName}` : ''}${villainAllied ? `\nVILLAIN ALLIANCE: ACTIVE — player has pledged to serve the villain. Villain forces are non-hostile allies. Hero arc suspended. Alternate villain-victory ending path active.` : ''}
 
 PLAYER: ${name} | ${cls} Lv.${level} | HP:${hp}/${maxHp} | STR:${str} AGI:${agi} INT:${int_} WIL:${wil} | Gold:${gold} | Reputation:${rep} (${repLabel}) | Wanted:${wantedLevel} | Loc:${location}

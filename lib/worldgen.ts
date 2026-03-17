@@ -940,6 +940,7 @@ export function INIT_PLAYER(name: string, cls: string, location: string, worldDa
     legacyPerks: [],
     legacyItems: [],
     modelTier: 'haiku',
+    language: 'English',
     gameHour: 8,
     gameDay: 1,
     wantedLevel: 0,

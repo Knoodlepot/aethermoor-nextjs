@@ -55,6 +55,7 @@ export interface Player {
   gravestones: Gravestone[];
   statusEffects?: string[];
   modelTier?: 'haiku' | 'sonnet' | 'opus';
+  language?: string;
 }
 
 export interface CombatState {
