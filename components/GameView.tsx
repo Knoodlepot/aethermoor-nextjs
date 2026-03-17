@@ -281,6 +281,9 @@ function GameContent() {
     setTimeout(() => setDungeonHint(false), 4500);
   };
 
+  // Use 'any' casts so TypeScript doesn't object to fields not yet in the Player type
+  const player = gameState.player as any;
+
   // Stable setState references for effects
   const { setIsMobile } = ui;
 
@@ -429,8 +432,6 @@ function GameContent() {
 
   // ── Game is ready ───────────────────────────────────────────────────────────
 
-  // Use 'any' casts so TypeScript doesn't object to fields not yet in the Player type
-  const player = gameState.player as any;
   const worldSeed = gameState.worldSeed as any;
 
   // HP bar colour
