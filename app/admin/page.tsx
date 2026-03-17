@@ -274,6 +274,8 @@ export default function AdminPage() {
   const [breakagePct, setBreakagePct] = React.useState(20);
   const [haikuSplit, setHaikuSplit] = React.useState(0);
   const [gbpRate, setGbpRate] = React.useState(0.80);
+  const [inclCarBot, setInclCarBot] = React.useState(false);
+  const [inclVercel, setInclVercel] = React.useState(false);
 
   // Support
   const [supportQuery, setSupportQuery] = React.useState('');
@@ -411,10 +413,10 @@ export default function AdminPage() {
     const apiCalls = activeTokens;
     const totalApiCostUSD = apiCalls * avgCostPerCallUSD;
     const totalApiCostGBP = totalApiCostUSD * gbpRate;
-    const profitGBP = netGBP - totalApiCostGBP;
-    const profitUSD = profitGBP / gbpRate;
-    return { grossGBP, grossUSD, stripeFees, netGBP, netUSD, totalTokens, breakageTokens, activeTokens, totalApiCostUSD, totalApiCostGBP, profitGBP, profitUSD };
-  }, [calcQty, calcTok, calcPrc, stripePct, stripeFixed, breakagePct, haikuSplit, gbpRate]);
+    const subCostsGBP = (inclCarBot ? 6.50 : 0) + (inclVercel ? 20 * gbpRate : 0);
+    const profitGBP = netGBP - totalApiCostGBP - subCostsGBP;
+    return { grossGBP, stripeFees, netGBP, totalTokens, breakageTokens, activeTokens, totalApiCostGBP, subCostsGBP, profitGBP };
+  }, [calcQty, calcTok, calcPrc, stripePct, stripeFixed, breakagePct, haikuSplit, gbpRate, inclCarBot, inclVercel]);
 
   // ── Settings save ──────────────────────────────────────────────────────────
   function saveSettings() {
@@ -786,21 +788,53 @@ export default function AdminPage() {
           </div>
 
           <div style={S.card}>
+            <div style={S.cardTitle}>SUBSCRIPTIONS</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                { label: 'Car-bot', detail: '£6.50/mo', val: inclCarBot, set: setInclCarBot },
+                { label: 'Vercel', detail: `$20/mo (≈ £${fmt(20 * gbpRate)})`, val: inclVercel, set: setInclVercel },
+              ].map(({ label, detail, val, set }) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div
+                    onClick={() => set(!val)}
+                    style={{
+                      width: 36, height: 20, borderRadius: 10, cursor: 'pointer',
+                      background: val ? '#c9a84c' : '#2e2515',
+                      border: `1px solid ${val ? '#c9a84c' : '#5a4a2a'}`,
+                      position: 'relative', flexShrink: 0, transition: 'background 0.2s',
+                    }}
+                  >
+                    <div style={{
+                      position: 'absolute', top: 2, left: val ? 18 : 2, width: 14, height: 14,
+                      borderRadius: '50%', background: val ? '#0d0a06' : '#5a4a2a', transition: 'left 0.2s',
+                    }} />
+                  </div>
+                  <div>
+                    <span style={{ fontFamily: "'Cinzel', serif", fontSize: 11, color: val ? '#c9a84c' : '#8a7a5a' }}>{label}</span>
+                    <span style={{ fontSize: 11, color: '#5a4a2a', marginLeft: 8 }}>{detail}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={S.card}>
             <div style={S.cardTitle}>RESULTS</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 13 }}>
-              {[
-                ['Gross Revenue', `£${fmt(calcResults.grossGBP)} / $${fmt(calcResults.grossUSD)}`],
+              {([
+                ['Gross Revenue', `£${fmt(calcResults.grossGBP)}`],
                 ['Stripe Fees', `£${fmt(calcResults.stripeFees)}`],
-                ['Net After Stripe', `£${fmt(calcResults.netGBP)} / $${fmt(calcResults.netUSD)}`],
+                ['Net After Stripe', `£${fmt(calcResults.netGBP)}`],
                 ['Total Tokens Sold', calcResults.totalTokens.toLocaleString()],
                 ['Breakage', `${calcResults.breakageTokens.toLocaleString()} tokens`],
                 ['Active Tokens', calcResults.activeTokens.toLocaleString()],
-                ['Anthropic Cost', `$${fmt(calcResults.totalApiCostUSD)} / £${fmt(calcResults.totalApiCostGBP)}`],
-                ['Estimated Profit', `£${fmt(calcResults.profitGBP)} / $${fmt(calcResults.profitUSD)}`],
-              ].map(([label, value]) => (
-                <React.Fragment key={label as string}>
+                ['Anthropic Cost', `£${fmt(calcResults.totalApiCostGBP)}`],
+                ...(calcResults.subCostsGBP > 0 ? [['Subscriptions', `−£${fmt(calcResults.subCostsGBP)}`] as [string, string]] : []),
+                ['Estimated Profit', `£${fmt(calcResults.profitGBP)}`],
+              ] as [string, string][]).map(([label, value]) => (
+                <React.Fragment key={label}>
                   <div style={{ color: '#8a7a5a', fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: 1, alignSelf: 'center' }}>{label}</div>
-                  <div style={{ color: '#c9a84c', fontFamily: "'Cinzel', serif", fontSize: 13 }}>{value}</div>
+                  <div style={{ color: label === 'Estimated Profit' ? (calcResults.profitGBP >= 0 ? '#80c080' : '#c08080') : '#c9a84c', fontFamily: "'Cinzel', serif", fontSize: 13 }}>{value}</div>
                 </React.Fragment>
               ))}
             </div>
