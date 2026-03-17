@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { messages, player, worldSeed, systemType, max_tokens } = body;
+    const { messages, player, worldSeed, systemType, max_tokens, modelTier } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
 
     // Determine if this is a utility call (doesn't need safety check)
     const utilityCall = ['SCREENER', 'QUEST_PARSER', 'ENEMY_NAMER'].includes(systemType);
+    const tier = (!utilityCall && ['haiku', 'sonnet', 'opus'].includes(modelTier)) ? modelTier : 'haiku';
+    const tierCost = utilityCall ? 1 : (anthropic.TIER_TOKEN_COST[tier] ?? 1);
     const needsNarrationSafety = !utilityCall;
 
     // Resolve narrator context from canonical server save first.
@@ -89,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Check token balance and spend token
-    const spend = await spendTokenSafely(authCtx.playerId);
+    const spend = await spendTokenSafely(authCtx.playerId, tierCost);
     if (!spend.success) {
       return NextResponse.json(
         { error: 'no_tokens', message: 'No tokens remaining. Buy more to keep adventuring!', remaining: spend.remaining },
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Call Anthropic API
-    const model = anthropic.selectModel(utilityCall);
+    const model = utilityCall ? anthropic.selectModel(true) : anthropic.selectModelForTier(tier);
     const maxTokens = Math.min(Math.max(100, parseInt(max_tokens) || 1500), 2000);
 
     const { status: apiStatus, data: apiData } = await anthropic.callAnthropic({
@@ -123,7 +125,7 @@ export async function POST(request: NextRequest) {
 
     // Handle API errors
     if (apiStatus !== 200) {
-      await tokens.addTokens(authCtx.playerId, 1, 'refund_api_error');
+      await tokens.addTokens(authCtx.playerId, tierCost, 'refund_api_error');
       console.error(`Anthropic error ${apiStatus}:`, JSON.stringify(apiData).slice(0, 200));
       const freshBalance = await tokens.getBalance(authCtx.playerId);
       return NextResponse.json({ error: 'ai_error', tokenBalance: freshBalance ?? 0 }, { status: 502 });
@@ -136,12 +138,12 @@ export async function POST(request: NextRequest) {
     if (needsNarrationSafety) {
       // Keyword check
       if (anthropic.hasBlockedKeywords(narrative)) {
-        await tokens.addTokens(authCtx.playerId, 1, 'refund_safety_block');
+        await tokens.addTokens(authCtx.playerId, tierCost, 'refund_safety_block');
         const bal = await tokens.getBalance(authCtx.playerId);
         return NextResponse.json(
           {
             narrative: anthropic.buildSafetyFallbackResponse('output_blocked_keywords'),
-            tokenBalance: (bal ?? 0) + 1,
+            tokenBalance: (bal ?? 0) + tierCost,
             safetyBlocked: true,
           },
           { status: 200 }
@@ -151,12 +153,12 @@ export async function POST(request: NextRequest) {
       // AI screener check
       const outGate = await anthropic.runSafetyScreen([{ role: 'assistant', content: narrative }]);
       if (outGate.blocked) {
-        await tokens.addTokens(authCtx.playerId, 1, 'refund_safety_block');
+        await tokens.addTokens(authCtx.playerId, tierCost, 'refund_safety_block');
         const bal = await tokens.getBalance(authCtx.playerId);
         return NextResponse.json(
           {
             narrative: anthropic.buildSafetyFallbackResponse(outGate.reason || 'output_blocked'),
-            tokenBalance: (bal ?? 0) + 1,
+            tokenBalance: (bal ?? 0) + tierCost,
             safetyBlocked: true,
           },
           { status: 200 }
@@ -209,6 +211,7 @@ export async function POST(request: NextRequest) {
     try {
       const authCtx = auth.authenticateRequest(request);
       if (authCtx) {
+        // Best-effort refund — tierCost may not be in scope here, default to 1
         await tokens.addTokens(authCtx.playerId, 1, 'refund_network_error');
       }
     } catch (refundErr) {
@@ -278,14 +281,15 @@ async function persistCanonicalNarrationState(
  * Spend token with error handling
  */
 async function spendTokenSafely(
-  playerId: string
+  playerId: string,
+  cost: number = 1
 ): Promise<{ success: boolean; remaining: number }> {
   const balance = await tokens.getBalance(playerId);
-  if (balance <= 0) {
-    return { success: false, remaining: 0 };
+  if (balance < cost) {
+    return { success: false, remaining: balance };
   }
 
-  const success = await tokens.spendToken(playerId);
+  const success = await tokens.spendToken(playerId, cost);
   const remaining = await tokens.getBalance(playerId);
 
   return { success, remaining };

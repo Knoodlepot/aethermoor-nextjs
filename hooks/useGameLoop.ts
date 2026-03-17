@@ -673,6 +673,7 @@ export function useGameLoop(
             messages,
             player,
             worldSeed,
+            modelTier: (player as any).modelTier ?? 'haiku',
           }),
         });
 

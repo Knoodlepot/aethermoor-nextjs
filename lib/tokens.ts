@@ -53,30 +53,27 @@ export async function ensurePlayerRow(playerId: string): Promise<void> {
 }
 
 /**
- * Spend one token per AI turn
+ * Spend tokens per AI turn (cost varies by model tier)
  */
-export async function spendToken(playerId: string): Promise<boolean> {
+export async function spendToken(playerId: string, cost: number = 1): Promise<boolean> {
   try {
-    // Check balance first
     const balance = await getBalance(playerId);
-    if (balance <= 0) {
-      return false; // Not enough tokens
+    if (balance < cost) {
+      return false;
     }
 
-    // Deduct token
     const result = await query(
       `UPDATE players
-       SET tokens = tokens - 1, updated_at = NOW()
-       WHERE player_id = $1 AND tokens > 0`,
-      [playerId]
+       SET tokens = tokens - $2, updated_at = NOW()
+       WHERE player_id = $1 AND tokens >= $2`,
+      [playerId, cost]
     );
 
     if (result.rowCount! > 0) {
-      // Log the token deduction
       await query(
         `INSERT INTO token_log (player_id, change, reason, created_at)
          VALUES ($1, $2, $3, NOW())`,
-        [playerId, -1, 'AI turn']
+        [playerId, -cost, 'AI turn']
       );
       return true;
     }

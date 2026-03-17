@@ -54,6 +54,7 @@ export interface Player {
   deathCount: number;
   gravestones: Gravestone[];
   statusEffects?: string[];
+  modelTier?: 'haiku' | 'sonnet' | 'opus';
 }
 
 export interface CombatState {

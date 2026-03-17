@@ -939,6 +939,7 @@ export function INIT_PLAYER(name: string, cls: string, location: string, worldDa
     ngPlusCount: 0,
     legacyPerks: [],
     legacyItems: [],
+    modelTier: 'haiku',
     gameHour: 8,
     gameDay: 1,
     wantedLevel: 0,

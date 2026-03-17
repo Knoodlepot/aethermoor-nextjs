@@ -274,6 +274,16 @@ export default function AdminPage() {
   const [breakagePct, setBreakagePct] = React.useState(20);
   const [haikuSplit, setHaikuSplit] = React.useState(0);
   const [gbpRate, setGbpRate] = React.useState(0.80);
+  // Per-tier toggles and token costs
+  const [tierHaiku, setTierHaiku] = React.useState(true);
+  const [tierSonnet, setTierSonnet] = React.useState(false);
+  const [tierOpus, setTierOpus] = React.useState(false);
+  const [tokHaiku, setTokHaiku] = React.useState(1);
+  const [tokSonnet, setTokSonnet] = React.useState(4);
+  const [tokOpus, setTokOpus] = React.useState(20);
+  const [mixHaiku, setMixHaiku] = React.useState(100);
+  const [mixSonnet, setMixSonnet] = React.useState(0);
+  const [mixOpus, setMixOpus] = React.useState(0);
   const [inclCarBot, setInclCarBot] = React.useState(false);
   const [inclVercel, setInclVercel] = React.useState(false);
   const [inclAnthropic, setInclAnthropic] = React.useState(false);
@@ -392,8 +402,11 @@ export default function AdminPage() {
 
   // ── Calculator ─────────────────────────────────────────────────────────────
   const calcResults = React.useMemo(() => {
-    const SONNET_IN = 3.0, SONNET_OUT = 15.0, HAIKU_IN = 0.8, HAIKU_OUT = 4.0;
+    const HAIKU_IN = 0.8, HAIKU_OUT = 4.0;
+    const SONNET_IN = 3.0, SONNET_OUT = 15.0;
+    const OPUS_IN = 15.0, OPUS_OUT = 75.0;
     const AVG_INPUT = 4000, AVG_OUTPUT = 400;
+
     let grossGBP = 0, txCount = 0, totalTokens = 0;
     for (const p of PACKAGES) {
       const qty = calcQty[p.id] || 0;
@@ -403,22 +416,41 @@ export default function AdminPage() {
       txCount += qty;
       totalTokens += qty * toks;
     }
-    const grossUSD = grossGBP / gbpRate;
     const stripeFees = txCount > 0 ? (grossGBP * stripePct / 100) + (txCount * stripeFixed) : 0;
     const netGBP = grossGBP - stripeFees;
-    const netUSD = netGBP / gbpRate;
     const breakageTokens = Math.floor(totalTokens * breakagePct / 100);
     const activeTokens = totalTokens - breakageTokens;
-    const avgCostPerCallUSD =
-      ((AVG_INPUT / 1_000_000) * (SONNET_IN * (1 - haikuSplit / 100) + HAIKU_IN * (haikuSplit / 100))) +
-      ((AVG_OUTPUT / 1_000_000) * (SONNET_OUT * (1 - haikuSplit / 100) + HAIKU_OUT * (haikuSplit / 100)));
-    const apiCalls = activeTokens;
-    const totalApiCostUSD = apiCalls * avgCostPerCallUSD;
+
+    // Blended API cost per game-token using tier mix
+    const totalMix = (tierHaiku ? mixHaiku : 0) + (tierSonnet ? mixSonnet : 0) + (tierOpus ? mixOpus : 0) || 1;
+    const hPct = (tierHaiku ? mixHaiku : 0) / totalMix;
+    const sPct = (tierSonnet ? mixSonnet : 0) / totalMix;
+    const oPct = (tierOpus ? mixOpus : 0) / totalMix;
+    const costPerCallUSD =
+      ((AVG_INPUT / 1_000_000) * (HAIKU_IN * hPct + SONNET_IN * sPct + OPUS_IN * oPct)) +
+      ((AVG_OUTPUT / 1_000_000) * (HAIKU_OUT * hPct + SONNET_OUT * sPct + OPUS_OUT * oPct));
+    // Weighted game-tokens per call (players spend different amounts)
+    const tokPerCall = (tierHaiku ? tokHaiku * hPct : 0) + (tierSonnet ? tokSonnet * sPct : 0) + (tierOpus ? tokOpus * oPct : 0) || 1;
+    const totalApiCalls = activeTokens / tokPerCall;
+    const totalApiCostUSD = totalApiCalls * costPerCallUSD;
     const totalApiCostGBP = totalApiCostUSD * gbpRate;
+
+    // Per-tier profit rows
+    const tierRows = [
+      { label: 'Haiku', enabled: tierHaiku, tok: tokHaiku, IN: HAIKU_IN, OUT: HAIKU_OUT, mix: mixHaiku },
+      { label: 'Sonnet', enabled: tierSonnet, tok: tokSonnet, IN: SONNET_IN, OUT: SONNET_OUT, mix: mixSonnet },
+      { label: 'Opus', enabled: tierOpus, tok: tokOpus, IN: OPUS_IN, OUT: OPUS_OUT, mix: mixOpus },
+    ].filter(t => t.enabled).map(t => {
+      const costUSD = ((AVG_INPUT / 1_000_000) * t.IN) + ((AVG_OUTPUT / 1_000_000) * t.OUT);
+      const costGBP = costUSD * gbpRate;
+      const revGBP = totalTokens > 0 ? (grossGBP / totalTokens) * t.tok : 0;
+      return { label: t.label, tok: t.tok, costGBP, mix: t.mix, marginGBP: revGBP - costGBP };
+    });
+
     const subCostsGBP = (inclCarBot ? 6.50 : 0) + (inclVercel ? 20 * gbpRate : 0) + (inclAnthropic ? 15 : 0) + (inclRailway ? 5 * gbpRate : 0);
     const profitGBP = netGBP - totalApiCostGBP - subCostsGBP;
-    return { grossGBP, stripeFees, netGBP, totalTokens, breakageTokens, activeTokens, totalApiCostGBP, subCostsGBP, profitGBP };
-  }, [calcQty, calcTok, calcPrc, stripePct, stripeFixed, breakagePct, haikuSplit, gbpRate, inclCarBot, inclVercel, inclAnthropic, inclRailway]);
+    return { grossGBP, stripeFees, netGBP, totalTokens, breakageTokens, activeTokens, totalApiCostGBP, subCostsGBP, profitGBP, tierRows };
+  }, [calcQty, calcTok, calcPrc, stripePct, stripeFixed, breakagePct, gbpRate, inclCarBot, inclVercel, inclAnthropic, inclRailway, tierHaiku, tierSonnet, tierOpus, tokHaiku, tokSonnet, tokOpus, mixHaiku, mixSonnet, mixOpus]);
 
   // ── Settings save ──────────────────────────────────────────────────────────
   function saveSettings() {
@@ -777,7 +809,6 @@ export default function AdminPage() {
                 { label: 'Stripe Fee %', val: stripePct, set: setStripePct, step: 0.1 },
                 { label: 'Stripe Fixed (£)', val: stripeFixed, set: setStripeFixed, step: 0.01 },
                 { label: 'Breakage %', val: breakagePct, set: setBreakagePct, step: 1 },
-                { label: 'Haiku Split %', val: haikuSplit, set: setHaikuSplit, step: 1 },
                 { label: 'USD → GBP Rate', val: gbpRate, set: setGbpRate, step: 0.01 },
               ].map(({ label, val, set, step }) => (
                 <div key={label}>
@@ -787,6 +818,43 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div style={S.card}>
+            <div style={S.cardTitle}>AI MODEL TIERS</div>
+            <div style={{ fontSize: 10, color: '#5a4a2a', marginBottom: 12, fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>
+              Toggle tiers to include in blended cost. Set tokens per turn and player usage mix %.
+            </div>
+            {[
+              { label: 'Haiku', model: 'claude-haiku-4-5', colour: '#4a7a4a', enabled: tierHaiku, setEnabled: setTierHaiku, tok: tokHaiku, setTok: setTokHaiku, mix: mixHaiku, setMix: setMixHaiku, apiCost: '~£0.004/call' },
+              { label: 'Sonnet', model: 'claude-sonnet-4-6', colour: '#4a6a9a', enabled: tierSonnet, setEnabled: setTierSonnet, tok: tokSonnet, setTok: setTokSonnet, mix: mixSonnet, setMix: setMixSonnet, apiCost: '~£0.014/call' },
+              { label: 'Opus', model: 'claude-opus-4-6', colour: '#8a4a9a', enabled: tierOpus, setEnabled: setTierOpus, tok: tokOpus, setTok: setTokOpus, mix: mixOpus, setMix: setMixOpus, apiCost: '~£0.072/call' },
+            ].map(({ label, model, colour, enabled, setEnabled, tok, setTok, mix, setMix, apiCost }) => (
+              <div key={label} style={{ marginBottom: 10, border: `1px solid ${enabled ? colour + '66' : '#2e2515'}`, padding: '10px 12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: enabled ? 10 : 0 }}>
+                  <div onClick={() => setEnabled(!enabled)} style={{ width: 36, height: 20, borderRadius: 10, cursor: 'pointer', background: enabled ? colour : '#2e2515', border: `1px solid ${enabled ? colour : '#5a4a2a'}`, position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}>
+                    <div style={{ position: 'absolute', top: 2, left: enabled ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: enabled ? '#0d0a06' : '#5a4a2a', transition: 'left 0.2s' }} />
+                  </div>
+                  <div>
+                    <span style={{ fontFamily: "'Cinzel', serif", fontSize: 11, color: enabled ? colour : '#8a7a5a' }}>{label}</span>
+                    <span style={{ fontSize: 10, color: '#5a4a2a', marginLeft: 8 }}>{model}</span>
+                    <span style={{ fontSize: 10, color: '#3a3020', marginLeft: 8 }}>{apiCost}</span>
+                  </div>
+                </div>
+                {enabled && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div>
+                      <label style={S.label}>TOKENS / TURN</label>
+                      <input style={S.input} type="number" min={1} step={1} value={tok} onChange={(e) => setTok(Number(e.target.value))} />
+                    </div>
+                    <div>
+                      <label style={S.label}>PLAYER MIX %</label>
+                      <input style={S.input} type="number" min={0} max={100} step={1} value={mix} onChange={(e) => setMix(Number(e.target.value))} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
           <div style={S.card}>
@@ -842,6 +910,26 @@ export default function AdminPage() {
                 </React.Fragment>
               ))}
             </div>
+
+            {calcResults.tierRows.length > 0 && (
+              <>
+                <div style={{ borderTop: '1px solid #2e2515', margin: '14px 0 10px' }} />
+                <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 2, color: '#5a4a2a', marginBottom: 8 }}>PER-TIER API COST VS REVENUE</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 4 }}>
+                  {['TIER', 'TOKENS', 'API COST', 'MARGIN/TURN'].map(h => (
+                    <div key={h} style={{ fontFamily: "'Cinzel', serif", fontSize: 8, color: '#5a4a2a', letterSpacing: 1 }}>{h}</div>
+                  ))}
+                  {calcResults.tierRows.map(r => (
+                    <React.Fragment key={r.label}>
+                      <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, color: '#c9a84c' }}>{r.label}</div>
+                      <div style={{ fontSize: 11, color: '#d4c5a0' }}>{r.tok}</div>
+                      <div style={{ fontSize: 11, color: '#d4c5a0' }}>£{fmt(r.costGBP)}</div>
+                      <div style={{ fontSize: 11, color: r.marginGBP >= 0 ? '#80c080' : '#c08080' }}>£{fmt(r.marginGBP)}</div>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

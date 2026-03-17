@@ -43,6 +43,7 @@ import { DeathScreen } from '@/components/screens/DeathScreen';
 import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 
 // Modals
+import { SettingsPanel } from '@/components/modals/SettingsPanel';
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
 import { FactionOfferModal } from '@/components/modals/FactionOfferModal';
 import { UserProfileModal } from '@/components/modals/UserProfileModal';
@@ -274,6 +275,12 @@ function GameContent() {
     }
   };
 
+
+  const [showSettings, setShowSettings] = useState(false);
+  const handleTierSelect = (tier: 'haiku' | 'sonnet' | 'opus') => {
+    if (!gameState.player) return;
+    gameState.setPlayer({ ...gameState.player, modelTier: tier } as any);
+  };
 
   const [dungeonHint, setDungeonHint] = useState(false);
   const showDungeonHint = () => {
@@ -773,6 +780,7 @@ function GameContent() {
         onCraft={() => ui.toggleModal('crafting')}
         onGear={() => ui.toggleModal('inventory')}
         onBestiary={() => ui.toggleModal('bestiary')}
+        onSettings={() => setShowSettings(true)}
         activeQuestCount={activeQuestCount}
         skillPts={skillPts}
         bestiaryCount={bestiaryCount}
@@ -1170,6 +1178,7 @@ function GameContent() {
           onCraft={() => ui.toggleModal('crafting')}
           onGear={() => { ui.toggleModal('inventory'); setShowMobilePanel(false); }}
           onBestiary={() => { ui.toggleModal('bestiary'); setShowMobilePanel(false); }}
+          onSettings={() => { setShowSettings(true); setShowMobilePanel(false); }}
           activeQuestCount={activeQuestCount}
           skillPts={skillPts}
           bestiaryCount={bestiaryCount}
@@ -1378,6 +1387,14 @@ function GameContent() {
 
       {ui.showPatchNotes && (
         <PatchNotesScreen onClose={() => ui.closeModal('patchNotes')} />
+      )}
+
+      {showSettings && (
+        <SettingsPanel
+          currentTier={(player?.modelTier as any) ?? 'haiku'}
+          onSelectTier={handleTierSelect}
+          onClose={() => setShowSettings(false)}
+        />
       )}
 
       {ui.showHowToPlay && (

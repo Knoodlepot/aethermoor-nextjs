@@ -2,6 +2,7 @@ const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 let warnedMissingAnthropicKey = false;
 const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 const SONNET_MODEL = 'claude-sonnet-4-6';
+const OPUS_MODEL = 'claude-opus-4-6';
 const HAIKU_PCT = Math.min(
   100,
   Math.max(0, parseInt(process.env.HAIKU_PCT || '90'))
@@ -136,6 +137,22 @@ export function selectModel(isUtilityCall: boolean = false): string {
   if (isUtilityCall) return HAIKU_MODEL;
   return Math.random() * 100 < HAIKU_PCT ? HAIKU_MODEL : SONNET_MODEL;
 }
+
+/**
+ * Select model for a player-chosen tier — always 100% that model
+ */
+export function selectModelForTier(tier: string): string {
+  if (tier === 'opus') return OPUS_MODEL;
+  if (tier === 'sonnet') return SONNET_MODEL;
+  return HAIKU_MODEL;
+}
+
+/** Token cost per tier */
+export const TIER_TOKEN_COST: Record<string, number> = {
+  haiku: 1,
+  sonnet: 4,
+  opus: 20,
+};
 
 /**
  * Build safety fallback narrative string
