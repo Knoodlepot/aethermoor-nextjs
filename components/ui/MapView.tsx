@@ -18,7 +18,7 @@ const KEY_X = 725, KEY_Y = 20;
 const PAD = 44;
 const BASE_SX = (MAP_W - PAD * 2) / 100;
 const BASE_SY = (MAP_H - PAD * 2) / 100;
-const ZOOM_MIN = 0.6, ZOOM_MAX = 3.0;
+const ZOOM_MIN = 0.6, ZOOM_MAX = 5.0;
 const ZOOM_STEP_BTN = 0.25, ZOOM_STEP_SCROLL = 0.12;
 
 // ── Tier icons for location list ──
@@ -50,9 +50,9 @@ const NODE: Record<string, { r: number; fill: string; stroke: string; label: str
 const ROAD_STYLE: Record<string, { color: string; width: number; dash: number[]; fogColor: string; fogWidth: number }> = {
   highway: { color: '#c9a84c', width: 3,   dash: [],      fogColor: 'rgba(201,168,76,0.35)',  fogWidth: 2   },
   road:    { color: '#7a6c50', width: 2,   dash: [],      fogColor: 'rgba(122,108,80,0.35)',  fogWidth: 1.5 },
-  dirt:    { color: '#5a4430', width: 1.5, dash: [5, 4],  fogColor: 'rgba(90,68,48,0.3)',    fogWidth: 1   },
-  trail:   { color: '#3a5030', width: 1,   dash: [3, 5],  fogColor: 'rgba(58,80,48,0.25)',   fogWidth: 1   },
-  track:   { color: '#382818', width: 1,   dash: [2, 6],  fogColor: 'rgba(56,40,24,0.2)',    fogWidth: 0.8 },
+  dirt:    { color: '#8a6e50', width: 1.5, dash: [5, 4],  fogColor: 'rgba(138,110,80,0.35)', fogWidth: 1   },
+  trail:   { color: '#6a8850', width: 1,   dash: [3, 5],  fogColor: 'rgba(106,136,80,0.3)',  fogWidth: 1   },
+  track:   { color: '#7a6040', width: 1,   dash: [2, 6],  fogColor: 'rgba(122,96,64,0.28)',  fogWidth: 0.8 },
 };
 
 function fmtHours(h: number): string {
@@ -62,45 +62,6 @@ function fmtHours(h: number): string {
   return rem > 0 ? `${d}d ${rem}h` : `${d}d`;
 }
 
-// Deterministic seeded random for terrain textures (avoids noise flicker on re-render)
-function seededRand(seed: number) {
-  let s = seed >>> 0;
-  return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 0xffffffff; };
-}
-
-// Generate organic (irregular blob) control points around a rectangle
-function organicPoints(
-  px: number, py: number, pw: number, ph: number,
-  r: () => number,
-  steps: number = 10
-): Array<{ x: number; y: number }> {
-  const pts: Array<{ x: number; y: number }> = [];
-  const jx = pw * 0.13, jy = ph * 0.13;
-  const nt = Math.max(2, Math.round(steps * pw / (pw + ph)));
-  const ns = Math.max(2, Math.round(steps * ph / (pw + ph)));
-  for (let i = 0; i < nt; i++)
-    pts.push({ x: px + (i / nt) * pw + (r() - 0.5) * jx, y: py + (r() - 0.5) * jy });
-  for (let i = 0; i < ns; i++)
-    pts.push({ x: px + pw + (r() - 0.5) * jx, y: py + (i / ns) * ph + (r() - 0.5) * jy });
-  for (let i = nt; i > 0; i--)
-    pts.push({ x: px + (i / nt) * pw + (r() - 0.5) * jx, y: py + ph + (r() - 0.5) * jy });
-  for (let i = ns; i > 0; i--)
-    pts.push({ x: px + (r() - 0.5) * jx, y: py + (i / ns) * ph + (r() - 0.5) * jy });
-  return pts;
-}
-
-// Draw a smooth bezier curve through organic control points
-function drawOrganic(g: CanvasRenderingContext2D, pts: Array<{ x: number; y: number }>) {
-  if (pts.length < 3) return;
-  g.beginPath();
-  const last = pts[pts.length - 1];
-  g.moveTo((last.x + pts[0].x) / 2, (last.y + pts[0].y) / 2);
-  for (let i = 0; i < pts.length; i++) {
-    const c = pts[i], n = pts[(i + 1) % pts.length];
-    g.quadraticCurveTo(c.x, c.y, (c.x + n.x) / 2, (c.y + n.y) / 2);
-  }
-  g.closePath();
-}
 
 export function MapView({ player, worldSeed, onClose, inline = false, onCommand }: MapViewProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -189,7 +150,6 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
 
     const lg: Record<string, any> = (worldSeed.travelMatrix as any)?.locationGrid || {};
     const routes: any[] = (worldSeed.travelMatrix as any)?.routes || [];
-    const terrain: any[] = (worldSeed.travelMatrix as any)?.terrain || [];
     const explored = new Set<string>((player as any).exploredLocations || [player.location]);
     const current = player.location;
 
@@ -219,108 +179,6 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
       g.fillRect(MAP_X + Math.random() * MAP_W, MAP_Y + Math.random() * MAP_H, Math.random() * 3 + 1, Math.random() * 3 + 1);
     }
     g.globalAlpha = 1;
-
-    // ── TERRAIN (clipped, zoomed) ──
-    g.save();
-    clipToMap();
-
-    terrain.forEach((t: any, ti: number) => {
-      const { type, x, y, w, h } = t;
-      if (!type || x == null || y == null || !w || !h) return;
-      const s1 = toScreen(x, y), s2 = toScreen(x + w, y + h);
-      const px = s1.x, py = s1.y, pw = s2.x - s1.x, ph = s2.y - s1.y;
-      if (pw <= 0 || ph <= 0) return;
-      const sr = seededRand(ti * 888131 + (type.charCodeAt(0) || 0) * 17);
-      const r  = seededRand(ti * 999983 + (type.charCodeAt(0) || 0) * 7);
-      const pts = organicPoints(px, py, pw, ph, sr);
-      g.save();
-      drawOrganic(g, pts);
-      g.clip();
-
-      if (type === 'forest' || type === 'woodland' || type === 'glade') {
-        g.fillStyle = 'rgba(10,32,8,0.55)'; g.fillRect(px, py, pw, ph);
-        g.fillStyle = 'rgba(40,80,20,0.6)';
-        for (let i = 0; i < 80; i++) {
-          g.beginPath(); g.arc(px + r() * pw, py + r() * ph, 1.5 + r() * 2, 0, Math.PI * 2); g.fill();
-        }
-        g.strokeStyle = 'rgba(50,90,25,0.35)'; g.lineWidth = 0.8; g.setLineDash([]);
-        for (let i = 0; i < 15; i++) {
-          const cx = px + r() * pw, cy = py + r() * ph, cs = 4 + r() * 5;
-          g.beginPath(); g.moveTo(cx - cs / 2, cy); g.lineTo(cx + cs / 2, cy); g.stroke();
-          g.beginPath(); g.moveTo(cx, cy - cs / 2); g.lineTo(cx, cy + cs / 2); g.stroke();
-        }
-      } else if (type === 'plains') {
-        g.fillStyle = 'rgba(120,100,40,0.22)'; g.fillRect(px, py, pw, ph);
-        g.strokeStyle = 'rgba(150,130,60,0.15)'; g.lineWidth = 0.7; g.setLineDash([]);
-        const sp = Math.max(4, ph / 10);
-        for (let ly = py; ly < py + ph; ly += sp) { g.beginPath(); g.moveTo(px, ly); g.lineTo(px + pw, ly); g.stroke(); }
-      } else if (type === 'grasslands') {
-        g.fillStyle = 'rgba(50,100,20,0.28)'; g.fillRect(px, py, pw, ph);
-        g.fillStyle = 'rgba(70,130,30,0.3)';
-        for (let i = 0; i < 60; i++) {
-          g.beginPath(); g.arc(px + r() * pw, py + r() * ph, 1 + r() * 1.5, 0, Math.PI * 2); g.fill();
-        }
-      } else if (type === 'hills') {
-        g.fillStyle = 'rgba(80,65,40,0.28)'; g.fillRect(px, py, pw, ph);
-        g.strokeStyle = 'rgba(110,90,60,0.5)'; g.lineWidth = 1; g.setLineDash([]);
-        for (let i = 0; i < 18; i++) {
-          const hx = px + r() * pw, hy = py + r() * ph, hr = 5 + r() * 8;
-          g.beginPath(); g.arc(hx, hy, hr, Math.PI, Math.PI * 2); g.stroke();
-          g.beginPath(); g.arc(hx, hy + hr * 0.4, hr * 0.6, Math.PI, Math.PI * 2); g.stroke();
-        }
-      } else if (type === 'mountains') {
-        g.fillStyle = 'rgba(45,42,50,0.35)'; g.fillRect(px, py, pw, ph);
-        const rows = Math.max(2, Math.floor(ph / 28));
-        for (let row = 0; row < rows; row++) {
-          const baseY = py + ph - (row + 1) * (ph / (rows + 0.5));
-          const peaks = Math.max(2, Math.floor(pw / 18));
-          for (let p = 0; p < peaks; p++) {
-            const pkX = px + (p + 0.5 + r() * 0.4 - 0.2) * (pw / peaks);
-            const pkW = (pw / peaks) * (0.65 + r() * 0.5);
-            const pkH = 14 + r() * 24;
-            g.fillStyle = 'rgba(70,65,80,0.65)';
-            g.beginPath();
-            g.moveTo(pkX - pkW / 2, baseY + 8);
-            g.lineTo(pkX, baseY - pkH);
-            g.lineTo(pkX + pkW / 2, baseY + 8);
-            g.closePath(); g.fill();
-            g.fillStyle = 'rgba(200,200,220,0.28)';
-            g.beginPath();
-            g.moveTo(pkX - pkW * 0.15, baseY - pkH + pkH * 0.28);
-            g.lineTo(pkX, baseY - pkH);
-            g.lineTo(pkX + pkW * 0.15, baseY - pkH + pkH * 0.28);
-            g.closePath(); g.fill();
-          }
-        }
-      } else if (type === 'tundra') {
-        g.fillStyle = 'rgba(150,165,195,0.2)'; g.fillRect(px, py, pw, ph);
-        g.fillStyle = 'rgba(175,190,215,0.22)';
-        for (let i = 0; i < 40; i++) {
-          g.beginPath(); g.arc(px + r() * pw, py + r() * ph, 1 + r() * 1.5, 0, Math.PI * 2); g.fill();
-        }
-        g.strokeStyle = 'rgba(130,145,170,0.2)'; g.lineWidth = 0.5; g.setLineDash([2, 4]);
-        for (let i = 0; i < 10; i++) {
-          const lx = px + r() * pw, ly = py + r() * ph;
-          g.beginPath(); g.moveTo(lx, ly); g.lineTo(lx + r() * 20 - 10, ly + r() * 20 - 10); g.stroke();
-        }
-        g.setLineDash([]);
-      } else if (type === 'swamp') {
-        g.fillStyle = 'rgba(35,65,35,0.38)'; g.fillRect(px, py, pw, ph);
-        g.fillStyle = 'rgba(55,85,45,0.3)';
-        for (let i = 0; i < 55; i++) {
-          g.beginPath(); g.arc(px + r() * pw, py + r() * ph, 1 + r() * 3, 0, Math.PI * 2); g.fill();
-        }
-      }
-      g.restore();
-      // Soft parchment border traces the organic edge
-      g.save();
-      drawOrganic(g, pts);
-      g.strokeStyle = 'rgba(180,155,80,0.18)';
-      g.lineWidth = 1.5;
-      g.setLineDash([]);
-      g.stroke();
-      g.restore();
-    });
 
     // ── RIVERS ── (curved bezier on river-flagged routes)
     const drawnRivers = new Set<string>();
@@ -559,48 +417,16 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
       g.fillText(rk.desc, KEY_X + 56, ry + 13);
     });
 
-    const divY3 = divY2 + 140;
-    g.strokeStyle = '#c9a84c22'; g.lineWidth = 1;
-    g.beginPath(); g.moveTo(KEY_X + 6, divY3); g.lineTo(W - 14, divY3); g.stroke();
-
-    // Terrain key
-    g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#a07848'; g.textAlign = 'left';
-    g.fillText('TERRAIN', KEY_X + 10, divY3 + 13);
-    [
-      { col: 'rgba(10,32,8,0.75)',      label: 'Forest / Woodland', river: false },
-      { col: 'rgba(50,100,20,0.65)',    label: 'Grasslands',        river: false },
-      { col: 'rgba(120,100,40,0.55)',   label: 'Plains',            river: false },
-      { col: 'rgba(80,65,40,0.65)',     label: 'Hills',             river: false },
-      { col: 'rgba(45,42,50,0.7)',      label: 'Mountains',         river: false },
-      { col: 'rgba(150,165,195,0.5)',   label: 'Tundra',            river: false },
-      { col: 'rgba(35,65,35,0.65)',     label: 'Swamp',             river: false },
-      { col: 'rgba(55,105,175,0.6)',    label: 'River',             river: true  },
-    ].forEach((tk, i) => {
-      const ty = divY3 + 26 + i * 14;
-      if (tk.river) {
-        g.save();
-        g.strokeStyle = tk.col; g.lineWidth = 2.5; g.setLineDash([]);
-        g.beginPath(); g.moveTo(KEY_X + 10, ty - 3); g.lineTo(KEY_X + 24, ty - 3); g.stroke();
-        g.restore();
-      } else {
-        g.fillStyle = tk.col; g.fillRect(KEY_X + 10, ty - 8, 14, 10);
-        g.strokeStyle = 'rgba(201,168,76,0.18)'; g.lineWidth = 0.5; g.setLineDash([]);
-        g.strokeRect(KEY_X + 10, ty - 8, 14, 10);
-      }
-      g.font = '7px Cinzel,serif'; g.fillStyle = '#a09080'; g.textAlign = 'left';
-      g.fillText(tk.label, KEY_X + 28, ty);
-    });
-
     // Markers
-    const divY4 = divY3 + 130;
-    if (divY4 < MAP_Y + MAP_H - 20) {
+    const divY3 = divY2 + 140;
+    if (divY3 < MAP_Y + MAP_H - 20) {
       g.strokeStyle = '#c9a84c22'; g.lineWidth = 1;
-      g.beginPath(); g.moveTo(KEY_X + 6, divY4); g.lineTo(W - 14, divY4); g.stroke();
+      g.beginPath(); g.moveTo(KEY_X + 6, divY3); g.lineTo(W - 14, divY3); g.stroke();
       g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#a07848'; g.textAlign = 'left';
-      g.fillText('MARKERS', KEY_X + 10, divY4 + 13);
+      g.fillText('MARKERS', KEY_X + 10, divY3 + 13);
       [{ sym: '◆', col: '#fffce0', label: 'Your location' }, { sym: '?', col: '#806040', label: 'Unexplored nearby' }]
         .forEach((mk, i) => {
-          const my = divY4 + 26 + i * 16;
+          const my = divY3 + 26 + i * 16;
           g.font = 'bold 10px serif'; g.fillStyle = mk.col; g.textAlign = 'left';
           g.fillText(mk.sym, KEY_X + 13, my + 3);
           g.font = '8px Cinzel,serif'; g.fillStyle = mk.col;
