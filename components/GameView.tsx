@@ -49,7 +49,7 @@ import { UserProfileModal } from '@/components/modals/UserProfileModal';
 import { SaveSlotModal } from '@/components/modals/SaveSlotModal';
 import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 
-import { CLASSES, STATUS_EFFECTS } from '@/lib/constants';
+import { CLASSES, STATUS_EFFECTS, FACTIONS } from '@/lib/constants';
 import { countItem, XP_TABLE } from '@/lib/helpers';
 import { generateWorldSeed, INIT_PLAYER } from '@/lib/worldgen';
 
@@ -105,6 +105,8 @@ function GameContent() {
   const [showMobilePanel, setShowMobilePanel] = useState(false);
   const prevGoldRef = useRef<number | null>(null);
   const [goldFlash, setGoldFlash] = useState<'gain' | 'loss' | null>(null);
+  const prevHpRef = useRef<number | null>(null);
+  const [hpFlash, setHpFlash] = useState<'heal' | 'damage' | null>(null);
 
   // Fetch token balance on mount and after Stripe return
   useEffect(() => {
@@ -289,6 +291,18 @@ function GameContent() {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, [setIsMobile]);
+
+  // HP change flash
+  useEffect(() => {
+    if (!player) return;
+    const prev = prevHpRef.current;
+    prevHpRef.current = player.hp;
+    if (prev !== null && player.hp !== prev) {
+      setHpFlash(player.hp > prev ? 'heal' : 'damage');
+      const t = setTimeout(() => setHpFlash(null), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [player?.hp]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Gold change flash
   useEffect(() => {
@@ -481,6 +495,35 @@ function GameContent() {
     return sum + (qtyMatch ? parseInt(qtyMatch[1], 10) : 1);
   }, 0) : 0;
 
+  // HP flash colour
+  const hpBarColor = hpFlash === 'heal' ? '#60c060' : hpFlash === 'damage' ? '#c04040' : T.hpColor;
+
+  // Gear summary (weapon · body · head, non-null slots only)
+  const gearSummary = player
+    ? (['weapon', 'body', 'head'] as const).map((s) => (player.equipped as any)?.[s]).filter(Boolean).join(' · ')
+    : '';
+
+  // Faction rank helpers
+  const FACTION_RANKS_LOCAL = [
+    { label: 'Stranger',  color: '#6a523c' },
+    { label: 'Known',     color: '#9a7a55' },
+    { label: 'Associate', color: '#c0a030' },
+    { label: 'Member',    color: '#60a060' },
+    { label: 'Trusted',   color: '#3090c0' },
+    { label: 'Champion',  color: '#9030c0' },
+  ];
+  const FACTION_XP_NEEDED_LOCAL = [100, 300, 600, 1000, 1500, 2100];
+  const factionRankIdx = (xp: number) => {
+    let r = 0;
+    for (let i = 0; i < FACTION_XP_NEEDED_LOCAL.length; i++) { if (xp >= FACTION_XP_NEEDED_LOCAL[i]) r = i + 1; else break; }
+    return Math.min(r, FACTION_RANKS_LOCAL.length - 1);
+  };
+  const activeFactions = player ? Object.values(FACTIONS)
+    .map((f: any) => ({ name: f.name, xp: (player.factionStandings || {})[f.id] || 0 }))
+    .filter((f) => f.xp > 0)
+    .sort((a, b) => b.xp - a.xp)
+    .slice(0, 4) : [];
+
   // ── StatBar helper ─────────────────────────────────────────────────────────
   const StatBar = ({ label, value, max, color }: { label: string; value: number; max: number; color: string }) => {
     const pct = Math.min(100, Math.round((value / Math.max(1, max)) * 100));
@@ -587,12 +630,15 @@ function GameContent() {
       <div style={{ padding: '4px 6px 4px', textAlign: 'center' as const }}>
         <div style={{ ...tf, color: T.gold, fontSize: 16, letterSpacing: 1 }}>{player.name}</div>
         <div style={{ color: T.accent, fontSize: 11, letterSpacing: 1, marginTop: 2 }}>{player.class} · Lv.{playerLevel}</div>
+        {gearSummary && (
+          <div style={{ color: T.textFaint, fontSize: 10, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{gearSummary}</div>
+        )}
         <div style={{ color: charClockColor, fontSize: 11, marginTop: 4, letterSpacing: 1 }}>{clockStr}</div>
       </div>
 
       {/* ── HP / XP bars ── */}
       <div style={{ padding: '0 6px 4px' }}>
-        <StatBar label="❤️ HP" value={hp} max={maxHp} color={T.hpColor} />
+        <StatBar label="❤️ HP" value={hp} max={maxHp} color={hpBarColor} />
         <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
         <div style={{ fontSize: 9, color: T.textFaint, textAlign: 'right' as const, marginTop: 2, marginBottom: 8 }}>
           Next: {xpCeil} XP
@@ -634,6 +680,25 @@ function GameContent() {
           <div style={{ color: T.textMuted, fontSize: 10 }}>⭐ Rep</div>
         </button>
       </div>
+
+      {/* ── Faction mini-list ── */}
+      {activeFactions.length > 0 && (
+        <button
+          onClick={() => ui.toggleModal('standings')}
+          style={{ display: 'block', width: '100%', textAlign: 'left' as const, background: 'none', border: 'none', borderTop: `1px solid ${T.border}`, cursor: 'pointer', padding: '4px 8px 6px' }}
+        >
+          <div style={{ fontSize: 8, color: T.textFaint, letterSpacing: 2, marginBottom: 3 }}>FACTIONS</div>
+          {activeFactions.map((f) => {
+            const rank = FACTION_RANKS_LOCAL[factionRankIdx(f.xp)];
+            return (
+              <div key={f.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 2 }}>
+                <span style={{ color: T.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const, maxWidth: '62%' }}>{f.name}</span>
+                <span style={{ color: rank.color, flexShrink: 0 }}>{rank.label}</span>
+              </div>
+            );
+          })}
+        </button>
+      )}
     </div>
   ) : null;
 
@@ -943,7 +1008,7 @@ function GameContent() {
             cursor: 'pointer',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: gearSummary ? 1 : 3 }}>
             <span style={{ ...tf, color: T.gold, fontSize: 11 }}>
               {player.name} · {player.class} Lv.{playerLevel}
             </span>
@@ -973,9 +1038,12 @@ function GameContent() {
               )}
             </div>
           </div>
+          {gearSummary && (
+            <div style={{ fontSize: 10, color: T.textFaint, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{gearSummary}</div>
+          )}
           <div style={{ display: 'flex', gap: 4 }}>
             <div style={{ flex: 1, height: 4, background: T.border, borderRadius: 2, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${Math.round((hp / maxHp) * 100)}%`, background: T.hpColor }} />
+              <div style={{ height: '100%', width: `${Math.round((hp / maxHp) * 100)}%`, background: hpBarColor, transition: 'background 0.3s' }} />
             </div>
             <div style={{ flex: 1, height: 4, background: T.border, borderRadius: 2, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${xpRange > 0 ? Math.round((xpProgress / xpRange) * 100) : 0}%`, background: T.xpColor }} />
@@ -999,6 +1067,40 @@ function GameContent() {
         isLoading={gameLoop.isLoading}
         fillInput={ui.fillInput || null}
       />
+
+      {/* Suggestion chips */}
+      {ui.suggestions.length > 0 && !gameLoop.isLoading && (
+        <div style={{ flexShrink: 0, borderTop: `1px solid ${T.border}` }}>
+          {ui.suggestions.slice(0, 3).map((s, idx) => (
+            <button
+              key={idx}
+              onClick={() => { ui.setSuggestions([]); handleFreeText(s); }}
+              style={{
+                width: '100%', background: 'transparent', border: 'none',
+                borderBottom: `1px solid ${T.border}`, color: T.textMuted,
+                padding: '8px 12px', textAlign: 'left' as const, fontSize: 12,
+                fontFamily: "'Crimson Text',serif", cursor: 'pointer',
+              }}
+            >
+              ▸ {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Context action buttons — inline for all contexts */}
+      {player && (
+        <ContextActionPanel
+          context={(player as any).context || 'explore'}
+          isLoading={gameLoop.isLoading}
+          onAction={(text) => handleFreeText(text)}
+          onOpenShop={() => ui.toggleModal('shop')}
+          onOpenCraft={() => ui.toggleModal('crafting')}
+          inventory={(player as any).inventory || []}
+          location={(player as any).location}
+          locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
+        />
+      )}
     </div>
   );
 
@@ -1077,18 +1179,6 @@ function GameContent() {
             combatLog={ui.combatLog}
             playerStatusEffects={ui.playerStatusEffects}
             playerDefending={ui.playerDefending}
-          />
-        )}
-        {player && (
-          <ContextActionPanel
-            context={(player as any).context || 'explore'}
-            isLoading={gameLoop.isLoading}
-            onAction={(text) => { handleFreeText(text); setShowMobilePanel(false); }}
-            onOpenShop={() => { ui.toggleModal('shop'); setShowMobilePanel(false); }}
-            onOpenCraft={() => { ui.toggleModal('crafting'); setShowMobilePanel(false); }}
-            inventory={(player as any).inventory || []}
-            location={(player as any).location}
-            locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
           />
         )}
         {worldSeed && (
