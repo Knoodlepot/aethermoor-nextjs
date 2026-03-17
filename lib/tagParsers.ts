@@ -551,11 +551,18 @@ export function processParsedTags(
     }
   }
 
-  // Item removal
+  // Item removal — strip from inventory AND any equipped slot
   if (tags.remove && tags.remove.item) {
+    const removeName = tags.remove.item as string;
+    const currentEquipped = updatedPlayer.equipped || {};
+    const newEquipped: Record<string, string | null> = {};
+    for (const [slot, val] of Object.entries(currentEquipped)) {
+      newEquipped[slot] = val === removeName ? null : (val as string | null);
+    }
     updatedPlayer = {
       ...updatedPlayer,
-      inventory: (updatedPlayer.inventory || []).filter((i) => i !== tags.remove.item),
+      inventory: (updatedPlayer.inventory || []).filter((i) => i !== removeName),
+      equipped: newEquipped,
     };
   }
 

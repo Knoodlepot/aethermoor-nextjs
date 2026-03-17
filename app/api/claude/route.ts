@@ -669,7 +669,7 @@ RULES:
   Only emit playerStatus when an effect clearly begins or clearly ends. Do NOT emit it on every turn — only at the moment of onset or cure. Never stack the same effect twice. Enemy status effects are descriptive only — do not emit playerStatus tags for enemies.
 - ITEM REMOVE RULE: Emit {"remove":{"item":"ItemName"}} on its own line whenever an item clearly leaves the player's possession — this includes: the player gives, trades, donates, or surrenders it; an enemy disarms, steals, grabs, or takes it; the item is consumed or destroyed. If you narrate that an item is lost, stolen, or gone, you MUST emit the remove tag. Do not describe an item as gone without removing it.
 - THROWN WEAPON RULE: When the player deliberately throws a weapon or item during combat (not the Knife Throw skill — that implies retrieval):
-  1. IMMEDIATELY emit {"remove":{"item":"ItemName"}} — the item leaves their hands at the moment of throwing.
+  1. IMMEDIATELY emit {"remove":{"item":"ItemName"}} — the item leaves their hands at the moment of throwing. Use the exact item name as it appears in EQUIPPED or INVENTORY (check EQUIPPED first — thrown weapons are usually the equipped weapon).
   2. When combat ends, always include a short post-combat recovery beat. Roll internally based on AGI:
      - AGI 8+: 75% chance recovered
      - AGI 5–7: 60% chance recovered
