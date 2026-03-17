@@ -1,6 +1,14 @@
 ## [Unreleased]
 
 ### Added
+- **Options menu on the main screen**: A new Options button on the title screen opens a panel where you can choose your AI narrator model and the language you want the game narrated in — no need to enter the game first.
+- **Choose your AI narrator**: Pick Haiku (1 token/turn, fast), Sonnet (4 tokens/turn, richer prose), or Opus (20 tokens/turn, deepest storytelling) directly from the main menu Options screen.
+- **Narrator language selection**: The game can now narrate in 18 languages including French, Spanish, German, Japanese, Arabic, and more. Selecting a non-English language shows a note (in that language) that narration may not be perfect.
+
+### Changed
+- **AI model selector moved to main menu**: The in-game AI button has been removed. All narrator and language settings are now in the Options screen on the main menu.
+
+### Added
 - **Combat, explore, and town action buttons now always visible on mobile**: All action buttons (Attack, Flee, Shop, Notice Board, Move, Rest, etc.) appear directly below the input bar on mobile — no need to open the side menu during a fight or while exploring.
 - **Suggestion chips on mobile**: After each narrator response, three suggested actions appear as tappable buttons below the input bar, helping you decide what to do next.
 - **HP bar flashes on change**: When you take damage the HP bar briefly flashes red. When you heal (rest, potion, or magic) it briefly flashes green — so you can see at a glance that something changed.

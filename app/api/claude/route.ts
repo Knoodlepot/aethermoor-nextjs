@@ -438,16 +438,53 @@ function buildNarratorSystem(p: any, w: any): string {
   const bestiaryCount = Array.isArray(p.bestiary) ? p.bestiary.reduce((s: number, b: any) => s + (b.timesKilled || 0), 0) : 0;
   const bestiaryTypes = Array.isArray(p.bestiary) ? p.bestiary.length : 0;
 
-  // Narrative-affecting skill tree unlocks
-  const narrativeSkills: string[] = [];
+  // All skill tree descriptions — sent to narrator so it knows what the player can do
+  const ALL_SKILL_DESCRIPTIONS: Record<string, string> = {
+    // Warrior
+    iron_skin: 'Iron Skin (reduce all incoming damage by 1 permanently)',
+    power_strike: 'Power Strike (chance to deal double damage on a heavy swing)',
+    war_shout: 'War Shout (boost STR for 3 turns when combat begins)',
+    crushing_blow: 'Crushing Blow (stagger the enemy, skipping their next attack)',
+    toughness: 'Toughness (max HP +20 permanently)',
+    battle_rush: 'Battle Rush (first attack each combat deals +50% damage)',
+    berserker_rage: 'Berserker Rage (below 30% HP, deal triple damage)',
+    unbreakable: 'Unbreakable (survive one killing blow per dungeon at 1 HP — bears visible battle scars; soldiers recognise a true warrior)',
+    warlords_presence: "Warlord's Presence (weaker enemies may flee before combat; commands battlefield authority — NPCs and enemies sense the dominance)",
+    // Rogue
+    shadowstep: 'Shadowstep (vanish and reappear behind the target; next attack automatically crits)',
+    pick_pocket: 'Pick Pocket (steal gold from targets without entering combat)',
+    knife_throw: 'Knife Throw (open combat at range with an AGI-based thrown dagger)',
+    blade_dance: 'Blade Dance (strike twice per attack turn against a single target)',
+    evasion: 'Evasion (+20% chance to dodge incoming attacks)',
+    smoke_bomb: 'Smoke Bomb (guaranteed escape from any combat encounter)',
+    master_thief: 'Master Thief (doubles all gold from combat and theft — merchants are wary, criminals respect you)',
+    assassinate: 'Assassinate (one-hit-kill chance on weakened targets)',
+    ghost_walk: 'Ghost Walk (25% chance to negate an incoming attack completely; moves with uncanny silence — people sometimes do not notice until they speak)',
+    // Mage
+    arcane_surge: 'Arcane Surge (cast one spell for free per combat)',
+    mana_shield: 'Mana Shield (absorb up to 15 damage before HP is affected)',
+    spell_pierce: 'Spell Pierce (spells ignore half of enemy defence)',
+    chain_lightning: 'Chain Lightning (lightning bounces between up to 3 targets)',
+    arcane_mind: 'Arcane Mind (add INT to WIL for spell resistance permanently)',
+    overcharge: 'Overcharge (sacrifice 10 HP to boost next spell damage by 50%)',
+    archmages_will: "Archmage's Will (all spells automatically critically hit — radiates arcane mastery; lesser scholars defer, the fearful flinch)",
+    time_stop: "Time Stop (skip the enemy's next 3 turns; once per dungeon)",
+    lich_form: 'Lich Form (death heals instead of killing, once per run)',
+    // Cleric
+    healing_light: 'Healing Light (restore 25 HP as a combat action)',
+    bless: 'Bless (boost next attack by WIL×2 damage)',
+    ward_undead: 'Ward Undead (undead deal 30% less damage)',
+    smite_evil: 'Smite Evil (deal double damage against undead and demons)',
+    group_heal: 'Group Heal (restore WIL×3 HP at start of each floor)',
+    divine_aegis: 'Divine Aegis (absorb the first attack each combat completely)',
+    resurrection_light: 'Resurrection Light (survive death once per dungeon at 50% HP — carries an unmistakable air of divine protection; the devout sense it)',
+    holy_storm: 'Holy Storm (massive WIL-based holy damage hits all enemies present)',
+    avatar_divine: 'Avatar of the Divine (for 3 turns all attacks heal 50% of damage dealt — a visible divine aura in moments of extremity; the faithful take notice)',
+  };
   const sk = Array.isArray(p.unlockedSkills) ? p.unlockedSkills : [];
-  if (sk.includes('warlords_presence')) narrativeSkills.push("Warlord's Presence (commands battlefield authority — NPCs and enemies sense your dominance)");
-  if (sk.includes('master_thief')) narrativeSkills.push("Master Thief (renowned for sleight of hand — merchants are wary, criminals respect you)");
-  if (sk.includes('archmages_will')) narrativeSkills.push("Archmage's Will (radiates arcane mastery — lesser scholars defer, the fearful flinch)");
-  if (sk.includes('avatar_divine')) narrativeSkills.push("Avatar of the Divine (a visible divine aura in moments of extremity — the faithful take notice)");
-  if (sk.includes('unbreakable')) narrativeSkills.push("Unbreakable (bears visible battle scars with quiet pride — soldiers recognise a true warrior)");
-  if (sk.includes('ghost_walk')) narrativeSkills.push("Ghost Walk (moves with uncanny silence — people sometimes don't notice them until they speak)");
-  if (sk.includes('resurrection_light')) narrativeSkills.push("Resurrection Light (carries an unmistakable air of divine protection — the devout sense it)");
+  const unlockedSkillDescs = sk
+    .map((id: string) => ALL_SKILL_DESCRIPTIONS[id])
+    .filter(Boolean) as string[];
 
   // Travel matrix
   let travelMatrixStr = '';
@@ -561,7 +598,7 @@ ${knownNpcs ? `KNOWN NPCS: ${knownNpcs}` : ''}
 CURRENT TIME: ${timeStr}
 ${scheduledEvents ? `UPCOMING EVENTS: ${scheduledEvents}` : ''}
 ${bestiaryCount > 0 ? `KILLS: ${bestiaryCount} total across ${bestiaryTypes} enemy types slain` : ''}
-${narrativeSkills.length > 0 ? `MASTERED SKILLS: ${narrativeSkills.join('; ')}` : ''}
+${unlockedSkillDescs.length > 0 ? `UNLOCKED SKILLS: ${unlockedSkillDescs.join('; ')}` : ''}
 ${travelMatrixStr ? travelMatrixStr : ''}
 ${worldEventsStr ? `WORLD EVENTS: ${worldEventsStr}\n` : ''}
 XEPHITA ROLL: ${Math.floor(Math.random() * 10) + 1}
@@ -605,10 +642,10 @@ RULES:
   - Do NOT push the hero arc. Build toward an alternate ending — the villain achieves their goal with the player's aid. Weave growing dread into every scene.
   - When the player makes an unambiguous, convincing, irreversible pledge to the villain's cause (not merely talking to a cultist — a genuine oath or act of commitment), emit on its own line: {"villainAlly":true}. This is permanent. Do not emit it lightly.
 - Track consequences, remember NPCs, weave in main quest organically
-- When you introduce a NEW named NPC emit on its own line: {"npc":{"name":"Name","role":"Role","location":"SettlementName","relationship":"neutral","notes":"One sentence"}} — always include the settlement or place where this NPC lives or was first encountered in the "location" field.
+- When you introduce a NEW named NPC emit on its own line: {"npc":{"name":"Name","role":"Role","location":"SettlementName","relationship":"neutral","notes":"One sentence"}} — always include the settlement or place where this NPC lives or was first encountered in the "location" field. If this NPC gives the player a quest or commission, add "questGiver":true to the tag.
 - When an EXISTING NPC from KNOWN NPCS appears or is encountered in the narrative, emit on its own line: {"npcUpdate":{"name":"ExactName","lastInteractionNotes":"Brief outcome summary"}} — this updates their record and optionally records the interaction outcome. Reuse and reference known NPCs naturally across locations — have them reappear in other settlements, remember past interactions, grow or change based on what the player has done.
 - NPC UNIQUENESS RULE: Every name in KNOWN NPCS belongs exclusively to that character and their listed location. Never give a new character a name that already appears in KNOWN NPCS. Each settlement has its own distinct cast — do not reuse tavern names, innkeeper names, or merchant names from one location in another. If you need a new NPC, invent a completely different name.
-- When a quest is clearly completed say "quest complete" somewhere in your response
+- QUEST COMPLETE RULE: When a quest objective is clearly fulfilled, emit on its own line: {"questComplete":"Exact Quest Title"} — use the exact title from ACTIVE QUESTS. Also include "quest complete" naturally in your prose.
 - SHOP RULE: When the player browses a shop through conversation, describe available wares, prices, and the merchant's manner — but do not complete a transaction until a negotiation has concluded. When the player sends the "barter" command, they are opening a price negotiation — engage with it directly. Have the merchant name their asking price and let the scene unfold naturally. Do NOT redirect the player to "use the barter command" — they are already in one. When a barter negotiation ends without a completed purchase (player declines, walks away, or can't agree), give the player a clear final choice in prose (e.g. "The merchant shrugs. Last offer: 65 gold — take it or leave it.") and emit on its own line: {"shopPrice":{"item":"Exact Item Name","price":N}} where N is the final price the merchant was willing to accept. This updates the item's price in the shop for the player's next visit. Only emit shopPrice when a specific item's price was actively negotiated — not for general browsing or window shopping.
 - GOLD RULE: When a barter negotiation or conversational purchase clearly concludes (price agreed, item handed over, payment accepted), emit both {"grant":{"item":"ItemName"}} AND {"goldChange":-N} where N is the gold cost. On a failed negotiation where the player walks away, emit {"shopPrice":{"item":"ItemName","price":N}} with the merchant's last offered price instead (see SHOP RULE). Check the player's current gold balance before confirming any sale — if they cannot afford it, the merchant declines. Never deduct gold without also granting the item, and vice versa.
 - GOLD CHANGE RULE: When gold changes hands as a direct narrative consequence — a fine levied, a bribe paid, a reward received, gambling winnings, a sale completed through conversation — emit on its own line: {"goldChange":N} where N is a signed integer (negative = player spends, positive = player receives). Do NOT emit on every turn, only on clear gold transactions. CRITICAL: If you acknowledge in prose that the player was overcharged, that gold should be refunded, or that a previous deduction was an error, you MUST emit {"goldChange":N} with the refund amount — stating the correct total in prose alone does NOT update the player's actual gold balance. Similarly, if an NPC is explicitly covering the cost of something (paying on the player's behalf), do NOT emit a negative goldChange for that cost; if the player was already charged in error, emit a positive goldChange to return it.
@@ -633,7 +670,7 @@ RULES:
   Only emit playerStatus when an effect clearly begins or clearly ends. Do NOT emit it on every turn — only at the moment of onset or cure. Never stack the same effect twice. Enemy status effects are descriptive only — do not emit playerStatus tags for enemies.
 - ITEM REMOVE RULE: When the player clearly gives, hands over, trades away, donates, or surrenders an item from their own inventory to someone else, emit on its own line: {"remove":{"item":"ItemName"}} using the exact item name if known.
 - THEFT RULE: When the player successfully steals, pickpockets, loots, or takes a physical item from an NPC or bystander through narrative action (not combat), emit on its own line: {"grant":{"item":"ItemName"}} using a descriptive name for the stolen item (e.g. "Stolen Purse", "Merchant's Ledger", "Guard's Keyring"). If gold is stolen, emit {"goldChange":N} with a positive N for the amount taken instead. Only emit these tags when the theft clearly succeeds — if the attempt fails or is interrupted, emit nothing. Do not emit for items the player was already carrying before the theft.
-- QUEST RULE: When you establish a clear new objective or mission for the player, emit on its own line: {"newQuest":{"title":"Short Quest Name","objective":"One sentence describing what the player must do","type":"side"}} — always include "type":"side" for regular quests, "type":"contract" for paid work, "type":"faction" for faction missions. If any gold is paid UPFRONT when the quest is accepted (advance payment, deposit, retainer), include "rewardGold":N in the tag (e.g. {"newQuest":{"title":"...","objective":"...","type":"contract","rewardGold":20}}) — this automatically credits the player's gold so you do NOT also need to emit a separate {"goldChange":N} for the upfront amount. Only use rewardGold for gold given NOW; use {"goldChange":N} separately for any gold paid on completion.
+- QUEST RULE: When you establish a clear new objective or mission for the player, emit on its own line: {"newQuest":{"title":"Short Quest Name","objective":"One sentence describing what the player must do","type":"side"}} — always include "type":"side" for regular quests, "type":"contract" for paid work, "type":"faction" for faction missions. If any gold is paid UPFRONT when the quest is accepted (advance payment, deposit, retainer), include "rewardGold":N in the tag (e.g. {"newQuest":{"title":"...","objective":"...","type":"contract","rewardGold":20}}) — this automatically credits the player's gold so you do NOT also need to emit a separate {"goldChange":N} for the upfront amount. Only use rewardGold for gold given NOW; use {"goldChange":N} separately for any gold paid on completion. CRITICAL: Whenever you emit a newQuest tag from a named NPC, you MUST also emit that NPC's tag on a separate line — use {"npc":{...,"questGiver":true,...}} if they are new, or {"npcUpdate":{"name":"ExactName","questGiver":true,"lastInteractionNotes":"Gave quest: Title"}} if they are already in KNOWN NPCS. No named quest-giver should go untracked.
 - SUGGESTIONS: At the very end of every response (after the context tag), emit on its own line: {"suggestions":["First person action 3-7 words","Another action","Third action"]} — three natural contextual choices the player could take next
 - ACT PROGRESSION: You are narrating Act ${act} of a 6-act campaign. Progress acts organically — earned by story moments, not just level alone (use levels as a rough guide):
   - Act 1 (levels 1–4): Build dread using the ACT 1 HOOK above as ominous signs, NPC whispers, environmental details. NEVER name the villain. After 3+ significant hook moments AND player has meaningful stakes, emit: {"mainQuestAct":"2"}

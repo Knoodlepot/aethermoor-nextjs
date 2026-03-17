@@ -24,6 +24,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"villainAlly"\s*:\s*true\}/g, '');
   t = t.replace(/\{"worldEvent"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"grantAbility"\s*:\s*"[^"]+"\}/g, '');
+  t = t.replace(/\{"questComplete"\s*:\s*"[^"]+"\}/g, '');
   t = t.replace(/\{"repChange"\s*:\s*-?\d+\}/g, '');
   t = t.replace(/\{"goldChange"\s*:\s*-?\d+\}/g, '');
   t = t.replace(/\{"shopPrice"\s*:\s*\{[\s\S]+?\}\s*\}/g, '');
@@ -274,6 +275,14 @@ export function extractGrantAbilityTag(text: string): string | null {
 }
 
 /**
+ * Extract quest complete tag: {"questComplete":"Quest Title"}
+ */
+export function extractQuestCompleteTag(text: string): string | null {
+  const m = text.match(/\{"questComplete"\s*:\s*"([^"]+)"\}/);
+  return m ? m[1] : null;
+}
+
+/**
  * Extract reputation change tag: {"repChange":N}
  */
 export function extractRepChangeTag(text: string): number | null {
@@ -418,6 +427,7 @@ export interface ParsedTags {
   villainAlly: boolean;
   worldEvent: any;
   grantAbility: string | null;
+  questComplete: string | null;
   repChange: number | null;
   goldChange: number | null;
   shopPrice: any;
@@ -454,6 +464,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     villainAlly: extractVillainAllyTag(narrative),
     worldEvent: extractWorldEventTag(narrative),
     grantAbility: extractGrantAbilityTag(narrative),
+    questComplete: extractQuestCompleteTag(narrative),
     repChange: extractRepChangeTag(narrative),
     goldChange: extractGoldChangeTag(narrative),
     shopPrice: extractShopPriceTag(narrative),
@@ -672,6 +683,23 @@ export function processParsedTags(
     const actNum = parseInt(tags.mainQuestAct, 10);
     if (!isNaN(actNum) && actNum > (updatedSeed.currentAct || 0)) {
       updatedSeed = { ...updatedSeed, currentAct: actNum };
+    }
+  }
+
+  // Quest completion — mark matching quest as done
+  if (tags.questComplete) {
+    const titleLower = tags.questComplete.toLowerCase().trim();
+    const currentQuests = updatedPlayer.quests || [];
+    const idx = currentQuests.findIndex(
+      (q: any) => q.title && q.title.toLowerCase().trim() === titleLower && q.status === 'active'
+    );
+    if (idx >= 0) {
+      updatedPlayer = {
+        ...updatedPlayer,
+        quests: currentQuests.map((q: any, i: number) =>
+          i === idx ? { ...q, status: 'done' } : q
+        ),
+      };
     }
   }
 
