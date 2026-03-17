@@ -923,8 +923,8 @@ export default function AdminPage() {
                     <React.Fragment key={r.label}>
                       <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, color: '#c9a84c' }}>{r.label}</div>
                       <div style={{ fontSize: 11, color: '#d4c5a0' }}>{r.tok}</div>
-                      <div style={{ fontSize: 11, color: '#d4c5a0' }}>£{fmt(r.costGBP)}</div>
-                      <div style={{ fontSize: 11, color: r.marginGBP >= 0 ? '#80c080' : '#c08080' }}>£{fmt(r.marginGBP)}</div>
+                      <div style={{ fontSize: 11, color: '#d4c5a0' }}>£{r.costGBP.toFixed(4)}</div>
+                      <div style={{ fontSize: 11, color: r.marginGBP >= 0 ? '#80c080' : '#c08080' }}>£{r.marginGBP.toFixed(4)}</div>
                     </React.Fragment>
                   ))}
                 </div>
