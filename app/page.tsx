@@ -6,7 +6,6 @@ import { OptionsModal, type ModelTier } from '@/components/modals/OptionsModal';
 import { PatchNotesScreen } from '@/components/screens/PatchNotesScreen';
 import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 import { SaveSlotModal } from '@/components/modals/SaveSlotModal';
-import { THEMES, type ThemeKey } from '@/components/providers/ThemeProvider';
 import type { SlotSummary } from '@/hooks/useStorage';
 
 export default function Home() {
@@ -17,7 +16,6 @@ export default function Home() {
   const [optionsLanguage, setOptionsLanguage] = useState('English');
   const [showTokenShop, setShowTokenShop] = useState(false);
   const [showLoadSlot, setShowLoadSlot] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('standard');
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [playerIdCopied, setPlayerIdCopied] = useState(false);
@@ -245,29 +243,6 @@ export default function Home() {
             </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <label style={{ fontSize: '0.9rem', color: '#b8925a' }}>Theme:</label>
-            <select
-              value={selectedTheme}
-              onChange={(e) => setSelectedTheme(e.target.value as ThemeKey)}
-              style={{
-                padding: '0.5rem 0.75rem',
-                background: '#0a0805',
-                color: '#c9a84c',
-                border: '1px solid #2e2010',
-                borderRadius: '3px',
-                fontSize: '0.9rem',
-                fontFamily: 'Georgia, serif',
-                cursor: 'pointer',
-              }}
-            >
-              {Object.entries(THEMES).map(([key, theme]) => (
-                <option key={key} value={key}>
-                  {theme.label}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {/* Footer */}
@@ -278,9 +253,6 @@ export default function Home() {
           color: '#7a6040',
         }}>
           <p>v0.3.0 — Next.js Migration Phase 5</p>
-          <p style={{ marginTop: '0.5rem', fontSize: '0.75rem' }}>
-            Your theme preference resets on reload. Sign in to save your settings.
-          </p>
           <p style={{ marginTop: '0.75rem' }}>
             <a
               href="/legal"

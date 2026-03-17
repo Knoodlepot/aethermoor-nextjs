@@ -13,7 +13,7 @@ export function NarrativePanel({
   narrative,
   log = [],
 }: NarrativePanelProps) {
-  const { T, bf, isDyslexic } = useTheme();
+  const { T, bf, isDyslexic, narrativeFontSize } = useTheme();
   const logRef = React.useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom on narrative update
@@ -25,7 +25,6 @@ export function NarrativePanel({
 
   const dyxNarr = isDyslexic
     ? {
-        fontSize: 18,
         lineHeight: 2.1,
         letterSpacing: '0.04em',
         wordSpacing: '0.18em',
@@ -58,7 +57,7 @@ export function NarrativePanel({
             marginBottom: 10,
             animation: 'slideIn 0.4s ease',
             lineHeight: 2.0,
-            fontSize: 15,
+            fontSize: narrativeFontSize,
             overflow: 'visible',
             ...bf,
             ...dyxNarr,

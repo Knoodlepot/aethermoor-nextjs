@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTheme, THEMES, type ThemeKey, type TextSize } from '@/components/providers/ThemeProvider';
 
 export type ModelTier = 'haiku' | 'sonnet' | 'opus';
 
@@ -31,6 +32,14 @@ const LANGUAGES: { name: string; native: string; warning: string }[] = [
   { name: 'Turkish',    native: 'Türkçe',     warning: 'Anlatım %100 doğru olmayabilir.' },
 ];
 
+const TEXT_SIZES: { id: TextSize; label: string; desc: string }[] = [
+  { id: 'small',  label: 'S', desc: 'Small'  },
+  { id: 'medium', label: 'M', desc: 'Medium' },
+  { id: 'large',  label: 'L', desc: 'Large'  },
+];
+
+const SECTION = { fontFamily: "'Cinzel',serif", fontSize: 10, letterSpacing: 3, color: '#8a7a5a', marginBottom: 10 } as const;
+
 interface OptionsModalProps {
   currentTier: ModelTier;
   currentLanguage: string;
@@ -40,6 +49,7 @@ interface OptionsModalProps {
 }
 
 export function OptionsModal({ currentTier, currentLanguage, onSelectTier, onSelectLanguage, onClose }: OptionsModalProps) {
+  const { themeKey, setThemeKey, isDyslexic, setIsDyslexic, textSize, setTextSize } = useTheme();
   const [pendingLang, setPendingLang] = React.useState<string | null>(null);
   const selectedLangData = LANGUAGES.find(l => l.name === (pendingLang ?? currentLanguage));
 
@@ -49,7 +59,7 @@ export function OptionsModal({ currentTier, currentLanguage, onSelectTier, onSel
       onClick={onClose}
     >
       <div
-        style={{ background: '#13100a', border: '1px solid #2e2515', maxWidth: 500, width: '100%', padding: '24px 20px', maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ background: '#13100a', border: '1px solid #2e2515', maxWidth: 520, width: '100%', padding: '24px 20px', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -58,8 +68,113 @@ export function OptionsModal({ currentTier, currentLanguage, onSelectTier, onSel
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#5a4a2a', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>
 
+        {/* DISPLAY THEME */}
+        <div style={SECTION}>DISPLAY THEME</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: 24 }}>
+          {(Object.entries(THEMES) as [ThemeKey, typeof THEMES[ThemeKey]][]).map(([key, theme]) => {
+            const active = themeKey === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setThemeKey(key)}
+                style={{
+                  background: active ? '#c9a84c14' : 'transparent',
+                  border: `1px solid ${active ? '#c9a84c' : '#2e2515'}`,
+                  padding: '10px 12px',
+                  cursor: 'pointer',
+                  textAlign: 'left' as const,
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                }}
+              >
+                {/* Color swatches */}
+                <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+                  {theme.preview.map((c, i) => (
+                    <span key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, display: 'inline-block', border: '1px solid rgba(255,255,255,0.15)' }} />
+                  ))}
+                </div>
+                <div>
+                  <div style={{ fontFamily: "'Cinzel',serif", fontSize: 10, color: active ? '#c9a84c' : '#8a7a5a', letterSpacing: 1 }}>{theme.label}</div>
+                  <div style={{ fontSize: 10, color: '#5a4a2a', marginTop: 1, fontFamily: "'Crimson Text',Georgia,serif" }}>{theme.desc}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ACCESSIBILITY */}
+        <div style={SECTION}>ACCESSIBILITY</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+
+          {/* Dyslexia font toggle */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #2e2515', padding: '10px 12px' }}>
+            <div>
+              <div style={{ fontFamily: "'Cinzel',serif", fontSize: 10, color: isDyslexic ? '#c9a84c' : '#8a7a5a', letterSpacing: 1 }}>DYSLEXIA-FRIENDLY FONT</div>
+              <div style={{ fontSize: 11, color: '#5a4a2a', marginTop: 2, fontFamily: "'Crimson Text',Georgia,serif" }}>Uses OpenDyslexic — wider spacing, distinct letter shapes</div>
+            </div>
+            <button
+              onClick={() => setIsDyslexic(!isDyslexic)}
+              style={{
+                width: 44,
+                height: 24,
+                borderRadius: 12,
+                background: isDyslexic ? '#4a7a4a' : '#2e2515',
+                border: 'none',
+                cursor: 'pointer',
+                position: 'relative' as const,
+                flexShrink: 0,
+                transition: 'background 0.2s',
+              }}
+            >
+              <span style={{
+                position: 'absolute' as const,
+                top: 3,
+                left: isDyslexic ? 23 : 3,
+                width: 18,
+                height: 18,
+                borderRadius: '50%',
+                background: '#fff',
+                transition: 'left 0.2s',
+                display: 'block',
+              }} />
+            </button>
+          </div>
+
+          {/* Text size */}
+          <div style={{ border: '1px solid #2e2515', padding: '10px 12px' }}>
+            <div style={{ fontFamily: "'Cinzel',serif", fontSize: 10, color: '#8a7a5a', letterSpacing: 1, marginBottom: 8 }}>NARRATOR TEXT SIZE</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {TEXT_SIZES.map((s) => {
+                const active = textSize === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setTextSize(s.id)}
+                    style={{
+                      flex: 1,
+                      padding: '6px 0',
+                      background: active ? '#c9a84c22' : 'transparent',
+                      border: `1px solid ${active ? '#c9a84c' : '#2e2515'}`,
+                      color: active ? '#c9a84c' : '#8a7a5a',
+                      cursor: 'pointer',
+                      fontFamily: "'Cinzel',serif",
+                      fontSize: s.id === 'small' ? 11 : s.id === 'large' ? 15 : 13,
+                      letterSpacing: 1,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {s.desc}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
         {/* AI SELECTION */}
-        <div style={{ fontFamily: "'Cinzel',serif", fontSize: 10, letterSpacing: 3, color: '#8a7a5a', marginBottom: 10 }}>AI SELECTION</div>
+        <div style={SECTION}>AI SELECTION</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
           {TIERS.map((t) => {
             const active = currentTier === t.id;
@@ -84,7 +199,7 @@ export function OptionsModal({ currentTier, currentLanguage, onSelectTier, onSel
         </div>
 
         {/* NARRATOR LANGUAGE */}
-        <div style={{ fontFamily: "'Cinzel',serif", fontSize: 10, letterSpacing: 3, color: '#8a7a5a', marginBottom: 10 }}>NARRATOR LANGUAGE</div>
+        <div style={SECTION}>NARRATOR LANGUAGE</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 12 }}>
           {LANGUAGES.map((l) => {
             const active = (pendingLang ?? currentLanguage) === l.name;
@@ -108,7 +223,7 @@ export function OptionsModal({ currentTier, currentLanguage, onSelectTier, onSel
 
         {/* Warning for non-English */}
         {selectedLangData?.warning && (
-          <div style={{ background: '#201808', border: '1px solid #5a3a10', padding: '8px 12px', fontSize: 12, color: '#c9a84c', fontFamily: "'Crimson Text',Georgia,serif", lineHeight: 1.5 }}>
+          <div style={{ background: '#201808', border: '1px solid #5a3a10', padding: '8px 12px', fontSize: 12, color: '#c9a84c', fontFamily: "'Crimson Text',Georgia,serif", lineHeight: 1.5, marginBottom: 14 }}>
             ⚠ {selectedLangData.warning}
           </div>
         )}

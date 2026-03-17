@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Theme color definitions
 export const THEMES = {
@@ -89,8 +89,9 @@ export const THEMES = {
     inputBg: '#0a0606',
   },
   dyslexia: {
-    label: 'Dyslexia-Friendly',
-    dyslexic: true as const,
+    label: 'Light (High Contrast)',
+    desc: 'Light background, high contrast text',
+    dyslexic: false as const,
     preview: ['#b06010', '#c47a20', '#1a6030'],
     gold: '#7a4a08',
     accent: '#b06010',
@@ -111,6 +112,7 @@ export const THEMES = {
 };
 
 export type ThemeKey = keyof typeof THEMES;
+export type TextSize = 'small' | 'medium' | 'large';
 
 export interface ThemeContextType {
   T: (typeof THEMES)[ThemeKey];
@@ -126,9 +128,12 @@ export interface ThemeContextType {
     letterSpacing?: string;
     wordSpacing?: string;
     lineHeight?: number;
-    fontSize?: number;
   };
   isDyslexic: boolean;
+  setIsDyslexic: (v: boolean) => void;
+  textSize: TextSize;
+  setTextSize: (v: TextSize) => void;
+  narrativeFontSize: number;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -150,9 +155,41 @@ export function ThemeProvider({
   children,
   initialTheme = 'standard',
 }: ThemeProviderProps) {
-  const [themeKey, setThemeKey] = useState<ThemeKey>(initialTheme);
+  const [themeKey, setThemeKeyState] = useState<ThemeKey>(initialTheme);
+  const [isDyslexicOverride, setIsDyslexicOverrideState] = useState(false);
+  const [textSize, setTextSizeState] = useState<TextSize>('medium');
+
+  // Load persisted preferences from localStorage after mount
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('rpg-theme') as ThemeKey;
+    if (storedTheme && storedTheme in THEMES) setThemeKeyState(storedTheme);
+
+    setIsDyslexicOverrideState(localStorage.getItem('rpg-dyslexic') === '1');
+
+    const storedSize = localStorage.getItem('rpg-textsize') as TextSize;
+    if (storedSize === 'small' || storedSize === 'medium' || storedSize === 'large') {
+      setTextSizeState(storedSize);
+    }
+  }, []);
+
+  const setThemeKey = (key: ThemeKey) => {
+    setThemeKeyState(key);
+    localStorage.setItem('rpg-theme', key);
+  };
+
+  const setIsDyslexic = (v: boolean) => {
+    setIsDyslexicOverrideState(v);
+    localStorage.setItem('rpg-dyslexic', v ? '1' : '0');
+  };
+
+  const setTextSize = (v: TextSize) => {
+    setTextSizeState(v);
+    localStorage.setItem('rpg-textsize', v);
+  };
+
   const T = THEMES[themeKey];
-  const isDyslexic = !!T.dyslexic;
+  const isDyslexic = isDyslexicOverride;
+  const narrativeFontSize = textSize === 'small' ? 13 : textSize === 'large' ? 18 : 15;
 
   // Font styling
   const tf = {
@@ -206,6 +243,10 @@ export function ThemeProvider({
     tf,
     bf,
     isDyslexic,
+    setIsDyslexic,
+    textSize,
+    setTextSize,
+    narrativeFontSize,
   };
 
   return (
