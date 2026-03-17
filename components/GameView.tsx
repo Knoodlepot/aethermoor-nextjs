@@ -65,7 +65,7 @@ function GameContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isNewGame = searchParams.get('new') === '1';
-  const { T, tf, isDyslexic } = useTheme();
+  const { T, tf, isDyslexic, t } = useTheme();
 
   // All hooks in dependency order
   const auth = useAuth();
@@ -669,16 +669,16 @@ function GameContent() {
       <div style={{ borderTop: `1px solid ${T.border}`, padding: '4px 6px', display: 'flex', justifyContent: 'space-around' }}>
         <div style={{ textAlign: 'center' as const }}>
           <div style={{ color: goldFlash === 'gain' ? '#60c060' : goldFlash === 'loss' ? '#c04040' : T.gold, fontSize: 17, lineHeight: '1.2', ...tf, transition: 'color 0.3s' }}>{player.gold}</div>
-          <div style={{ color: T.textMuted, fontSize: 10 }}>🪙 Gold</div>
+          <div style={{ color: T.textMuted, fontSize: 10 }}>🪙 {t('gold')}</div>
         </div>
         <div style={{ textAlign: 'center' as const }}>
           <div style={{ color: rations > 0 ? '#80a060' : '#c05050', fontSize: 17, lineHeight: '1.2', ...tf }}>{rations}</div>
-          <div style={{ color: T.textMuted, fontSize: 10 }}>🎒 Rations</div>
+          <div style={{ color: T.textMuted, fontSize: 10 }}>🎒 {t('rations')}</div>
         </div>
         <button onClick={() => ui.toggleModal('standings')}
           style={{ textAlign: 'center' as const, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <div style={{ color: T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{player.reputation ?? 0}</div>
-          <div style={{ color: T.textMuted, fontSize: 10 }}>⭐ Rep</div>
+          <div style={{ color: T.textMuted, fontSize: 10 }}>⭐ {t('rep')}</div>
         </button>
       </div>
 
@@ -688,7 +688,7 @@ function GameContent() {
           onClick={() => ui.toggleModal('standings')}
           style={{ display: 'block', width: '100%', textAlign: 'left' as const, background: 'none', border: 'none', borderTop: `1px solid ${T.border}`, cursor: 'pointer', padding: '4px 8px 6px' }}
         >
-          <div style={{ fontSize: 8, color: T.textFaint, letterSpacing: 2, marginBottom: 3 }}>FACTIONS</div>
+          <div style={{ fontSize: 8, color: T.textFaint, letterSpacing: 2, marginBottom: 3 }}>{t('factions').toUpperCase()}</div>
           {activeFactions.map((f) => {
             const rank = FACTION_RANKS_LOCAL[factionRankIdx(f.xp)];
             return (

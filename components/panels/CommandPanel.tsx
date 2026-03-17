@@ -13,7 +13,7 @@ interface CommandPanelProps {
 }
 
 export function CommandPanel({ player, onCommand, isLoading, isDyslexic }: CommandPanelProps) {
-  const { T } = useTheme();
+  const { T, t } = useTheme();
   const ctx = player?.context || 'explore';
 
   const tf = {
@@ -28,11 +28,11 @@ export function CommandPanel({ player, onCommand, isLoading, isDyslexic }: Comma
   };
 
   const ctxInfo: Record<string, { label: string; color: string; icon: string }> = {
-    explore: { label: 'Exploring', color: '#4a8040', icon: '🌲' },
-    town: { label: 'In Town', color: '#7060a0', icon: '🏘️' },
-    combat: { label: 'In Combat!', color: '#c03030', icon: '⚔️' },
-    npc: { label: 'Talking', color: '#4070a0', icon: '💬' },
-    camp: { label: 'Camped', color: '#a06020', icon: '🔥' },
+    explore: { label: t('exploring'), color: '#4a8040', icon: '🌲' },
+    town: { label: t('inTown'), color: '#7060a0', icon: '🏘️' },
+    combat: { label: t('inCombat'), color: '#c03030', icon: '⚔️' },
+    npc: { label: t('talking'), color: '#4070a0', icon: '💬' },
+    camp: { label: t('camped'), color: '#a06020', icon: '🔥' },
   };
   const ctxData = ctxInfo[ctx] || ctxInfo.explore;
 
@@ -75,7 +75,7 @@ export function CommandPanel({ player, onCommand, isLoading, isDyslexic }: Comma
         <span style={{ color: ctxData.color, fontWeight: 700, fontFamily: tf.fontFamily, fontSize: 13 }}>{ctxData.label}</span>
         {isLoading && (
           <span style={{ color: T.textFaint, fontSize: 10, fontStyle: 'italic', marginLeft: 'auto', fontFamily: 'Crimson Text,serif' }}>
-            weaving story...
+            {t('weavingStory')}
           </span>
         )}
       </div>
