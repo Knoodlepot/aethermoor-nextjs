@@ -9,7 +9,7 @@ const S = {
     background: '#0d0a06',
     color: '#d4c5a0',
     fontFamily: "'Crimson Text', Georgia, serif",
-    minHeight: '100vh',
+    height: '100vh',
     display: 'flex',
     flexDirection: 'column' as const,
   },
