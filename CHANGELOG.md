@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Fixed
+- **Narrator now knows all your unlocked skills**: Previously the narrator only recognised a handful of skills with world-flavour effects (Ghost Walk, Master Thief, etc.) and was unaware of combat skills like Shadowstep, Blade Dance, Evasion, Knife Throw, and others. The narrator now sees your full skill list and will correctly let you use any ability you have unlocked.
+- **Completed quests now move to the Done tab**: Finishing a quest will now properly move it from Side/Faction to the Done tab. Previously the narrator would say "quest complete" in prose but the quest log never updated.
+- **Named quest-givers now always appear in the NPC tab**: NPCs who give you a quest or commission (such as a magistrate giving you a contract) are now always tracked in the NPC tab of the Quest Log.
+
 ### Added
 - **Options menu on the main screen**: A new Options button on the title screen opens a panel where you can choose your AI narrator model and the language you want the game narrated in — no need to enter the game first.
 - **Choose your AI narrator**: Pick Haiku (1 token/turn, fast), Sonnet (4 tokens/turn, richer prose), or Opus (20 tokens/turn, deepest storytelling) directly from the main menu Options screen.
