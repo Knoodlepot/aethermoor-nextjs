@@ -276,6 +276,8 @@ export default function AdminPage() {
   const [gbpRate, setGbpRate] = React.useState(0.80);
   const [inclCarBot, setInclCarBot] = React.useState(false);
   const [inclVercel, setInclVercel] = React.useState(false);
+  const [inclAnthropic, setInclAnthropic] = React.useState(false);
+  const [inclRailway, setInclRailway] = React.useState(false);
 
   // Support
   const [supportQuery, setSupportQuery] = React.useState('');
@@ -413,10 +415,10 @@ export default function AdminPage() {
     const apiCalls = activeTokens;
     const totalApiCostUSD = apiCalls * avgCostPerCallUSD;
     const totalApiCostGBP = totalApiCostUSD * gbpRate;
-    const subCostsGBP = (inclCarBot ? 6.50 : 0) + (inclVercel ? 20 * gbpRate : 0);
+    const subCostsGBP = (inclCarBot ? 6.50 : 0) + (inclVercel ? 20 * gbpRate : 0) + (inclAnthropic ? 15 : 0) + (inclRailway ? 5 * gbpRate : 0);
     const profitGBP = netGBP - totalApiCostGBP - subCostsGBP;
     return { grossGBP, stripeFees, netGBP, totalTokens, breakageTokens, activeTokens, totalApiCostGBP, subCostsGBP, profitGBP };
-  }, [calcQty, calcTok, calcPrc, stripePct, stripeFixed, breakagePct, haikuSplit, gbpRate, inclCarBot, inclVercel]);
+  }, [calcQty, calcTok, calcPrc, stripePct, stripeFixed, breakagePct, haikuSplit, gbpRate, inclCarBot, inclVercel, inclAnthropic, inclRailway]);
 
   // ── Settings save ──────────────────────────────────────────────────────────
   function saveSettings() {
@@ -793,6 +795,8 @@ export default function AdminPage() {
               {[
                 { label: 'Car-bot', detail: '£6.50/mo', val: inclCarBot, set: setInclCarBot },
                 { label: 'Vercel', detail: `$20/mo (≈ £${fmt(20 * gbpRate)})`, val: inclVercel, set: setInclVercel },
+                { label: 'Anthropic', detail: '£15/mo', val: inclAnthropic, set: setInclAnthropic },
+                { label: 'Railway', detail: `$5/mo (≈ £${fmt(5 * gbpRate)})`, val: inclRailway, set: setInclRailway },
               ].map(({ label, detail, val, set }) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div
