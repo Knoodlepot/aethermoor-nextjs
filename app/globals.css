@@ -74,3 +74,8 @@ button {
 /* Hide right column scrollbar */
 .ae-right-col::-webkit-scrollbar { display: none; }
 .ae-right-col { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* Hide number input spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
