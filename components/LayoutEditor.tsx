@@ -1,0 +1,455 @@
+'use client';
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+type PanelBox = {
+  id: string;
+  label: string;
+  color: string;       // hex base color
+  x: number;           // px from canvas left
+  y: number;           // px from canvas top
+  w: number;           // px width
+  h: number;           // px height
+  zIndex: number;
+};
+
+type DragState = {
+  type: 'move' | 'resize';
+  panelId: string;
+  startX: number;      // pointer position when drag started
+  startY: number;
+  origX: number;       // panel position when drag started
+  origY: number;
+  origW: number;
+  origH: number;
+  handle?: string;     // 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se'
+};
+
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const MIN_W = 80;
+const MIN_H = 40;
+const TOOLBAR_H = 48;
+const LS_KEY = 'ae-layout-editor-panels';
+
+// Default layout mirrors the real game (~70% left / ~30% right split).
+// Positions are in canvas pixels — the canvas is the full window minus toolbar.
+function buildDefaults(cw: number, ch: number): PanelBox[] {
+  const rightX = Math.round(cw * 0.70);
+  const rightW = cw - rightX;
+  const inputH = 72;
+
+  // right column panel heights
+  const playerH  = 150;
+  const ctxBarH  = 80;
+  const ctxActH  = 90;
+  const combatH  = 120;
+  const mainQH   = 100;
+  const sideQH   = 120;
+  const mapH     = ch - playerH - ctxBarH - ctxActH - combatH - mainQH - sideQH;
+
+  return [
+    { id: 'narrative',    label: 'Narrative',        color: '#2a7a7a', x: 0,      y: 0,                                          w: rightX, h: ch - inputH, zIndex: 1 },
+    { id: 'input',        label: 'Input Bar',         color: '#4a5a7a', x: 0,      y: ch - inputH,                                w: rightX, h: inputH,     zIndex: 1 },
+    { id: 'playerInfo',   label: 'Player Info',       color: '#9a7a20', x: rightX, y: 0,                                          w: rightW, h: playerH,    zIndex: 1 },
+    { id: 'contextBar',   label: 'Context Bar',       color: '#9a6010', x: rightX, y: playerH,                                    w: rightW, h: ctxBarH,    zIndex: 1 },
+    { id: 'contextAct',   label: 'Context Actions',   color: '#8a5000', x: rightX, y: playerH + ctxBarH,                          w: rightW, h: ctxActH,    zIndex: 1 },
+    { id: 'combat',       label: 'Combat Panel',      color: '#7a2020', x: rightX, y: playerH + ctxBarH + ctxActH,                w: rightW, h: combatH,    zIndex: 1 },
+    { id: 'mainQuest',    label: 'Main Quest',        color: '#5a2a8a', x: rightX, y: playerH + ctxBarH + ctxActH + combatH,      w: rightW, h: mainQH,     zIndex: 1 },
+    { id: 'sideQuests',   label: 'Side Quests',       color: '#3a3a9a', x: rightX, y: playerH + ctxBarH + ctxActH + combatH + mainQH,  w: rightW, h: sideQH,    zIndex: 1 },
+    { id: 'miniMap',      label: 'Mini Map',          color: '#2a6a30', x: rightX, y: playerH + ctxBarH + ctxActH + combatH + mainQH + sideQH, w: rightW, h: Math.max(MIN_H, mapH), zIndex: 1 },
+  ];
+}
+
+// ── Resize handle directions ─────────────────────────────────────────────────
+
+const HANDLES = ['nw','n','ne','e','se','s','sw','w'] as const;
+type Handle = typeof HANDLES[number];
+
+function handleCursor(h: Handle): string {
+  const map: Record<Handle, string> = {
+    nw: 'nw-resize', n: 'n-resize', ne: 'ne-resize',
+    e: 'e-resize', se: 'se-resize', s: 's-resize',
+    sw: 'sw-resize', w: 'w-resize',
+  };
+  return map[h];
+}
+
+function handlePos(h: Handle, w: number, hh: number): React.CSSProperties {
+  const sz = 10;
+  const half = sz / 2;
+  const positions: Record<Handle, React.CSSProperties> = {
+    nw: { top: -half, left: -half, cursor: 'nw-resize' },
+    n:  { top: -half, left: w / 2 - half, cursor: 'n-resize' },
+    ne: { top: -half, right: -half, cursor: 'ne-resize' },
+    e:  { top: hh / 2 - half, right: -half, cursor: 'e-resize' },
+    se: { bottom: -half, right: -half, cursor: 'se-resize' },
+    s:  { bottom: -half, left: w / 2 - half, cursor: 's-resize' },
+    sw: { bottom: -half, left: -half, cursor: 'sw-resize' },
+    w:  { top: hh / 2 - half, left: -half, cursor: 'w-resize' },
+  };
+  return { position: 'absolute', width: sz, height: sz, background: '#fff', border: '1.5px solid #000', borderRadius: 2, zIndex: 10, ...positions[h] };
+}
+
+// ── Clamp helper ─────────────────────────────────────────────────────────────
+
+function clamp(v: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, v));
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+
+export function LayoutEditor() {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [canvasSize, setCanvasSize] = useState({ w: 1280, h: 720 });
+  const [panels, setPanels] = useState<PanelBox[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [dragState, setDragState] = useState<DragState | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [maxZ, setMaxZ] = useState(1);
+
+  // ── Canvas size tracking ───────────────────────────────────────────────────
+
+  useEffect(() => {
+    function measure() {
+      setCanvasSize({ w: window.innerWidth, h: window.innerHeight - TOOLBAR_H });
+    }
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  // ── Load from localStorage or build defaults ───────────────────────────────
+
+  useEffect(() => {
+    if (canvasSize.w === 1280 && canvasSize.h === 720) return; // wait for real size
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        setPanels(JSON.parse(raw));
+        return;
+      }
+    } catch {}
+    setPanels(buildDefaults(canvasSize.w, canvasSize.h));
+  }, [canvasSize.w, canvasSize.h]);
+
+  // ── Auto-save (debounced) ─────────────────────────────────────────────────
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (panels.length === 0) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      localStorage.setItem(LS_KEY, JSON.stringify(panels));
+    }, 500);
+    return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
+  }, [panels]);
+
+  // ── Pointer move/up on window (handles drag outside panel) ────────────────
+
+  const handlePointerMove = useCallback((e: PointerEvent) => {
+    if (!dragState) return;
+    const dx = e.clientX - dragState.startX;
+    const dy = e.clientY - dragState.startY;
+    const cw = canvasSize.w;
+    const ch = canvasSize.h;
+
+    setPanels(prev => prev.map(p => {
+      if (p.id !== dragState.panelId) return p;
+
+      if (dragState.type === 'move') {
+        return {
+          ...p,
+          x: clamp(dragState.origX + dx, 0, cw - p.w),
+          y: clamp(dragState.origY + dy, 0, ch - p.h),
+        };
+      }
+
+      // Resize
+      let { origX: nx, origY: ny, origW: nw, origH: nh } = dragState;
+
+      const h = dragState.handle!;
+      if (h.includes('e')) { nw = clamp(dragState.origW + dx, MIN_W, cw - nx); }
+      if (h.includes('s')) { nh = clamp(dragState.origH + dy, MIN_H, ch - ny); }
+      if (h.includes('w')) {
+        const rawW = dragState.origW - dx;
+        nw = clamp(rawW, MIN_W, dragState.origX + dragState.origW);
+        nx = dragState.origX + dragState.origW - nw;
+      }
+      if (h.includes('n')) {
+        const rawH = dragState.origH - dy;
+        nh = clamp(rawH, MIN_H, dragState.origY + dragState.origH);
+        ny = dragState.origY + dragState.origH - nh;
+      }
+      return { ...p, x: nx, y: ny, w: nw, h: nh };
+    }));
+  }, [dragState, canvasSize]);
+
+  const handlePointerUp = useCallback(() => {
+    setDragState(null);
+    (document.activeElement as HTMLElement)?.blur();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [handlePointerMove, handlePointerUp]);
+
+  // ── Panel interactions ────────────────────────────────────────────────────
+
+  function bringToFront(id: string) {
+    const newZ = maxZ + 1;
+    setMaxZ(newZ);
+    setPanels(prev => prev.map(p => p.id === id ? { ...p, zIndex: newZ } : p));
+  }
+
+  function startMove(e: React.PointerEvent, panel: PanelBox) {
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    bringToFront(panel.id);
+    setSelected(panel.id);
+    setDragState({
+      type: 'move',
+      panelId: panel.id,
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: panel.x,
+      origY: panel.y,
+      origW: panel.w,
+      origH: panel.h,
+    });
+  }
+
+  function startResize(e: React.PointerEvent, panel: PanelBox, handle: Handle) {
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDragState({
+      type: 'resize',
+      panelId: panel.id,
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: panel.x,
+      origY: panel.y,
+      origW: panel.w,
+      origH: panel.h,
+      handle,
+    });
+  }
+
+  // ── Toolbar actions ───────────────────────────────────────────────────────
+
+  function handleReset() {
+    const fresh = buildDefaults(canvasSize.w, canvasSize.h);
+    setPanels(fresh);
+    setSelected(null);
+    localStorage.setItem(LS_KEY, JSON.stringify(fresh));
+  }
+
+  function handleSave() {
+    localStorage.setItem(LS_KEY, JSON.stringify(panels));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
+  }
+
+  const exportJson = JSON.stringify(
+    panels.map(({ id, label, x, y, w, h }) => ({ id, label, x, y, w, h })),
+    null, 2
+  );
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  const btnStyle: React.CSSProperties = {
+    padding: '6px 14px',
+    background: 'transparent',
+    color: '#c9a84c',
+    border: '1px solid #c9a84c',
+    borderRadius: 4,
+    fontSize: 13,
+    fontFamily: 'Georgia, serif',
+    cursor: 'pointer',
+    letterSpacing: '0.05em',
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: '#0d0a06', userSelect: 'none', overflow: 'hidden' }}>
+
+      {/* ── Toolbar ── */}
+      <div style={{
+        height: TOOLBAR_H,
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '0 16px',
+        borderBottom: '1px solid #2e2010',
+        background: '#120d08',
+      }}>
+        <span style={{ color: '#c9a84c', fontFamily: 'Cinzel, serif', fontSize: 14, letterSpacing: '0.1em', marginRight: 8 }}>
+          LAYOUT EDITOR
+        </span>
+        <button style={btnStyle} onClick={handleReset}>Reset</button>
+        <button style={{ ...btnStyle, color: saved ? '#80c060' : '#c9a84c', borderColor: saved ? '#80c060' : '#c9a84c' }} onClick={handleSave}>
+          {saved ? 'Saved!' : 'Save'}
+        </button>
+        <button style={btnStyle} onClick={() => setShowExport(true)}>Export Config</button>
+        <div style={{ flex: 1 }} />
+        <span style={{ color: '#7a6040', fontSize: 11, fontFamily: 'Georgia, serif' }}>
+          Drag panel headers to move · Drag edges/corners to resize · Click canvas to deselect
+        </span>
+        <div style={{ flex: 1 }} />
+        <a href="/game" style={{ ...btnStyle, textDecoration: 'none', fontSize: 12, color: '#b8925a', borderColor: '#7a6040' }}>
+          ← Back to Game
+        </a>
+      </div>
+
+      {/* ── Canvas ── */}
+      <div
+        ref={canvasRef}
+        style={{ position: 'relative', flex: 1, overflow: 'hidden', background: '#0d0a06' }}
+        onPointerDown={(e) => { if (e.target === canvasRef.current) setSelected(null); }}
+      >
+        {/* Guide line: default right-column start */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0,
+          left: Math.round(canvasSize.w * 0.70),
+          width: 1, background: '#2e2010', pointerEvents: 'none', zIndex: 0,
+        }} />
+
+        {/* Grid dots */}
+        <svg
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <circle cx="1" cy="1" r="0.8" fill="#2e2010" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+
+        {/* Panel boxes */}
+        {panels.map(panel => {
+          const isSelected = selected === panel.id;
+          return (
+            <div
+              key={panel.id}
+              style={{
+                position: 'absolute',
+                left: panel.x,
+                top: panel.y,
+                width: panel.w,
+                height: panel.h,
+                zIndex: panel.zIndex,
+                background: panel.color + '33',
+                border: `2px solid ${panel.color}${isSelected ? 'ff' : '99'}`,
+                boxShadow: isSelected ? `0 0 0 1px ${panel.color}66, 0 4px 16px #00000088` : '0 2px 8px #00000055',
+                boxSizing: 'border-box',
+              }}
+              onClick={(e) => { e.stopPropagation(); setSelected(panel.id); }}
+            >
+              {/* Drag header */}
+              <div
+                style={{
+                  height: 28,
+                  background: panel.color + '88',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: dragState?.panelId === panel.id && dragState.type === 'move' ? 'grabbing' : 'grab',
+                  fontFamily: 'Cinzel, serif',
+                  fontSize: 11,
+                  letterSpacing: '0.08em',
+                  color: '#fff',
+                  textTransform: 'uppercase' as const,
+                  userSelect: 'none',
+                }}
+                onPointerDown={(e) => startMove(e, panel)}
+              >
+                {panel.label}
+              </div>
+
+              {/* Size label */}
+              <div style={{
+                position: 'absolute',
+                bottom: 4,
+                right: 6,
+                fontSize: 10,
+                color: panel.color + 'cc',
+                fontFamily: 'monospace',
+                pointerEvents: 'none',
+              }}>
+                {Math.round(panel.w)} × {Math.round(panel.h)}
+              </div>
+
+              {/* Resize handles (only when selected) */}
+              {isSelected && HANDLES.map(h => (
+                <div
+                  key={h}
+                  style={handlePos(h, panel.w, panel.h)}
+                  onPointerDown={(e) => { e.stopPropagation(); startResize(e, panel, h); }}
+                />
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Export modal ── */}
+      {showExport && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: '#000000bb',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999,
+          }}
+          onClick={() => setShowExport(false)}
+        >
+          <div
+            style={{
+              background: '#1a120a', border: '1px solid #c9a84c', borderRadius: 6,
+              padding: 24, maxWidth: 640, width: '90%', maxHeight: '80vh',
+              display: 'flex', flexDirection: 'column', gap: 12,
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ color: '#c9a84c', fontFamily: 'Cinzel, serif', fontSize: 14, letterSpacing: '0.1em' }}>
+              EXPORT CONFIG
+            </div>
+            <p style={{ color: '#b8925a', fontSize: 12, fontFamily: 'Georgia, serif', margin: 0 }}>
+              Copy this JSON and paste it to Claude to implement your layout.
+            </p>
+            <textarea
+              readOnly
+              value={exportJson}
+              style={{
+                flex: 1, minHeight: 300, background: '#0d0a06', color: '#80c060',
+                border: '1px solid #2e2010', borderRadius: 4, padding: 12,
+                fontFamily: 'monospace', fontSize: 12, resize: 'vertical',
+              }}
+              onFocus={e => e.currentTarget.select()}
+            />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button
+                style={btnStyle}
+                onClick={() => { navigator.clipboard.writeText(exportJson).catch(() => {}); }}
+              >
+                Copy to Clipboard
+              </button>
+              <button style={{ ...btnStyle, borderColor: '#7a6040', color: '#b8925a' }} onClick={() => setShowExport(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
