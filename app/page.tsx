@@ -13,7 +13,6 @@ export default function Home() {
   const [showPatches, setShowPatches] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [optionsTier, setOptionsTier] = useState<ModelTier>('haiku');
-  const [optionsLanguage, setOptionsLanguage] = useState('English');
   const [showTokenShop, setShowTokenShop] = useState(false);
   const [showLoadSlot, setShowLoadSlot] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
@@ -45,13 +44,12 @@ export default function Home() {
       if (raw) {
         const p = JSON.parse(raw);
         if (p.modelTier) setOptionsTier(p.modelTier);
-        if (p.language) setOptionsLanguage(p.language);
       }
     } catch {}
     setShowOptions(true);
   };
 
-  const saveOption = (key: 'modelTier' | 'language', value: string) => {
+  const saveOption = (key: 'modelTier', value: string) => {
     try {
       const raw = localStorage.getItem('rpg-player-slot1');
       const p = raw ? JSON.parse(raw) : {};
@@ -270,9 +268,7 @@ export default function Home() {
       {showOptions && (
         <OptionsModal
           currentTier={optionsTier}
-          currentLanguage={optionsLanguage}
           onSelectTier={(t) => { setOptionsTier(t); saveOption('modelTier', t); }}
-          onSelectLanguage={(l) => { setOptionsLanguage(l); saveOption('language', l); }}
           onClose={() => setShowOptions(false)}
         />
       )}
