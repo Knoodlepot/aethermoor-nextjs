@@ -11,7 +11,7 @@ interface InputBarProps {
 }
 
 export function InputBar({ player, onFreeText, isLoading, fillInput }: InputBarProps) {
-  const { T, isDyslexic } = useTheme();
+  const { T, isDyslexic, t } = useTheme();
   const [text, setText] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -39,12 +39,12 @@ export function InputBar({ player, onFreeText, isLoading, fillInput }: InputBarP
   };
 
   const placeholders: Record<string, string> = {
-    combat: isLoading ? 'The dice are cast...' : 'What do you do? (attack, dodge, cast a spell...)',
-    town: isLoading ? 'The world stirs...' : 'What do you do?',
-    npc: isLoading ? 'They await your words...' : 'What do you say?',
-    dungeon: isLoading ? 'The darkness listens...' : 'What do you do?',
-    camp: isLoading ? 'The fire crackles...' : 'What do you do?',
-    explore: isLoading ? 'The Fates weave your story...' : 'What do you do?',
+    combat: isLoading ? t('placeholderCamp') : t('placeholderCombat'),
+    town:   isLoading ? t('placeholderCamp') : t('placeholderTown'),
+    npc:    isLoading ? t('placeholderCamp') : t('placeholderNpc'),
+    dungeon: isLoading ? t('placeholderCamp') : t('placeholderExplore'),
+    camp:   t('placeholderCamp'),
+    explore: isLoading ? t('placeholderCamp') : t('placeholderExplore'),
   };
 
   return (

@@ -18,7 +18,7 @@ export function CombatPanel({
   playerStatusEffects = [],
   playerDefending = false,
 }: CombatPanelProps) {
-  const { T, tf } = useTheme();
+  const { T, tf, t } = useTheme();
 
   if (!enemy) return null;
 
@@ -118,7 +118,7 @@ export function CombatPanel({
             letterSpacing: 3,
           }}
         >
-          ⚠ FINAL CONFRONTATION ⚠
+          ⚠ {t('finalConfrontation')} ⚠
         </div>
       )}
 
@@ -136,7 +136,7 @@ export function CombatPanel({
             letterSpacing: 3,
           }}
         >
-          ⚔ VILLAIN'S LIEUTENANT
+          ⚔ {t('villainsLieutenant')}
         </div>
       )}
 
@@ -201,7 +201,7 @@ export function CombatPanel({
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
           {playerDefending && (
             <span style={{ fontSize: 11, color: '#4080c0', border: '1px solid #4080c044', padding: '2px 6px', borderRadius: 3 }}>
-              🛡 Defending
+              🛡 {t('defending')}
             </span>
           )}
           {playerStatusEffects.map((s) => {

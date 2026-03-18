@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { translate } from '@/lib/i18n';
 
 // Theme color definitions
 export const THEMES = {
@@ -134,6 +135,9 @@ export interface ThemeContextType {
   textSize: TextSize;
   setTextSize: (v: TextSize) => void;
   narrativeFontSize: number;
+  language: string;
+  setLanguage: (v: string) => void;
+  t: (key: string) => string;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -158,6 +162,7 @@ export function ThemeProvider({
   const [themeKey, setThemeKeyState] = useState<ThemeKey>(initialTheme);
   const [isDyslexicOverride, setIsDyslexicOverrideState] = useState(false);
   const [textSize, setTextSizeState] = useState<TextSize>('medium');
+  const [language, setLanguageState] = useState('English');
 
   // Load persisted preferences from localStorage after mount
   useEffect(() => {
@@ -170,6 +175,9 @@ export function ThemeProvider({
     if (storedSize === 'small' || storedSize === 'medium' || storedSize === 'large') {
       setTextSizeState(storedSize);
     }
+
+    const storedLang = localStorage.getItem('rpg-language');
+    if (storedLang) setLanguageState(storedLang);
   }, []);
 
   const setThemeKey = (key: ThemeKey) => {
@@ -186,6 +194,13 @@ export function ThemeProvider({
     setTextSizeState(v);
     localStorage.setItem('rpg-textsize', v);
   };
+
+  const setLanguage = (v: string) => {
+    setLanguageState(v);
+    localStorage.setItem('rpg-language', v);
+  };
+
+  const t = (key: string) => translate(language, key);
 
   const T = THEMES[themeKey];
   const isDyslexic = isDyslexicOverride;
@@ -247,6 +262,9 @@ export function ThemeProvider({
     textSize,
     setTextSize,
     narrativeFontSize,
+    language,
+    setLanguage,
+    t,
   };
 
   return (

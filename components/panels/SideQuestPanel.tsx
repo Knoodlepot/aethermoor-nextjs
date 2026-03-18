@@ -20,7 +20,7 @@ interface SideQuestPanelProps {
 const SLOT_COUNT = 6;
 
 export function SideQuestPanel({ quests, onOpenQuest, onToggleTrack, onOpenLog }: SideQuestPanelProps) {
-  const { T, tf } = useTheme();
+  const { T, tf, t } = useTheme();
 
   // All active non-main quests (tracked or not — slots show everything)
   const active = quests.filter((q) => (q.status as string) === 'active' && q.type !== 'main');
@@ -37,7 +37,7 @@ export function SideQuestPanel({ quests, onOpenQuest, onToggleTrack, onOpenLog }
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ ...tf, fontSize: 9, color: '#3090c0', letterSpacing: 2, flex: 1 }}>
-          SIDE QUESTS
+          {t('sideQuests')}
         </span>
         <button
           onClick={onOpenLog}
@@ -52,7 +52,7 @@ export function SideQuestPanel({ quests, onOpenQuest, onToggleTrack, onOpenLog }
             letterSpacing: 0.5,
           }}
         >
-          All →
+          {t('allQuests')} →
         </button>
       </div>
 
@@ -122,7 +122,7 @@ export function SideQuestPanel({ quests, onOpenQuest, onToggleTrack, onOpenLog }
               {/* Track toggle — top-right */}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleTrack(q.id); }}
-                title={tracked ? 'Untrack' : 'Track'}
+                title={tracked ? t('untrack') : t('track')}
                 style={{
                   position: 'absolute',
                   top: 2,

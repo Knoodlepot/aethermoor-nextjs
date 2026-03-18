@@ -22,18 +22,18 @@ interface ContextBarProps {
 }
 
 export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount = 0 }: ContextBarProps) {
-  const { T } = useTheme();
+  const { T, t } = useTheme();
   const ctx = player?.context || 'explore';
 
   const ctxInfo: Record<string, { label: string; color: string; icon: string }> = {
-    explore: { label: 'Exploring',   color: '#4a8040', icon: '🌲' },
-    town:    { label: 'In Town',     color: '#7060a0', icon: '🏛️' },
-    combat:  { label: 'In Combat!',  color: '#c03030', icon: '⚔️' },
-    npc:     { label: 'Talking',     color: '#4070a0', icon: '💬' },
-    camp:    { label: 'Camped',      color: '#a06020', icon: '🔥' },
-    travel:  { label: 'Travelling',  color: '#5080a0', icon: '🚶' },
-    farm:    { label: 'At Farm',     color: '#6a8040', icon: '🌾' },
-    poi:     { label: 'At Location', color: '#806030', icon: '⚠️' },
+    explore: { label: t('exploring'),   color: '#4a8040', icon: '🌲' },
+    town:    { label: t('inTown'),      color: '#7060a0', icon: '🏛️' },
+    combat:  { label: t('inCombat'),    color: '#c03030', icon: '⚔️' },
+    npc:     { label: t('talking'),     color: '#4070a0', icon: '💬' },
+    camp:    { label: t('camped'),      color: '#a06020', icon: '🔥' },
+    travel:  { label: t('travelling'),  color: '#5080a0', icon: '🚶' },
+    farm:    { label: t('atFarm'),      color: '#6a8040', icon: '🌾' },
+    poi:     { label: t('atLocation'),  color: '#806030', icon: '⚠️' },
   };
   const ctxData = ctxInfo[ctx] || ctxInfo.explore;
   const hasPoints = ((player?.statPoints ?? 0) > 0) || ((player?.skillPoints ?? 0) > 0);
@@ -50,7 +50,7 @@ export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop:
       {isLoading && (
         <div style={{ display: 'flex', alignItems: 'center', padding: '4px 8px' }}>
           <span style={{ color: T.textFaint, fontSize: 8, fontStyle: 'italic', fontFamily: 'Crimson Text,serif' }}>
-            weaving story...
+            {t('weavingStory')}
           </span>
         </div>
       )}
@@ -69,7 +69,7 @@ export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop:
                   position: 'relative' as const, whiteSpace: 'nowrap' as const, textAlign: 'center' as const,
                 }}
               >
-                📖 Bestiary
+                📖 {t('bestiary')}
                 {bestiaryCount > 0 && (
                   <span style={{ position: 'absolute', top: -3, right: -3, background: '#c04040', color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {bestiaryCount}
@@ -79,7 +79,7 @@ export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop:
             )}
             {onGear && (
               <button onClick={onGear} title="Character Screen — Equipped gear, inventory, skill tree, and attributes" style={{ background: 'transparent', border: `1px solid ${hasPoints ? '#f0c060' : T.accent}`, color: hasPoints ? '#f0c060' : T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const, animation: hasPoints ? 'pulse 1s infinite' : 'none', boxShadow: hasPoints ? '0 0 8px #f0c06066' : 'none' }}>
-                🎒 Character
+                🎒 {t('character')}
               </button>
             )}
             {onDungeon && (
@@ -95,7 +95,7 @@ export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop:
                   animation: dungeonAvailable ? 'pulse 1.2s infinite' : 'none',
                 }}
               >
-                🕳️ Dungeon
+                🕳️ {t('dungeon')}
               </button>
             )}
           </div>

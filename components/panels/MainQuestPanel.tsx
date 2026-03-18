@@ -10,11 +10,11 @@ interface MainQuestPanelProps {
 }
 
 export function MainQuestPanel({ worldSeed, onOpen }: MainQuestPanelProps) {
-  const { T, tf } = useTheme();
+  const { T, tf, t } = useTheme();
 
   if (!worldSeed) return null;
 
-  const ACT_LABELS = ['', 'I: The Hook', 'II: The Threat', 'III: The Confrontation', 'IV: The Reckoning', 'V: The Revelation', '✓ Complete'];
+  const ACT_LABELS = ['', t('act1label'), t('act2label'), t('act3label'), t('act4label'), t('act5label'), `✓ ${t('actComplete')}`];
   const ACT_COLORS = ['', '#c0a030', '#c07030', '#c04030', '#9030c0', '#a060c0', '#60a060'];
   const ACT_HINTS = [
     '',
@@ -54,7 +54,7 @@ export function MainQuestPanel({ worldSeed, onOpen }: MainQuestPanelProps) {
         <span style={{ fontSize: 15 }}>{worldSeed.templateIcon || '⚔️'}</span>
         <div style={{ flex: 1 }}>
           <div style={{ ...tf, fontSize: 9, color: col, letterSpacing: 2, marginBottom: 1 }}>
-            MAIN QUEST · ACT {ACT_LABELS[act]}
+            {t('mainQuestAct')} {ACT_LABELS[act]}
           </div>
           <div style={{ fontSize: 11, color: T.text, ...tf }}>
             {worldSeed.questTitle}
@@ -96,7 +96,7 @@ export function MainQuestPanel({ worldSeed, onOpen }: MainQuestPanelProps) {
         </div>
       ) : (
         <div style={{ fontSize: 10, color: T.textFaint, fontStyle: 'italic', fontFamily: 'Crimson Text,serif' }}>
-          Something stirs in the dark...
+          {t('somethingStirs')}
         </div>
       )}
 
@@ -105,7 +105,7 @@ export function MainQuestPanel({ worldSeed, onOpen }: MainQuestPanelProps) {
         <div style={{ fontSize: 10, color: T.textMuted, marginTop: 3 }}>
           🤝 {worldSeed.allyName?.split(',')[0]}
           {worldSeed.betrayalSprung && (
-            <span style={{ color: '#c04030' }}> ⚠ Betrayed</span>
+            <span style={{ color: '#c04030' }}> ⚠ {t('betrayed')}</span>
           )}
         </div>
       )}
@@ -113,7 +113,7 @@ export function MainQuestPanel({ worldSeed, onOpen }: MainQuestPanelProps) {
       {/* Victory banner */}
       {done && (
         <div style={{ fontSize: 9, color: '#60a060', marginTop: 3, ...tf, letterSpacing: 1 }}>
-          VICTORY · {(worldSeed.finalTone || '').toUpperCase()}
+          {t('victory')} · {(worldSeed.finalTone || '').toUpperCase()}
         </div>
       )}
 

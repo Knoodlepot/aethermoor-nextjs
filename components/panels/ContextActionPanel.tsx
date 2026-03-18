@@ -25,36 +25,36 @@ interface ActionBtn {
 }
 
 const TOWN_ACTIONS: ActionBtn[] = [
-  { icon: '💬', label: 'Talk',         text: 'I approach someone to start a conversation, asking around for local information, news, or gossip.' },
-  { icon: '🪙', label: 'Barter',       text: 'barter' },
-  { icon: '🛒', label: 'Shop',         text: 'I browse the local shops and merchants to see what\'s available.' },
-  { icon: '📋', label: 'Notice Board', text: 'I walk over to the notice board and read what\'s posted.' },
-  { icon: '🗣️', label: 'Rumours',      text: 'I find a quiet corner and listen in for local rumours, whispers, and gossip.' },
-  { icon: '🛏', label: 'Rest',         text: 'I find somewhere comfortable to rest for a few hours.' },
-  { icon: '👁', label: 'Look',         text: 'I look around the town, taking in my surroundings.' },
-  { icon: '⚒️', label: 'Craft',        text: 'I look for a suitable place to craft and work on my supplies.' },
-  { icon: '🙏', label: 'Pray',         text: 'I seek out the local shrine or temple to pray and pay my respects.' },
+  { icon: '💬', label: 'talk',         text: 'I approach someone to start a conversation, asking around for local information, news, or gossip.' },
+  { icon: '🪙', label: 'barter',       text: 'barter' },
+  { icon: '🛒', label: 'shop',         text: 'I browse the local shops and merchants to see what\'s available.' },
+  { icon: '📋', label: 'noticeBoard',  text: 'I walk over to the notice board and read what\'s posted.' },
+  { icon: '🗣️', label: 'rumours',      text: 'I find a quiet corner and listen in for local rumours, whispers, and gossip.' },
+  { icon: '🛏', label: 'rest',         text: 'I find somewhere comfortable to rest for a few hours.' },
+  { icon: '👁', label: 'look',         text: 'I look around the town, taking in my surroundings.' },
+  { icon: '⚒️', label: 'craft',        text: 'I look for a suitable place to craft and work on my supplies.' },
+  { icon: '🙏', label: 'pray',         text: 'I seek out the local shrine or temple to pray and pay my respects.' },
 ];
 
 const EXPLORE_ACTIONS: ActionBtn[] = [
-  { icon: '👁',  label: 'Look',       text: 'I look around carefully, taking in my surroundings.' },
-  { icon: '🔍', label: 'Search',      text: 'I search the area thoroughly.' },
-  { icon: '👂', label: 'Listen',      text: 'I stop and listen carefully to my surroundings.' },
-  { icon: '🛏', label: 'Rest',        text: 'I rest for a while to recover.' },
-  { icon: '🔥', label: 'Camp',        text: 'I make camp here for the night.' },
-  { icon: '🌿', label: 'Forage',      text: 'I forage carefully for edible plants, herbs, and useful supplies in the nearby wild.' },
-  { icon: '🌾', label: 'Farm',        text: 'I look for nearby fields and work the land to gather useful crops.' },
-  { icon: '🪓', label: 'Chop Wood',   text: 'I gather timber from nearby trees for shelter and supplies.', requiresItem: 'Woodcutter Hatchet' },
-  { icon: '⛏',  label: 'Mine Ore',   text: 'I search rocky ground and mine for ore and useful stone.', requiresItem: "Miner's Pickaxe" },
+  { icon: '👁',  label: 'look',       text: 'I look around carefully, taking in my surroundings.' },
+  { icon: '🔍', label: 'search',      text: 'I search the area thoroughly.' },
+  { icon: '👂', label: 'listen',      text: 'I stop and listen carefully to my surroundings.' },
+  { icon: '🛏', label: 'rest',        text: 'I rest for a while to recover.' },
+  { icon: '🔥', label: 'camp',        text: 'I make camp here for the night.' },
+  { icon: '🌿', label: 'forage',      text: 'I forage carefully for edible plants, herbs, and useful supplies in the nearby wild.' },
+  { icon: '🌾', label: 'farm',        text: 'I look for nearby fields and work the land to gather useful crops.' },
+  { icon: '🪓', label: 'chopWood',    text: 'I gather timber from nearby trees for shelter and supplies.', requiresItem: 'Woodcutter Hatchet' },
+  { icon: '⛏',  label: 'mineOre',    text: 'I search rocky ground and mine for ore and useful stone.', requiresItem: "Miner's Pickaxe" },
 ];
 
 const COMBAT_ACTIONS: ActionBtn[] = [
-  { icon: '⚔️', label: 'Attack',   text: 'I attack!' },
-  { icon: '🛡',  label: 'Defend',  text: 'I take a defensive stance, bracing for the next blow.' },
-  { icon: '💨', label: 'Dodge',    text: 'I dodge and look for an opening.' },
-  { icon: '✨', label: 'Spell',    text: 'I cast a spell.' },
-  { icon: '🎒', label: 'Use Item', text: 'I reach into my pack and use an item.' },
-  { icon: '🏃', label: 'Flee',     text: 'I attempt to flee!' },
+  { icon: '⚔️', label: 'attack',   text: 'I attack!' },
+  { icon: '🛡',  label: 'defend',  text: 'I take a defensive stance, bracing for the next blow.' },
+  { icon: '💨', label: 'dodge',    text: 'I dodge and look for an opening.' },
+  { icon: '✨', label: 'spell',    text: 'I cast a spell.' },
+  { icon: '🎒', label: 'useItem',  text: 'I reach into my pack and use an item.' },
+  { icon: '🏃', label: 'flee',     text: 'I attempt to flee!' },
 ];
 
 // Chance of bystander help by settlement type
@@ -119,7 +119,7 @@ function getTemplateFor(
 }
 
 export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, onOpenCraft, inventory = [], location, locationGrid }: ContextActionPanelProps) {
-  const { T, tf } = useTheme();
+  const { T, tf, t } = useTheme();
 
   const { label, color, actions } = getTemplateFor(context, location, locationGrid);
   const locIcon = locationIcon(location, locationGrid);
@@ -155,7 +155,7 @@ export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, o
     >
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ ...tf, fontSize: 8, color, letterSpacing: 2 }}>{label} ACTIONS</span>
+        <span style={{ ...tf, fontSize: 8, color, letterSpacing: 2 }}>{t(label === 'COMBAT' ? 'combatActions' : label === 'IN TOWN' ? 'inTownActions' : 'exploringActions')}</span>
         {location && (
           <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 3 }}>
             <span style={{ fontSize: 10 }}>{locIcon}</span>
@@ -173,12 +173,12 @@ export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, o
           return (
             <button
               key={btn.label}
-              title={btn.hasItem === false ? `Requires: ${btn.requiresItem}` : btn.label}
+              title={btn.hasItem === false ? `Requires: ${btn.requiresItem}` : t(btn.label)}
               disabled={disabled}
               onClick={() => {
                 if (disabled) return;
-                if (btn.label === 'Shop' && onOpenShop) { onOpenShop(); return; }
-                if (btn.label === 'Craft' && onOpenCraft) { onOpenCraft(); return; }
+                if (btn.label === 'shop' && onOpenShop) { onOpenShop(); return; }
+                if (btn.label === 'craft' && onOpenCraft) { onOpenCraft(); return; }
                 onAction(btn.text);
               }}
               style={{
@@ -212,7 +212,7 @@ export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, o
               }}
             >
               <span style={{ fontSize: 14, lineHeight: 1 }}>{btn.icon}</span>
-              <span>{btn.label}</span>
+              <span>{t(btn.label)}</span>
             </button>
           );
         })}
