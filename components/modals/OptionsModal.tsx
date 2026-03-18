@@ -30,6 +30,11 @@ const LANGUAGES: { name: string; native: string; warning: string }[] = [
   { name: 'Arabic',     native: 'العربية',    warning: 'قد لا تكون السرد دقيقاً بنسبة 100٪.' },
   { name: 'Hindi',      native: 'हिन्दी',     warning: 'कथन 100% सटीक नहीं हो सकता।' },
   { name: 'Turkish',    native: 'Türkçe',     warning: 'Anlatım %100 doğru olmayabilir.' },
+  { name: 'Latin',              native: 'Latina',           warning: 'Narrator speaks in Classical Latin. Gloriously archaic.' },
+  { name: 'Pirate',             native: 'Pirate',           warning: "Arrr! The narrator be speakin\' like a salty sea dog." },
+  { name: 'Old Norse',          native: 'Norrœnt mál',      warning: 'The narrator speaks in the tongue of the ancient Vikings. Results may be gloriously imperfect.' },
+  { name: 'Shakespearean',      native: 'Shakespearean',    warning: 'Forsooth! The narrator doth speak in the manner of the Bard. Verily.' },
+  { name: 'Klingon',            native: 'tlhIngan Hol',     warning: 'nuqneH! The narrator will attempt Klingon. Honour demands it.' },
 ];
 
 const TEXT_SIZES: { id: TextSize; label: string; desc: string }[] = [
@@ -42,16 +47,26 @@ const SECTION = { fontFamily: "'Cinzel',serif", fontSize: 10, letterSpacing: 3, 
 
 interface OptionsModalProps {
   currentTier: ModelTier;
-  currentLanguage: string;
   onSelectTier: (tier: ModelTier) => void;
-  onSelectLanguage: (language: string) => void;
   onClose: () => void;
 }
 
-export function OptionsModal({ currentTier, currentLanguage, onSelectTier, onSelectLanguage, onClose }: OptionsModalProps) {
-  const { themeKey, setThemeKey, isDyslexic, setIsDyslexic, textSize, setTextSize } = useTheme();
+export function OptionsModal({ currentTier, onSelectTier, onClose }: OptionsModalProps) {
+  const { themeKey, setThemeKey, isDyslexic, setIsDyslexic, textSize, setTextSize, language, setLanguage } = useTheme();
   const [pendingLang, setPendingLang] = React.useState<string | null>(null);
-  const selectedLangData = LANGUAGES.find(l => l.name === (pendingLang ?? currentLanguage));
+  const selectedLangData = LANGUAGES.find(l => l.name === (pendingLang ?? language));
+
+  const handleSelectLanguage = (name: string) => {
+    setPendingLang(name);
+    setLanguage(name);
+    // Also sync to player JSON so the narrator uses the same language
+    try {
+      const raw = localStorage.getItem('rpg-player-slot1');
+      const p = raw ? JSON.parse(raw) : {};
+      p.language = name;
+      localStorage.setItem('rpg-player-slot1', JSON.stringify(p));
+    } catch {}
+  };
 
   return (
     <div
@@ -202,11 +217,11 @@ export function OptionsModal({ currentTier, currentLanguage, onSelectTier, onSel
         <div style={SECTION}>NARRATOR LANGUAGE</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 12 }}>
           {LANGUAGES.map((l) => {
-            const active = (pendingLang ?? currentLanguage) === l.name;
+            const active = (pendingLang ?? language) === l.name;
             return (
               <button
                 key={l.name}
-                onClick={() => { setPendingLang(l.name); onSelectLanguage(l.name); }}
+                onClick={() => handleSelectLanguage(l.name)}
                 style={{
                   background: active ? '#c9a84c22' : 'transparent',
                   border: `1px solid ${active ? '#c9a84c' : '#2e2515'}`,
