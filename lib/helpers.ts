@@ -411,7 +411,18 @@ export function getItemSlotEx(name: string): string | null {
   if (tiered) return tiered.slot;
   // Type-based fallback (only for non-Armour types to avoid ambiguity)
   const info = getItemInfo(name);
-  if (!info) return null;
+  if (!info) {
+    // Keyword fallback for narrator-generated custom item names not in static maps
+    const WEAPON_KEYWORDS = ['dagger','sword','blade','knife','axe','bow','staff','mace',
+      'spear','lance','club','hammer','crossbow','wand','scythe','rapier','cutlass',
+      'dirk','stiletto','shortsword','longsword','falchion','sabre','flail','halberd'];
+    if (WEAPON_KEYWORDS.some(k => lower.includes(k))) return 'weapon';
+    const SHIELD_KEYWORDS = ['shield','buckler','targe'];
+    if (SHIELD_KEYWORDS.some(k => lower.includes(k))) return 'offhand';
+    const HELM_KEYWORDS = ['helm','helmet','hood','cap','crown','circlet','coif'];
+    if (HELM_KEYWORDS.some(k => lower.includes(k))) return 'head';
+    return null;
+  }
   if (info.type === 'Weapon') return 'weapon';
   if (info.type === 'Magic') return 'accessory';
   if (info.type === 'Mount') return 'mount';

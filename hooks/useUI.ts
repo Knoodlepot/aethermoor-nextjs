@@ -58,6 +58,8 @@ export interface UIContext {
   setFillInput: (text: string) => void;
   suggestions: string[];
   setSuggestions: (suggestions: string[]) => void;
+  lastInput: string;
+  setLastInput: (text: string) => void;
 
   // Messages
   levelUpMsg: string;
@@ -135,6 +137,7 @@ export function useUI(): UIContext {
   const [pendingSuggestion, setPendingSuggestion] = useState<any | null>(null);
   const [fillInput, setFillInput] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [lastInput, setLastInput] = useState('');
 
   // Messages
   const [levelUpMsg, setLevelUpMsg] = useState('');
@@ -336,6 +339,8 @@ export function useUI(): UIContext {
     setFillInput,
     suggestions,
     setSuggestions,
+    lastInput,
+    setLastInput,
     levelUpMsg,
     setLevelUpMsg,
     dungeonExitPrompt,

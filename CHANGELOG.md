@@ -1,6 +1,25 @@
 ## [Unreleased]
 
 ### Added
+- **Your last action now shows under the story**: The text you typed or the action you chose appears as a faint italic line below the narrative — handy for screenshots and mid-session context.
+
+### Fixed
+- **Skill points no longer pile up when all skills are unlocked**: Once you have all 9 skills for your class, levelling up no longer awards skill points you can't spend.
+- **Custom-named weapons from the story are now equippable**: Daggers, swords, axes, and other weapons the narrator names on the fly (e.g. "Horn Handle Dagger", "Ash-wood Bow") now show an Equip button in your inventory, instead of sitting as unequippable items.
+- **Gold rewards no longer repeat across turns**: The narrator now emits each gold reward exactly once. Previously, the same reward (e.g. a 70g contract payment) could be applied multiple times across different turns.
+
+### Added
+- **Event Log panel**: A new panel type you can add in the layout editor. It shows a live feed of XP gains, gold earned or spent, and reputation changes — each with a short reason (e.g. "+50 XP — Defeated Alpha Wolf", "-30g — Purchased supplies"). Entries are colour-coded: green for XP, yellow/amber for gold, cyan/red for reputation. The newest entry appears at the top.
+- **Layout editor snaps panels to edges**: When dragging or resizing a panel, it will snap to the edges of other panels and the canvas border within 8 pixels — making it much easier to align panels neatly without pixel-pushing.
+
+### Changed
+- **Layout editor now saves at your screen resolution**: Layouts designed on one monitor size now scale correctly when you play on a different resolution. A layout made on a 1080p screen will proportionally fill a 1440p screen as intended.
+- **Panels placed beside the input bar now render there in game**: Panels positioned in the same row as the input bar in the layout editor now correctly appear next to the input bar at the bottom of the screen — not in the right column.
+
+### Fixed
+- **Panels in the layout editor can now be deleted**: Selecting a panel and pressing Delete (or Backspace), clicking "Delete Panel" in the toolbar, or clicking the × on the panel header will remove it. Previously the × button only appeared after the panel was already selected, making it a confusing two-step process.
+
+### Added
 - **Every new character gets a unique cast of NPCs**: Each character now has their own name pool drawn from over 160 names spanning Nordic, Celtic, Mediterranean, Slavic, Eastern, and African-influenced styles. The narrator picks from this pool, so Captain Voss, Corvin, and Aldric won't follow you into every new game.
 - **Directions and maps actually reveal settlements**: When an NPC gives you directions to a town, hands you a map, or points out where a place is, those settlements now appear on your map. No more being told to "mark Beliogatespring on your map" and having it stay hidden.
 - **Main quest now paces itself properly**: The story no longer rushes through acts. Each act now requires a minimum number of turns played and side quests completed before the main plot can advance — so the world has time to breathe and feel earned rather than constant.

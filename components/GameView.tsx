@@ -334,6 +334,7 @@ function GameContent() {
   const handleFreeText = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || gameLoop.isLoading) return;
+    ui.setLastInput(trimmed);
     void gameLoop.executeCommand(trimmed, gameState);
   };
 
@@ -1020,6 +1021,21 @@ function GameContent() {
           narrative={gameState.narrative}
           log={gameState.log}
         />
+        {/* Last player input — shown faintly below narrative */}
+        {ui.lastInput && (
+          <div style={{
+            padding: '4px 14px',
+            fontSize: '0.72rem',
+            color: T.textMuted ?? '#888',
+            fontStyle: 'italic',
+            opacity: 0.55,
+            borderLeft: `2px solid ${T.border}`,
+            marginLeft: '4px',
+            flexShrink: 0,
+          }}>
+            &gt; {ui.lastInput}
+          </div>
+        )}
         {/* Suggestion buttons — sit above the input bar in their own row */}
         {ui.suggestions.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, borderTop: `1px solid ${T.border}` }}>
@@ -1152,6 +1168,22 @@ function GameContent() {
           log={gameState.log}
         />
       </div>
+
+      {/* Last player input */}
+      {ui.lastInput && (
+        <div style={{
+          padding: '3px 12px',
+          fontSize: '0.7rem',
+          color: T.textMuted ?? '#888',
+          fontStyle: 'italic',
+          opacity: 0.55,
+          borderLeft: `2px solid ${T.border}`,
+          marginLeft: '4px',
+          flexShrink: 0,
+        }}>
+          &gt; {ui.lastInput}
+        </div>
+      )}
 
       {/* Input bar */}
       <InputBar
