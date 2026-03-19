@@ -449,6 +449,7 @@ export interface ParsedTags {
   xpGain: number | null;
   bestiary: any;
   travelTo: string | null;
+  place: any;
 }
 
 /**

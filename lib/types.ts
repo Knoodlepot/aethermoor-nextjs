@@ -56,6 +56,7 @@ export interface Player {
   statusEffects?: string[];
   modelTier?: 'haiku' | 'sonnet' | 'opus';
   language?: string;
+  namedPlaces?: Array<{ name: string; type: string; settlement: string }>;
 }
 
 export interface CombatState {
