@@ -95,10 +95,13 @@ export function useLayoutConfig(): DerivedLayout | null {
     : Math.round(screenW * 0.70);
   const rightColW = Math.max(200, screenW - narrativeW);
 
-  // The "bottom row" threshold: panels at or below the narrative bottom
-  // Use narrative.h (scaled) as the dividing line; small tolerance for pixel offsets
+  // The "bottom row" threshold: use the input bar's y position as the dividing line.
+  // Only panels at the same y-level as the input bar count as bottom-row panels.
+  // Fall back to 90% of narrative height if no input panel is saved.
   const narrativeH = narrative?.h ?? 0;
-  const bottomThreshold = narrativeH > 0 ? narrativeH * scaleH * 0.9 : Infinity;
+  const bottomThreshold = input
+    ? input.y * scaleH
+    : narrativeH > 0 ? narrativeH * scaleH * 0.9 : Infinity;
 
   // Bottom-row panels: y >= bottomThreshold, sorted left to right
   const bottomPanels = panels
