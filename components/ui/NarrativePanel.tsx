@@ -16,10 +16,10 @@ export function NarrativePanel({
   const { T, bf, isDyslexic, narrativeFontSize } = useTheme();
   const logRef = React.useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom on narrative update
+  // Scroll to top on new narration
   React.useEffect(() => {
     if (logRef.current) {
-      logRef.current.scrollTop = logRef.current.scrollHeight;
+      logRef.current.scrollTop = 0;
     }
   }, [narrative]);
 
