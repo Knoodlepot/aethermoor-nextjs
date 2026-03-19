@@ -95,23 +95,22 @@ export function useLayoutConfig(): DerivedLayout | null {
     : Math.round(screenW * 0.70);
   const rightColW = Math.max(200, screenW - narrativeW);
 
-  // The "bottom row" threshold: use the input bar's y position as the dividing line.
-  // Only panels at the same y-level as the input bar count as bottom-row panels.
-  // Fall back to 90% of narrative height if no input panel is saved.
-  const narrativeH = narrative?.h ?? 0;
-  const bottomThreshold = input
-    ? input.y * scaleH
-    : narrativeH > 0 ? narrativeH * scaleH * 0.9 : Infinity;
+  // Divide panels by column using x-position:
+  // - Panels whose left edge is within the narrative column → bottom-row panels
+  // - Panels whose left edge is to the right of the narrative → right-column panels
+  // This is more reliable than y-position thresholds, which break when right-column
+  // panels stack up close to the bottom of the screen.
+  const narrativeRight = narrative ? narrative.x + narrative.w : (screenW * 0.70) / scaleW;
 
-  // Bottom-row panels: y >= bottomThreshold, sorted left to right
+  // Bottom-row panels: x < narrativeRight (in narrative column area), sorted left to right
   const bottomPanels = panels
-    .filter(p => p.id !== 'narrative' && p.id !== 'input' && p.y * scaleH >= bottomThreshold)
+    .filter(p => p.id !== 'narrative' && p.id !== 'input' && p.x < narrativeRight)
     .sort((a, b) => a.x - b.x)
     .map(p => ({ id: p.id, label: p.label, w: Math.max(60, Math.round(p.w * scaleW)) }));
 
-  // Right-column panels: y < bottomThreshold, sorted top to bottom
+  // Right-column panels: x >= narrativeRight, sorted top to bottom
   const rightPanels = panels
-    .filter(p => p.id !== 'narrative' && p.id !== 'input' && p.y * scaleH < bottomThreshold)
+    .filter(p => p.id !== 'narrative' && p.id !== 'input' && p.x >= narrativeRight)
     .sort((a, b) => a.y - b.y)
     .map(p => ({ id: p.id, label: p.label, h: Math.max(40, Math.round(p.h * scaleH)) }));
 
