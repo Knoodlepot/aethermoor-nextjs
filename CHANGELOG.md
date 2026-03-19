@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+### Added
+- **Story text now streams in as it's written**: Instead of waiting for the full narrator response, text now appears word by word in real time — the world reacts as Claude thinks, not after.
+- **Low token warning**: When you drop to 5 tokens or fewer after a turn, an amber warning bar appears with a direct link to buy more. Dismiss it with × whenever you're ready.
+- **Dungeon cooldown shown on button**: If you try to descend twice in quick succession the game now shows the remaining wait time (e.g. "🕳️ 12s") directly on the dungeon button, instead of silently ignoring the click.
+
+### Fixed
+- **Transient server errors automatically retry**: If a narrator call hits a temporary server error, the game now silently retries once after a short delay rather than immediately showing an error. Network blips and brief Vercel cold-starts should go unnoticed.
+
 ### Fixed
 - **Event log now survives page refresh**: XP, gold, and reputation entries in the Event Log panel are saved to your browser's local storage and restored when you reload — no more losing your session history on refresh.
 - **Character name properly capped at 30 characters**: The name field in character creation now enforces the same 30-character limit the game uses internally.
