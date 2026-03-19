@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Added
+- **Every new character gets a unique cast of NPCs**: Each character now has their own name pool drawn from over 160 names spanning Nordic, Celtic, Mediterranean, Slavic, Eastern, and African-influenced styles. The narrator picks from this pool, so Captain Voss, Corvin, and Aldric won't follow you into every new game.
+
 ### Fixed
 - **Narrator now knows all your unlocked skills**: Previously the narrator only recognised a handful of skills with world-flavour effects (Ghost Walk, Master Thief, etc.) and was unaware of combat skills like Shadowstep, Blade Dance, Evasion, Knife Throw, and others. The narrator now sees your full skill list and will correctly let you use any ability you have unlocked.
 - **Completed quests now move to the Done tab**: Finishing a quest will now properly move it from Side/Faction to the Done tab. Previously the narrator would say "quest complete" in prose but the quest log never updated.
