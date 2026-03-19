@@ -678,6 +678,12 @@ export function processParsedTags(
       ...updatedPlayer,
       scheduledEvents: [...(updatedPlayer.scheduledEvents || []), tags.scheduleEvent],
     };
+    // Auto-reveal the meeting location on the map
+    if (tags.scheduleEvent.location) {
+      const explored = new Set<string>((updatedPlayer as any).exploredLocations || [(updatedPlayer as any).location]);
+      explored.add(tags.scheduleEvent.location);
+      updatedPlayer = { ...updatedPlayer, exploredLocations: Array.from(explored) } as any;
+    }
   }
 
   // NPC travel

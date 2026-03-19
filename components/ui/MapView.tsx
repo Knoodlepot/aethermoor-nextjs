@@ -342,6 +342,28 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
 
     g.restore(); // end roads+nodes clip
 
+    // ── Scheduled event pins — amber ! above locations with pending meetings ──
+    g.save();
+    g.rect(MAP_X, MAP_Y, MAP_W, MAP_H);
+    g.clip();
+    (player.scheduledEvents || []).forEach((ev: any) => {
+      if (!ev.location) return;
+      const loc = lg[ev.location];
+      if (!loc || !explored.has(ev.location)) return;
+      const s = toScreen(loc.x, loc.y);
+      const nd = NODE[loc.type as keyof typeof NODE] || NODE.hamlet;
+      const nr = (nd?.r || 5) * Math.min(zoom, 2);
+      const grd = g.createRadialGradient(s.x, s.y, 0, s.x, s.y, nr * 4);
+      grd.addColorStop(0, 'rgba(255,180,40,0.4)');
+      grd.addColorStop(1, 'rgba(255,180,40,0)');
+      g.fillStyle = grd;
+      g.fillRect(s.x - nr * 4, s.y - nr * 4, nr * 8, nr * 8);
+      g.font = 'bold 12px serif'; g.fillStyle = '#ffb828';
+      g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+      g.fillText('!', s.x, s.y - nr - 4);
+    });
+    g.restore();
+
     // ── Key panel ──
     g.fillStyle = '#08090e';
     g.fillRect(KEY_X, KEY_Y, W - KEY_X - 8, MAP_Y + MAP_H - KEY_Y);
@@ -424,7 +446,7 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
       g.beginPath(); g.moveTo(KEY_X + 6, divY3); g.lineTo(W - 14, divY3); g.stroke();
       g.font = 'bold 8px Cinzel,serif'; g.fillStyle = '#a07848'; g.textAlign = 'left';
       g.fillText('MARKERS', KEY_X + 10, divY3 + 13);
-      [{ sym: '◆', col: '#fffce0', label: 'Your location' }, { sym: '?', col: '#806040', label: 'Unexplored nearby' }]
+      [{ sym: '◆', col: '#fffce0', label: 'Your location' }, { sym: '?', col: '#806040', label: 'Unexplored nearby' }, { sym: '!', col: '#ffb828', label: 'Pending event' }]
         .forEach((mk, i) => {
           const my = divY3 + 26 + i * 16;
           g.font = 'bold 10px serif'; g.fillStyle = mk.col; g.textAlign = 'left';

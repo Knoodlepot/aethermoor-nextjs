@@ -120,6 +120,8 @@ export interface ScheduledEvent {
   npcName: string;
   day: number;
   hour: number;
+  location?: string;
+  description?: string;
 }
 
 // NPC
