@@ -18,7 +18,7 @@ function sanitiseStr(val: unknown, maxLen: number): string {
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate JWT from Authorization header
-    const authCtx = auth.authenticateRequest(request);
+    const authCtx = await auth.authenticateRequestAsync(request);
 
     if (!authCtx) {
       return NextResponse.json(
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
 
     // Try to refund token on network error
     try {
-      const authCtx = auth.authenticateRequest(request);
+      const authCtx = await auth.authenticateRequestAsync(request);
       if (authCtx) {
         // Best-effort refund — tierCost may not be in scope here, default to 1
         await tokens.addTokens(authCtx.playerId, 1, 'refund_network_error');

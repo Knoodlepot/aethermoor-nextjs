@@ -3,7 +3,10 @@ import fs from 'fs/promises';
 import path from 'path';
 
 function checkAdminAuth(request: NextRequest): boolean {
-  const secret = new URL(request.url).searchParams.get('secret');
+  const headerSecret = request.headers.get('x-admin-secret');
+  const bearer = request.headers.get('authorization');
+  const bearerSecret = bearer?.startsWith('Bearer ') ? bearer.substring(7) : null;
+  const secret = headerSecret || bearerSecret;
   return !!(secret && secret === process.env.SESSION_SECRET);
 }
 

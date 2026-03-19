@@ -4,7 +4,7 @@ import { blockToken } from '@/lib/redis';
 
 export async function POST(request: NextRequest) {
   try {
-    const authCtx = auth.authenticateRequest(request);
+    const authCtx = await auth.authenticateRequestAsync(request);
     const rawToken = auth.getTokenFromRequest(request);
 
     if (authCtx && rawToken) {

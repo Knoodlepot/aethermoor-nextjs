@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from './db';
 import type { Account } from './db';
 import type { NextRequest, NextResponse } from 'next/server';
+import { isTokenBlocked } from './redis';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const JWT_EXPIRY = '90d'; // 90 days
@@ -278,6 +279,18 @@ export function getTokenFromRequest(request: NextRequest): string | null {
   const headerToken = extractBearerToken(request.headers.get('authorization') || undefined);
   if (headerToken) return headerToken;
   return request.cookies.get(AUTH_COOKIE_NAME)?.value || null;
+}
+
+/**
+ * Async version of authenticateRequest that also checks the token blocklist (logout revocation).
+ * Use this in all protected API routes instead of authenticateRequest.
+ */
+export async function authenticateRequestAsync(request: NextRequest): Promise<AuthContext | null> {
+  const authCtx = authenticateRequest(request);
+  if (!authCtx) return null;
+  const token = getTokenFromRequest(request);
+  if (token && await isTokenBlocked(token)) return null;
+  return authCtx;
 }
 
 export function setAuthCookie(response: NextResponse, token: string): void {

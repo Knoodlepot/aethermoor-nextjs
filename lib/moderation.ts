@@ -185,9 +185,9 @@ export async function getRecentIncidents(accountId: string, daysBack: number = 3
       `SELECT id, account_id, player_id, source, reason, trigger_text, status,
               admin_notes, created_at, reviewed_at, reviewed_by
        FROM moderation_incidents
-       WHERE account_id = $1 AND created_at > NOW() - INTERVAL '${daysBack} days'
+       WHERE account_id = $1 AND created_at > NOW() - ($2 * INTERVAL '1 day')
        ORDER BY created_at DESC`,
-      [accountId]
+      [accountId, daysBack]
     );
 
     return result.rows;

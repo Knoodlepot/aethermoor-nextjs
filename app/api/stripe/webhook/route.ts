@@ -35,6 +35,16 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true });
       }
 
+      // Idempotency guard — skip if this session was already processed
+      const existing = await query(
+        `SELECT id FROM purchases WHERE stripe_session_id = $1 AND status = 'completed' LIMIT 1`,
+        [session.id]
+      );
+      if (existing.rows.length > 0) {
+        console.log(`[STRIPE WEBHOOK] Already processed session ${session.id} — skipping`);
+        return NextResponse.json({ received: true });
+      }
+
       // Add tokens to player
       await addTokens(playerId, tokens, `Stripe purchase: ${packageId}`);
 

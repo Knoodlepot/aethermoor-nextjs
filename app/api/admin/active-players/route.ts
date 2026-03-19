@@ -5,8 +5,7 @@ function checkAdminAuth(request: NextRequest): boolean {
   const headerSecret = request.headers.get('x-admin-secret');
   const bearer = request.headers.get('authorization');
   const bearerSecret = bearer?.startsWith('Bearer ') ? bearer.substring(7) : null;
-  const legacyQuerySecret = new URL(request.url).searchParams.get('secret');
-  const secret = headerSecret || bearerSecret || legacyQuerySecret;
+  const secret = headerSecret || bearerSecret;
   return !!(secret && secret === process.env.SESSION_SECRET);
 }
 

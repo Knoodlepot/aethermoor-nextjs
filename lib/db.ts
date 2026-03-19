@@ -259,6 +259,7 @@ export async function migrateDb(): Promise<void> {
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
       CREATE INDEX IF NOT EXISTS idx_purchases_player_id ON purchases(player_id);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_purchases_stripe_session_id ON purchases(stripe_session_id) WHERE stripe_session_id IS NOT NULL;
     `);
 
     // Create dungeon_progress table

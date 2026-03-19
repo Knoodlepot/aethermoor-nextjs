@@ -9,7 +9,7 @@ import { cacheGetJson, cacheSetJson, cacheDel } from '@/lib/redis';
 // Add ?slots=all to get summary of all 3 slots
 export async function GET(request: NextRequest) {
   try {
-    const authCtx = auth.authenticateRequest(request);
+    const authCtx = await auth.authenticateRequestAsync(request);
     if (!authCtx) {
       return NextResponse.json({ error: 'unauthorized', message: 'Authentication required' }, { status: 401 });
     }
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
 // Save game state to cloud
 export async function POST(request: NextRequest) {
   try {
-    const authCtx = auth.authenticateRequest(request);
+    const authCtx = await auth.authenticateRequestAsync(request);
     if (!authCtx) {
       return NextResponse.json({ error: 'unauthorized', message: 'Authentication required' }, { status: 401 });
     }
