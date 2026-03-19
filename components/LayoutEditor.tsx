@@ -34,6 +34,19 @@ const MIN_H = 40;
 const TOOLBAR_H = 48;
 const LS_KEY = 'ae-layout-editor-panels';
 
+// All predefined panel types — used both for defaults and the Add Panel menu
+const PANEL_CATALOG = [
+  { id: 'narrative',  label: 'Narrative',       color: '#2a7a7a' },
+  { id: 'input',      label: 'Input Bar',        color: '#4a5a7a' },
+  { id: 'playerInfo', label: 'Player Info',      color: '#9a7a20' },
+  { id: 'contextBar', label: 'Context Bar',      color: '#9a6010' },
+  { id: 'contextAct', label: 'Context Actions',  color: '#8a5000' },
+  { id: 'combat',     label: 'Combat Panel',     color: '#7a2020' },
+  { id: 'mainQuest',  label: 'Main Quest',       color: '#5a2a8a' },
+  { id: 'sideQuests', label: 'Side Quests',      color: '#3a3a9a' },
+  { id: 'miniMap',    label: 'Mini Map',         color: '#2a6a30' },
+] as const;
+
 // Default layout mirrors the real game (~70% left / ~30% right split).
 // Positions are in canvas pixels — the canvas is the full window minus toolbar.
 function buildDefaults(cw: number, ch: number): PanelBox[] {
@@ -110,6 +123,9 @@ export function LayoutEditor() {
   const [saved, setSaved] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [maxZ, setMaxZ] = useState(1);
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [addingCustom, setAddingCustom] = useState(false);
+  const [customLabel, setCustomLabel] = useState('');
 
   // ── Canvas size tracking ───────────────────────────────────────────────────
 
@@ -258,6 +274,50 @@ export function LayoutEditor() {
     setTimeout(() => setSaved(false), 1500);
   }
 
+  function addPredefinedPanel(entry: typeof PANEL_CATALOG[number]) {
+    const newZ = maxZ + 1;
+    setMaxZ(newZ);
+    setPanels(prev => [...prev, {
+      id: entry.id,
+      label: entry.label,
+      color: entry.color,
+      x: Math.max(0, Math.round((canvasSize.w - 200) / 2)),
+      y: Math.max(0, Math.round((canvasSize.h - 120) / 2)),
+      w: 200,
+      h: 120,
+      zIndex: newZ,
+    }]);
+    setSelected(entry.id);
+    setShowAddMenu(false);
+  }
+
+  function addCustomPanel(label: string) {
+    if (!label.trim()) return;
+    const idx = panels.filter(p => p.id.startsWith('custom_')).length + 1;
+    const id = `custom_${idx}`;
+    const newZ = maxZ + 1;
+    setMaxZ(newZ);
+    setPanels(prev => [...prev, {
+      id,
+      label: label.trim(),
+      color: '#5a5a6a',
+      x: Math.max(0, Math.round((canvasSize.w - 200) / 2)),
+      y: Math.max(0, Math.round((canvasSize.h - 120) / 2)),
+      w: 200,
+      h: 120,
+      zIndex: newZ,
+    }]);
+    setSelected(id);
+    setCustomLabel('');
+    setAddingCustom(false);
+    setShowAddMenu(false);
+  }
+
+  function deletePanel(id: string) {
+    setPanels(prev => prev.filter(p => p.id !== id));
+    setSelected(null);
+  }
+
   const exportJson = JSON.stringify(
     panels.map(({ id, label, x, y, w, h }) => ({ id, label, x, y, w, h })),
     null, 2
@@ -299,6 +359,61 @@ export function LayoutEditor() {
           {saved ? 'Saved!' : 'Save'}
         </button>
         <button style={btnStyle} onClick={() => setShowExport(true)}>Export Config</button>
+
+        {/* Add Panel dropdown */}
+        <div style={{ position: 'relative' }}>
+          <button style={{ ...btnStyle, color: '#a0d080', borderColor: '#a0d080' }} onClick={() => { setShowAddMenu(m => !m); setAddingCustom(false); setCustomLabel(''); }}>
+            + Add Panel ▾
+          </button>
+          {showAddMenu && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, marginTop: 4,
+              background: '#1a120a', border: '1px solid #c9a84c', borderRadius: 4,
+              zIndex: 9999, minWidth: 180, padding: '4px 0',
+            }}>
+              {PANEL_CATALOG.map(entry => {
+                const alreadyOn = panels.some(p => p.id === entry.id);
+                return (
+                  <div
+                    key={entry.id}
+                    style={{
+                      padding: '6px 14px', cursor: alreadyOn ? 'default' : 'pointer',
+                      color: alreadyOn ? '#5a4a30' : '#c9a84c',
+                      fontFamily: 'Georgia, serif', fontSize: 12,
+                      display: 'flex', alignItems: 'center', gap: 8,
+                    }}
+                    onClick={() => { if (!alreadyOn) addPredefinedPanel(entry); }}
+                  >
+                    <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: entry.color, flexShrink: 0 }} />
+                    {entry.label}
+                    {alreadyOn && <span style={{ fontSize: 10, color: '#5a4a30', marginLeft: 'auto' }}>on canvas</span>}
+                  </div>
+                );
+              })}
+              <div style={{ borderTop: '1px solid #2e2010', margin: '4px 0' }} />
+              {!addingCustom ? (
+                <div
+                  style={{ padding: '6px 14px', cursor: 'pointer', color: '#80c0ff', fontFamily: 'Georgia, serif', fontSize: 12 }}
+                  onClick={() => setAddingCustom(true)}
+                >
+                  Custom Panel...
+                </div>
+              ) : (
+                <div style={{ padding: '6px 10px', display: 'flex', gap: 6 }}>
+                  <input
+                    autoFocus
+                    value={customLabel}
+                    onChange={e => setCustomLabel(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') addCustomPanel(customLabel); if (e.key === 'Escape') { setAddingCustom(false); setCustomLabel(''); } }}
+                    placeholder="Panel name…"
+                    style={{ flex: 1, background: '#0d0a06', color: '#c9a84c', border: '1px solid #5a4a30', borderRadius: 3, padding: '3px 6px', fontSize: 12, fontFamily: 'Georgia, serif' }}
+                  />
+                  <button style={{ ...btnStyle, padding: '2px 8px', fontSize: 11 }} onClick={() => addCustomPanel(customLabel)}>Add</button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <div style={{ flex: 1 }} />
         <span style={{ color: '#7a6040', fontSize: 11, fontFamily: 'Georgia, serif' }}>
           Drag panel headers to move · Drag edges/corners to resize · Click canvas to deselect
@@ -313,7 +428,7 @@ export function LayoutEditor() {
       <div
         ref={canvasRef}
         style={{ position: 'relative', flex: 1, overflow: 'hidden', background: '#0d0a06' }}
-        onPointerDown={(e) => { if (e.target === canvasRef.current) setSelected(null); }}
+        onPointerDown={(e) => { if (e.target === canvasRef.current) { setSelected(null); setShowAddMenu(false); } }}
       >
         {/* Guide line: default right-column start */}
         <div style={{
@@ -362,7 +477,7 @@ export function LayoutEditor() {
                   background: panel.color + '88',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  justifyContent: 'space-between',
                   cursor: dragState?.panelId === panel.id && dragState.type === 'move' ? 'grabbing' : 'grab',
                   fontFamily: 'Cinzel, serif',
                   fontSize: 11,
@@ -370,10 +485,20 @@ export function LayoutEditor() {
                   color: '#fff',
                   textTransform: 'uppercase' as const,
                   userSelect: 'none',
+                  paddingLeft: 8,
+                  paddingRight: 4,
                 }}
                 onPointerDown={(e) => startMove(e, panel)}
               >
-                {panel.label}
+                <span style={{ flex: 1, textAlign: 'center' }}>{panel.label}</span>
+                {isSelected && (
+                  <span
+                    style={{ cursor: 'pointer', padding: '0 4px', fontSize: 14, color: '#ffaaaa', lineHeight: 1, flexShrink: 0 }}
+                    onPointerDown={e => e.stopPropagation()}
+                    onClick={e => { e.stopPropagation(); deletePanel(panel.id); }}
+                    title="Remove panel"
+                  >×</span>
+                )}
               </div>
 
               {/* Size label */}
@@ -424,7 +549,7 @@ export function LayoutEditor() {
               EXPORT CONFIG
             </div>
             <p style={{ color: '#b8925a', fontSize: 12, fontFamily: 'Georgia, serif', margin: 0 }}>
-              Copy this JSON and paste it to Claude to implement your layout.
+              Your layout is live — the game reads this config automatically. Copy the JSON as a backup or to share.
             </p>
             <textarea
               readOnly

@@ -8,6 +8,7 @@ import { useStorage } from '@/hooks/useStorage';
 import { useGameState } from '@/hooks/useGameState';
 import { useUI } from '@/hooks/useUI';
 import { useGameLoop } from '@/hooks/useGameLoop';
+import { useLayoutConfig } from '@/lib/hooks/useLayoutConfig';
 
 // Panels
 import { CommandPanel } from '@/components/panels/CommandPanel';
@@ -66,6 +67,7 @@ function GameContent() {
   const searchParams = useSearchParams();
   const isNewGame = searchParams.get('new') === '1';
   const { T, tf, isDyslexic, t } = useTheme();
+  const layoutCfg = useLayoutConfig();
 
   // All hooks in dependency order
   const auth = useAuth();
@@ -746,20 +748,10 @@ function GameContent() {
 
   // ── Right column (combat + quest + command buttons) ─────────────────────────
 
-  const rightColumn = (
-    <div
-      style={{
-        width: 280,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        flexShrink: 0,
-        borderLeft: `1px solid ${T.border}`,
-      }}
-    >
-      {/* Player info panel at the top */}
-      {playerInfoPanel}
-      {/* Context/location bar */}
+  // Panel component map — keyed by layout editor panel id
+  const PANEL_MAP: Record<string, React.ReactNode> = {
+    playerInfo: playerInfoPanel,
+    contextBar: (
       <ContextBar
         player={gameState.player}
         isLoading={gameLoop.isLoading}
@@ -773,56 +765,127 @@ function GameContent() {
         onCraft={() => ui.toggleModal('crafting')}
         onGear={() => ui.toggleModal('inventory')}
         onBestiary={() => ui.toggleModal('bestiary')}
-                activeQuestCount={activeQuestCount}
+        activeQuestCount={activeQuestCount}
         skillPts={skillPts}
         bestiaryCount={bestiaryCount}
       />
-      {/* Context-sensitive action panel — changes template based on explore/town/combat */}
-      {player && (
-        <ContextActionPanel
-          context={(player as any).context || 'explore'}
-          isLoading={gameLoop.isLoading}
-          onAction={(text) => handleFreeText(text)}
-          onOpenShop={() => ui.toggleModal('shop')}
-          onOpenCraft={() => ui.toggleModal('crafting')}
-          inventory={(player as any).inventory || []}
-          location={(player as any).location}
-          locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
-        />
+    ),
+    contextAct: player ? (
+      <ContextActionPanel
+        context={(player as any).context || 'explore'}
+        isLoading={gameLoop.isLoading}
+        onAction={(text) => handleFreeText(text)}
+        onOpenShop={() => ui.toggleModal('shop')}
+        onOpenCraft={() => ui.toggleModal('crafting')}
+        inventory={(player as any).inventory || []}
+        location={(player as any).location}
+        locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
+      />
+    ) : null,
+    combat: ui.currentEnemy ? (
+      <CombatPanel
+        enemy={ui.currentEnemy}
+        combatLog={ui.combatLog}
+        playerStatusEffects={ui.playerStatusEffects}
+        playerDefending={ui.playerDefending}
+      />
+    ) : null,
+    mainQuest: worldSeed ? (
+      <MainQuestPanel
+        worldSeed={gameState.worldSeed}
+        onOpen={() => ui.toggleModal('questLog')}
+      />
+    ) : null,
+    sideQuests: (
+      <SideQuestPanel
+        quests={gameState.player?.quests || []}
+        onOpenQuest={(questId) => ui.openQuestLogAt(questId)}
+        onToggleTrack={(questId) => handleCommand('toggle_quest_track:' + questId)}
+        onAbandon={(questId) => handleCommand('abandon_quest:' + questId)}
+        onOpenLog={() => ui.openModal('questLog')}
+      />
+    ),
+    miniMap: player && worldSeed ? (
+      <MiniMap
+        player={player}
+        worldSeed={worldSeed}
+        onOpenMap={() => ui.setMapOpen(true)}
+      />
+    ) : null,
+  };
+
+  // Right column width — from layout config or default 280px
+  const rightColW = layoutCfg ? layoutCfg.rightColW : 280;
+
+  // Build right column panel list — from layout config or hardcoded order
+  const rightPanelOrder = layoutCfg
+    ? layoutCfg.rightPanels
+    : [
+        { id: 'playerInfo', label: 'Player Info', h: 0 },
+        { id: 'contextBar', label: 'Context Bar', h: 0 },
+        { id: 'contextAct', label: 'Context Actions', h: 0 },
+        { id: 'combat', label: 'Combat', h: 0 },
+        { id: 'mainQuest', label: 'Main Quest', h: 0 },
+        { id: 'sideQuests', label: 'Side Quests', h: 0 },
+        { id: 'miniMap', label: 'Mini Map', h: 0 },
+      ];
+
+  const rightColumn = (
+    <div
+      style={{
+        width: rightColW,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        flexShrink: 0,
+        borderLeft: `1px solid ${T.border}`,
+      }}
+    >
+      {rightPanelOrder.map(({ id, label, h }) => {
+        // Known panel from PANEL_MAP
+        if (id in PANEL_MAP) {
+          const node = PANEL_MAP[id];
+          if (!node) return null;
+          const style = layoutCfg && h > 0
+            ? { flexBasis: h, flexShrink: 0, overflow: 'hidden' }
+            : (id === 'combat' || id === 'mainQuest' || id === 'sideQuests' || id === 'miniMap')
+              ? undefined  // these go in the scroll area when no config
+              : { flexShrink: 0 };
+          return <div key={id} style={style}>{node}</div>;
+        }
+        // Custom panel placeholder
+        if (id.startsWith('custom_')) {
+          return (
+            <div key={id} style={{
+              flexBasis: layoutCfg && h > 0 ? h : 80,
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderBottom: `1px solid ${T.border}`,
+              color: T.textMuted,
+              fontFamily: "'Cinzel',serif",
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              background: '#1a1a2a33',
+            }}>
+              {label}
+            </div>
+          );
+        }
+        return null;
+      })}
+
+      {/* Scrollable area — only used when NOT driven by layout config */}
+      {!layoutCfg && (
+        <div className="ae-right-col" style={{ flex: 1, overflowY: 'auto' }}>
+          {ui.currentEnemy && PANEL_MAP.combat}
+          {worldSeed && PANEL_MAP.mainQuest}
+          {PANEL_MAP.sideQuests}
+          {player && worldSeed && PANEL_MAP.miniMap}
+        </div>
       )}
 
-      <div className="ae-right-col" style={{ flex: 1, overflowY: 'auto' }}>
-        {ui.currentEnemy && (
-          <CombatPanel
-            enemy={ui.currentEnemy}
-            combatLog={ui.combatLog}
-            playerStatusEffects={ui.playerStatusEffects}
-            playerDefending={ui.playerDefending}
-          />
-        )}
-        {worldSeed && (
-          <MainQuestPanel
-            worldSeed={gameState.worldSeed}
-            onOpen={() => ui.toggleModal('questLog')}
-          />
-        )}
-        <SideQuestPanel
-          quests={gameState.player?.quests || []}
-          onOpenQuest={(questId) => ui.openQuestLogAt(questId)}
-          onToggleTrack={(questId) => handleCommand('toggle_quest_track:' + questId)}
-          onAbandon={(questId) => handleCommand('abandon_quest:' + questId)}
-          onOpenLog={() => ui.openModal('questLog')}
-        />
-        {player && worldSeed && (
-          <MiniMap
-            player={player}
-            worldSeed={worldSeed}
-            onOpenMap={() => ui.setMapOpen(true)}
-          />
-        )}
-      </div>
-
-      {/* Action buttons at bottom of right column (legacy style) */}
       {actionButtons}
     </div>
   );
