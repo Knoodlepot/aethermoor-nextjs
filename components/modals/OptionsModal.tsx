@@ -30,6 +30,7 @@ const LANGUAGES: { name: string; native: string; warning: string }[] = [
   { name: 'Arabic',     native: 'العربية',    warning: 'قد لا تكون السرد دقيقاً بنسبة 100٪.' },
   { name: 'Hindi',      native: 'हिन्दी',     warning: 'कथन 100% सटीक नहीं हो सकता।' },
   { name: 'Turkish',    native: 'Türkçe',     warning: 'Anlatım %100 doğru olmayabilir.' },
+  { name: 'Greek',      native: 'Ελληνικά',   warning: 'Η αφήγηση μπορεί να μην είναι 100% ακριβής.' },
   { name: 'Latin',              native: 'Latina',           warning: 'Narrator speaks in Classical Latin. Gloriously archaic.' },
   { name: 'Pirate',             native: 'Pirate',           warning: "Arrr! The narrator be speakin\' like a salty sea dog." },
   { name: 'Old Norse',          native: 'Norrœnt mál',      warning: 'The narrator speaks in the tongue of the ancient Vikings. Results may be gloriously imperfect.' },
