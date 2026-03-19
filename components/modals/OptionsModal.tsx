@@ -31,11 +31,14 @@ const LANGUAGES: { name: string; native: string; warning: string }[] = [
   { name: 'Hindi',      native: 'हिन्दी',     warning: 'कथन 100% सटीक नहीं हो सकता।' },
   { name: 'Turkish',    native: 'Türkçe',     warning: 'Anlatım %100 doğru olmayabilir.' },
   { name: 'Greek',      native: 'Ελληνικά',   warning: 'Η αφήγηση μπορεί να μην είναι 100% ακριβής.' },
-  { name: 'Latin',              native: 'Latina',           warning: 'Narrator speaks in Classical Latin. Gloriously archaic.' },
-  { name: 'Pirate',             native: 'Pirate',           warning: "Arrr! The narrator be speakin\' like a salty sea dog." },
-  { name: 'Old Norse',          native: 'Norrœnt mál',      warning: 'The narrator speaks in the tongue of the ancient Vikings. Results may be gloriously imperfect.' },
-  { name: 'Shakespearean',      native: 'Shakespearean',    warning: 'Forsooth! The narrator doth speak in the manner of the Bard. Verily.' },
-  { name: 'Klingon',            native: 'tlhIngan Hol',     warning: 'nuqneH! The narrator will attempt Klingon. Honour demands it.' },
+];
+
+const FUN_LANGUAGES: { name: string; native: string; warning: string }[] = [
+  { name: 'Latin',         native: 'Latina',        warning: 'Narrator speaks in Classical Latin. Gloriously archaic.' },
+  { name: 'Pirate',        native: 'Pirate',        warning: "Arrr! The narrator be speakin' like a salty sea dog." },
+  { name: 'Old Norse',     native: 'Norrœnt mál',   warning: 'The narrator speaks in the tongue of the ancient Vikings. Results may be gloriously imperfect.' },
+  { name: 'Shakespearean', native: 'Shakespearean', warning: 'Forsooth! The narrator doth speak in the manner of the Bard. Verily.' },
+  { name: 'Klingon',       native: 'tlhIngan Hol',  warning: 'nuqneH! The narrator will attempt Klingon. Honour demands it.' },
 ];
 
 const TEXT_SIZES: { id: TextSize; label: string; desc: string }[] = [
@@ -55,7 +58,7 @@ interface OptionsModalProps {
 export function OptionsModal({ currentTier, onSelectTier, onClose }: OptionsModalProps) {
   const { themeKey, setThemeKey, isDyslexic, setIsDyslexic, textSize, setTextSize, language, setLanguage } = useTheme();
   const [pendingLang, setPendingLang] = React.useState<string | null>(null);
-  const selectedLangData = LANGUAGES.find(l => l.name === (pendingLang ?? language));
+  const selectedLangData = [...LANGUAGES, ...FUN_LANGUAGES].find(l => l.name === (pendingLang ?? language));
 
   const handleSelectLanguage = (name: string) => {
     setPendingLang(name);
@@ -235,6 +238,31 @@ export function OptionsModal({ currentTier, onSelectTier, onClose }: OptionsModa
               </button>
             );
           })}
+        </div>
+
+        {/* FUN languages */}
+        <div style={{ border: '1px solid #2e2515', padding: '10px 10px 8px', marginBottom: 12 }}>
+          <div style={{ fontFamily: "'Cinzel',serif", fontSize: 9, letterSpacing: 3, color: '#5a4a2a', marginBottom: 8 }}>FUN</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+            {FUN_LANGUAGES.map((l) => {
+              const active = (pendingLang ?? language) === l.name;
+              return (
+                <button
+                  key={l.name}
+                  onClick={() => handleSelectLanguage(l.name)}
+                  style={{
+                    background: active ? '#c9a84c22' : 'transparent',
+                    border: `1px solid ${active ? '#c9a84c' : '#2e2515'}`,
+                    padding: '7px 8px', cursor: 'pointer', textAlign: 'center' as const,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ fontFamily: "'Cinzel',serif", fontSize: 9, color: active ? '#c9a84c' : '#8a7a5a', letterSpacing: 1 }}>{l.name}</div>
+                  <div style={{ fontSize: 11, color: active ? '#c9a84c' : '#5a4a2a', marginTop: 2 }}>{l.native}</div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Warning for non-English */}
