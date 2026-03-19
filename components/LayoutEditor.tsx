@@ -146,12 +146,23 @@ export function LayoutEditor() {
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) {
-        setPanels(JSON.parse(raw));
-        return;
+        const parsed = JSON.parse(raw);
+        // Support new format { panels, canvasW, canvasH } and old array format
+        const loadedPanels: PanelBox[] = Array.isArray(parsed) ? parsed : (parsed?.panels ?? []);
+        if (loadedPanels.length > 0) {
+          setPanels(loadedPanels);
+          return;
+        }
       }
     } catch {}
     setPanels(buildDefaults(canvasSize.w, canvasSize.h));
   }, [canvasSize.w, canvasSize.h]);
+
+  // ── Save helpers ────────────────────────────────────────────────────────────
+
+  function saveToStorage(p: PanelBox[]) {
+    localStorage.setItem(LS_KEY, JSON.stringify({ panels: p, canvasW: canvasSize.w, canvasH: canvasSize.h }));
+  }
 
   // ── Auto-save (debounced) ─────────────────────────────────────────────────
 
@@ -160,10 +171,10 @@ export function LayoutEditor() {
     if (panels.length === 0) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      localStorage.setItem(LS_KEY, JSON.stringify(panels));
+      saveToStorage(panels);
     }, 500);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
-  }, [panels]);
+  }, [panels, canvasSize.w, canvasSize.h]);
 
   // ── Pointer move/up on window (handles drag outside panel) ────────────────
 
@@ -266,11 +277,11 @@ export function LayoutEditor() {
     const fresh = buildDefaults(canvasSize.w, canvasSize.h);
     setPanels(fresh);
     setSelected(null);
-    localStorage.setItem(LS_KEY, JSON.stringify(fresh));
+    saveToStorage(fresh);
   }
 
   function handleSave() {
-    localStorage.setItem(LS_KEY, JSON.stringify(panels));
+    saveToStorage(panels);
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   }
