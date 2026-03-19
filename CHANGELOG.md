@@ -4,6 +4,10 @@
 - **Every new character gets a unique cast of NPCs**: Each character now has their own name pool drawn from over 160 names spanning Nordic, Celtic, Mediterranean, Slavic, Eastern, and African-influenced styles. The narrator picks from this pool, so Captain Voss, Corvin, and Aldric won't follow you into every new game.
 - **Directions and maps actually reveal settlements**: When an NPC gives you directions to a town, hands you a map, or points out where a place is, those settlements now appear on your map. No more being told to "mark Beliogatespring on your map" and having it stay hidden.
 - **Main quest now paces itself properly**: The story no longer rushes through acts. Each act now requires a minimum number of turns played and side quests completed before the main plot can advance — so the world has time to breathe and feel earned rather than constant.
+- **NPC meeting promises now pin to the map**: When an NPC agrees to meet you somewhere, that location appears on your map with an amber `!` marker so you always know where to go. The marker stays until the meeting is resolved.
+- **Unfinished dungeons and locations leave a map pin**: If you leave a ruin, cathedral, or dungeon with clear unresolved business inside, the narrator will pin it on your map so you can find your way back.
+- **Overdue meetings are now acknowledged**: If you miss a scheduled meeting, the narrator will address it — the NPC appears looking for you, sends a message, or reacts appropriately. Missed obligations no longer silently disappear.
+- **Traveler marker shows your position on the road**: When fast-travelling between locations, a cyan marker appears at the midpoint on the road between your origin and destination so you can see you're heading the right way.
 
 ### Fixed
 - **Narrator now knows all your unlocked skills**: Previously the narrator only recognised a handful of skills with world-flavour effects (Ghost Walk, Master Thief, etc.) and was unaware of combat skills like Shadowstep, Blade Dance, Evasion, Knife Throw, and others. The narrator now sees your full skill list and will correctly let you use any ability you have unlocked.
