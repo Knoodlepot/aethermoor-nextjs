@@ -71,6 +71,16 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
   const isDragging = React.useRef(false);
   const dragStart = React.useRef({ x: 0, y: 0, ox: 0, oy: 0 });
 
+  // Escape key closes the map
+  React.useEffect(() => {
+    if (inline) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setSelectedDest(null); onClose?.(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [inline, onClose]);
+
   // Clamp offset so world content never fully leaves the map window
   const clampOffset = React.useCallback((ox: number, oy: number, z: number) => {
     const ww = 100 * BASE_SX * z, wh = 100 * BASE_SY * z;
