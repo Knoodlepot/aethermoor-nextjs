@@ -312,15 +312,18 @@ export function useGameLoop(
           return { success: true };
         }
 
-        // ── stat_point:<stat> ──
+        // ── stat_point:<stat>[:<count>] ──
         if (command.startsWith('stat_point:')) {
-          const stat = command.slice('stat_point:'.length) as 'str' | 'agi' | 'int' | 'wil';
+          const parts = command.slice('stat_point:'.length).split(':');
+          const stat = parts[0] as 'str' | 'agi' | 'int' | 'wil';
+          const count = parts[1] ? Math.max(1, parseInt(parts[1], 10) || 1) : 1;
           const pts: number = (updatedPlayer as any).statPoints ?? 0;
           if (pts > 0 && ['str', 'agi', 'int', 'wil'].includes(stat)) {
+            const apply = Math.min(count, pts);
             updatedPlayer = {
               ...updatedPlayer,
-              [stat]: ((updatedPlayer as any)[stat] ?? 0) + 1,
-              statPoints: pts - 1,
+              [stat]: ((updatedPlayer as any)[stat] ?? 0) + apply,
+              statPoints: pts - apply,
             } as any;
             gs.setPlayer(updatedPlayer);
             await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative || '', gs.log);

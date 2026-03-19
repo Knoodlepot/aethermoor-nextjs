@@ -1421,7 +1421,7 @@ function GameContent() {
           onUnlock={(skillId: string) => handleCommand('unlock_skill:' + skillId)}
           onSpendStats={(allocs: Record<string, number>) => {
             Object.entries(allocs).forEach(([stat, count]) => {
-              for (let i = 0; i < count; i++) handleCommand('stat_point:' + stat);
+              if (count > 0) handleCommand(`stat_point:${stat}:${count}`);
             });
           }}
           onClose={() => ui.closeModal('inventory')}

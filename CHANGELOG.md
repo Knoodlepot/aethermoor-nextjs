@@ -4,6 +4,9 @@
 - **Your last action now shows under the story**: The text you typed or the action you chose appears as a faint italic line below the narrative — handy for screenshots and mid-session context.
 
 ### Fixed
+- **Stat points now apply all at once**: Clicking Confirm on the attributes screen now correctly applies all pending points in one go. Previously allocating 3 points to Strength would only apply 1.
+
+### Fixed
 - **Skill points no longer pile up when all skills are unlocked**: Once you have all 9 skills for your class, levelling up no longer awards skill points you can't spend.
 - **Custom-named weapons from the story are now equippable**: Daggers, swords, axes, and other weapons the narrator names on the fly (e.g. "Horn Handle Dagger", "Ash-wood Bow") now show an Equip button in your inventory, instead of sitting as unequippable items.
 - **Gold rewards no longer repeat across turns**: The narrator now emits each gold reward exactly once. Previously, the same reward (e.g. a 70g contract payment) could be applied multiple times across different turns.
