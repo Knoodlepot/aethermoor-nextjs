@@ -1,7 +1,7 @@
 ## [Unreleased]
 
 ### Fixed
-- **Security: Several backend hardening improvements** — SQL injection vulnerability patched, admin API endpoints now require header-based authentication only, duplicate token grants from Stripe webhook retries are now prevented, and logged-out sessions are properly invalidated across all protected endpoints.
+- **Security: Several backend hardening improvements** — SQL injection vulnerability patched, admin API endpoints now require header-based authentication only, duplicate token grants from Stripe webhook retries are now prevented, and logged-out sessions are properly invalidated across all protected endpoints. Login, registration, and save endpoints are now rate-limited to prevent brute-force and spam.
 
 ### Added
 - **Your last action now shows under the story**: The text you typed or the action you chose appears as a faint italic line below the narrative — handy for screenshots and mid-session context.

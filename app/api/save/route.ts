@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as auth from '@/lib/auth';
 import * as db from '@/lib/db';
 import { cacheGetJson, cacheSetJson, cacheDel } from '@/lib/redis';
+import { getIP, isIpRateLimited } from '@/lib/ratelimit';
 
 
 // GET /api/save
@@ -76,6 +77,10 @@ export async function GET(request: NextRequest) {
 // Save game state to cloud
 export async function POST(request: NextRequest) {
   try {
+    if (await isIpRateLimited(getIP(request), 30)) {
+      return NextResponse.json({ error: 'rate_limited', message: 'Too many save requests. Please slow down.' }, { status: 429 });
+    }
+
     const authCtx = await auth.authenticateRequestAsync(request);
     if (!authCtx) {
       return NextResponse.json({ error: 'unauthorized', message: 'Authentication required' }, { status: 401 });

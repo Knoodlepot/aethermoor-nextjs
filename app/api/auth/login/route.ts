@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as auth from '@/lib/auth';
+import { getIP, isIpRateLimited } from '@/lib/ratelimit';
 
 export async function POST(request: NextRequest) {
   try {
+    if (await isIpRateLimited(getIP(request), 10)) {
+      return NextResponse.json({ error: 'rate_limited', message: 'Too many login attempts. Please try again later.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { email, password } = body;
 

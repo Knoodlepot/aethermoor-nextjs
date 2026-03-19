@@ -3,9 +3,14 @@ import * as auth from '@/lib/auth';
 import { sendVerificationEmail } from '@/lib/external/email';
 import { query } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
+import { getIP, isIpRateLimited } from '@/lib/ratelimit';
 
 export async function POST(request: NextRequest) {
   try {
+    if (await isIpRateLimited(getIP(request), 5)) {
+      return NextResponse.json({ error: 'rate_limited', message: 'Too many registration attempts. Please try again later.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { email, password } = body;
 
