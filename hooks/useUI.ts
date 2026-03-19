@@ -27,6 +27,10 @@ export interface UIContext {
   showDungeonWarning: boolean;
   showTokenShop: boolean;
 
+  // Token warning
+  lowTokenWarning: boolean;
+  setLowTokenWarning: (show: boolean) => void;
+
   // Modal control
   openModal: (modalName: string) => void;
   closeModal: (modalName: string) => void;
@@ -118,6 +122,9 @@ export function useUI(): UIContext {
   const [showNGPlusScreen, setShowNGPlusScreen] = useState(false);
   const [showDungeonWarning, setShowDungeonWarning] = useState(false);
   const [showTokenShop, setShowTokenShop] = useState(false);
+
+  // Token warning
+  const [lowTokenWarning, setLowTokenWarning] = useState(false);
 
   // Map state
   const [mapOpen, setMapOpen] = useState(false);
@@ -328,6 +335,8 @@ export function useUI(): UIContext {
     showNGPlusScreen,
     showDungeonWarning,
     showTokenShop,
+    lowTokenWarning,
+    setLowTokenWarning,
     openModal,
     closeModal,
     toggleModal,

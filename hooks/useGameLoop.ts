@@ -449,9 +449,10 @@ export function useGameLoop(
         const userMessages = [...gs.messages.slice(-19), { role: 'user', content: command }];
         gs.setMessages(userMessages);
 
-        // 2. Call Claude API for narration
+        // 2. Call Claude API for narration (streaming — clear narrative first so chunks build it up)
+        gs.setNarrative('');
         const preNarratorLevel = updatedPlayer.level;
-        const narratorResponse = await callClaude(userMessages, updatedPlayer, updatedSeed);
+        const narratorResponse = await callClaude(userMessages, updatedPlayer, updatedSeed, (chunk) => gs.appendNarrative(chunk));
 
         if (!narratorResponse.success || !narratorResponse.narrative) {
           if (narratorResponse.error === 'no_tokens') {
@@ -463,6 +464,9 @@ export function useGameLoop(
         // Update token balance display from server response
         if (narratorResponse.tokenBalance != null && setTokenBalance) {
           setTokenBalance(narratorResponse.tokenBalance);
+          if (narratorResponse.tokenBalance <= 5) {
+            ui.setLowTokenWarning(true);
+          }
         }
 
         // 3. Use server-applied state updates from /api/claude
@@ -654,13 +658,14 @@ export function useGameLoop(
   );
 
   /**
-   * Call Claude API with current game context
+   * Call Claude API with current game context (SSE streaming for narrator calls)
    */
   const callClaude = useCallback(
     async (
       messages: any[],
       player: Player,
-      worldSeed: WorldSeed
+      worldSeed: WorldSeed,
+      onChunk?: (text: string) => void
     ): Promise<{
       success: boolean;
       narrative?: string;
@@ -672,12 +677,10 @@ export function useGameLoop(
       stateChanges?: Record<string, any>;
       error?: string;
     }> => {
-      try {
+      const attempt = async () => {
         const res = await fetch('/api/claude', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
             messages,
@@ -687,25 +690,88 @@ export function useGameLoop(
           }),
         });
 
-        const data = await res.json();
-
-        if (res.ok && data.narrative) {
-          return {
-            success: true,
-            narrative: data.narrative,
-            cleanNarrative: data.cleanNarrative,
-            player: data.player,
-            worldSeed: data.worldSeed,
-            suggestions: data.suggestions,
-            tokenBalance: data.tokenBalance,
-            stateChanges: data.stateChanges ?? {},
-          };
+        // Handle non-ok without body
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          return { success: false as const, status: res.status, error: (data.error || 'API error') as string };
         }
 
-        return { success: false, error: data.error || 'API error' };
+        const contentType = res.headers.get('content-type') ?? '';
+
+        // SSE stream path (narrator calls)
+        if (contentType.includes('text/event-stream') && res.body) {
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let sseBuffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            sseBuffer += decoder.decode(value, { stream: true });
+
+            const events = sseBuffer.split('\n\n');
+            sseBuffer = events.pop() ?? '';
+
+            for (const event of events) {
+              if (!event.startsWith('data: ')) continue;
+              let payload: any;
+              try { payload = JSON.parse(event.slice(6)); } catch { continue; }
+
+              if (payload.type === 'chunk' && onChunk) {
+                onChunk(payload.text as string);
+              } else if (payload.type === 'done') {
+                return {
+                  success: true,
+                  narrative: payload.narrative as string,
+                  cleanNarrative: payload.cleanNarrative as string | undefined,
+                  player: payload.player as Player | undefined,
+                  worldSeed: payload.worldSeed as WorldSeed | undefined,
+                  suggestions: payload.suggestions as string[] | undefined,
+                  tokenBalance: payload.tokenBalance as number | undefined,
+                  stateChanges: (payload.stateChanges ?? {}) as Record<string, any>,
+                };
+              } else if (payload.type === 'error') {
+                return { success: false as const, status: 500, error: (payload.error || 'stream_error') as string };
+              }
+            }
+          }
+          return { success: false as const, status: 500, error: 'stream ended without done event' };
+        }
+
+        // Buffered JSON fallback (utility calls)
+        const data = await res.json();
+        if (data.narrative) {
+          return {
+            success: true,
+            narrative: data.narrative as string,
+            cleanNarrative: data.cleanNarrative as string | undefined,
+            player: data.player as Player | undefined,
+            worldSeed: data.worldSeed as WorldSeed | undefined,
+            suggestions: data.suggestions as string[] | undefined,
+            tokenBalance: data.tokenBalance as number | undefined,
+            stateChanges: (data.stateChanges ?? {}) as Record<string, any>,
+          };
+        }
+        return { success: false as const, status: res.status, error: (data.error || 'API error') as string };
+      };
+
+      try {
+        const result = await attempt();
+        // Single retry for server errors (5xx) — don't retry 4xx (auth, rate limit, no tokens)
+        if (!result.success && result.status != null && result.status >= 500) {
+          await new Promise(r => setTimeout(r, 1000));
+          return attempt();
+        }
+        return result;
       } catch (error: any) {
-        console.error('Claude API error:', error);
-        return { success: false, error: error.message };
+        // Network error — retry once after 1s
+        await new Promise(r => setTimeout(r, 1000));
+        try {
+          return await attempt();
+        } catch (e: any) {
+          console.error('Claude API error:', e);
+          return { success: false, error: e.message as string };
+        }
       }
     },
     []

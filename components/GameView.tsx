@@ -284,6 +284,44 @@ function GameContent() {
     setTimeout(() => setDungeonHint(false), 4500);
   };
 
+  const [dungeonCooldown, setDungeonCooldown] = useState(0);
+  const dungeonCooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const handleEnterDungeon = async () => {
+    if (dungeonCooldown > 0) return;
+    try {
+      const res = await fetch('/api/dungeon/descend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          floor: 1,
+          heroName: gameState.player?.name,
+          heroClass: (gameState.player as any)?.class,
+          heroLevel: gameState.player?.level,
+          ngPlus: (gameState.player as any)?.ngPlus ?? 0,
+        }),
+      });
+      if (res.status === 429) {
+        const data = await res.json();
+        const match = data.message?.match(/Wait (\d+)s/);
+        const secs = match ? parseInt(match[1]) : 15;
+        setDungeonCooldown(secs);
+        if (dungeonCooldownRef.current) clearInterval(dungeonCooldownRef.current);
+        dungeonCooldownRef.current = setInterval(() => {
+          setDungeonCooldown(prev => {
+            if (prev <= 1) { clearInterval(dungeonCooldownRef.current!); dungeonCooldownRef.current = null; return 0; }
+            return prev - 1;
+          });
+        }, 1000);
+        return;
+      }
+    } catch {
+      // If the API fails, allow entry anyway (non-blocking)
+    }
+    handleCommand('enter_dungeon');
+  };
+
   // Use 'any' casts so TypeScript doesn't object to fields not yet in the Player type
   const player = gameState.player as any;
 
@@ -762,8 +800,9 @@ function GameContent() {
         onShop={() => ui.toggleModal('shop')}
         onSkills={() => ui.toggleModal('skillTree')}
         onQuests={() => ui.toggleModal('questLog')}
-        onDungeon={() => dungeonAvailable ? handleCommand('enter_dungeon') : !atCapital ? showDungeonHint() : undefined}
-        dungeonAvailable={dungeonAvailable}
+        onDungeon={() => dungeonAvailable && dungeonCooldown === 0 ? handleEnterDungeon() : !atCapital ? showDungeonHint() : undefined}
+        dungeonAvailable={dungeonAvailable && dungeonCooldown === 0}
+        dungeonCooldown={dungeonCooldown}
         onCraft={() => ui.toggleModal('crafting')}
         onGear={() => ui.toggleModal('inventory')}
         onBestiary={() => ui.toggleModal('bestiary')}
@@ -1036,6 +1075,29 @@ function GameContent() {
             &gt; {ui.lastInput}
           </div>
         )}
+        {/* Low token warning banner */}
+        {ui.lowTokenWarning && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '6px 14px', flexShrink: 0,
+            background: '#7a4f00', color: '#ffd580',
+            fontSize: '0.8rem', fontFamily: "'Crimson Text',serif",
+          }}>
+            <span style={{ flex: 1 }}>
+              Low tokens — only {tokenBalance} remaining.{' '}
+              <span
+                style={{ textDecoration: 'underline', cursor: 'pointer' }}
+                onClick={() => ui.openModal('tokenShop')}
+              >
+                Buy more
+              </span>
+            </span>
+            <button
+              onClick={() => ui.setLowTokenWarning(false)}
+              style={{ background: 'none', border: 'none', color: '#ffd580', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, padding: 0 }}
+            >×</button>
+          </div>
+        )}
         {/* Suggestion buttons — sit above the input bar in their own row */}
         {ui.suggestions.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, borderTop: `1px solid ${T.border}` }}>
@@ -1185,6 +1247,30 @@ function GameContent() {
         </div>
       )}
 
+      {/* Low token warning banner (mobile) */}
+      {ui.lowTokenWarning && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '5px 12px', flexShrink: 0,
+          background: '#7a4f00', color: '#ffd580',
+          fontSize: '0.76rem', fontFamily: "'Crimson Text',serif",
+        }}>
+          <span style={{ flex: 1 }}>
+            Low tokens — only {tokenBalance} remaining.{' '}
+            <span
+              style={{ textDecoration: 'underline', cursor: 'pointer' }}
+              onClick={() => ui.openModal('tokenShop')}
+            >
+              Buy more
+            </span>
+          </span>
+          <button
+            onClick={() => ui.setLowTokenWarning(false)}
+            style={{ background: 'none', border: 'none', color: '#ffd580', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, padding: 0 }}
+          >×</button>
+        </div>
+      )}
+
       {/* Input bar */}
       <InputBar
         player={gameState.player}
@@ -1289,8 +1375,9 @@ function GameContent() {
           onShop={() => ui.toggleModal('shop')}
           onSkills={() => ui.toggleModal('skillTree')}
           onQuests={() => ui.toggleModal('questLog')}
-          onDungeon={() => dungeonAvailable ? handleCommand('enter_dungeon') : !atCapital ? showDungeonHint() : undefined}
-          dungeonAvailable={dungeonAvailable}
+          onDungeon={() => dungeonAvailable && dungeonCooldown === 0 ? handleEnterDungeon() : !atCapital ? showDungeonHint() : undefined}
+          dungeonAvailable={dungeonAvailable && dungeonCooldown === 0}
+          dungeonCooldown={dungeonCooldown}
           onCraft={() => ui.toggleModal('crafting')}
           onGear={() => { ui.toggleModal('inventory'); setShowMobilePanel(false); }}
           onBestiary={() => { ui.toggleModal('bestiary'); setShowMobilePanel(false); }}

@@ -48,6 +48,25 @@ export async function callAnthropic(body: any): Promise<{ status: number; data: 
 }
 
 /**
+ * Call Anthropic Claude API with streaming — returns the raw Response for SSE reading
+ */
+export async function callAnthropicStream(body: any): Promise<Response> {
+  if (!ANTHROPIC_KEY && !warnedMissingAnthropicKey) {
+    console.warn('[ANTHROPIC] API key missing: requests will fail.');
+    warnedMissingAnthropicKey = true;
+  }
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': ANTHROPIC_KEY || '',
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({ ...body, stream: true }),
+  });
+}
+
+/**
  * Extract text from Anthropic response
  */
 export function extractAnthropicText(data: any): string {

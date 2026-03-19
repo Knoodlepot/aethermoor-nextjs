@@ -15,6 +15,7 @@ export interface GameStateContext {
   setMessages: (messages: any[]) => void;
   narrative: string;
   setNarrative: (narrative: string) => void;
+  appendNarrative: (chunk: string) => void;
   log: any[];
   setLog: (log: any[]) => void;
   addMessage: (role: string, content: string) => void;
@@ -94,6 +95,10 @@ export function useGameState(storage: UseStorageReturn): GameStateContext {
   /**
    * Advance game time by hours
    */
+  const appendNarrative = useCallback((chunk: string) => {
+    setNarrative(prev => prev + chunk);
+  }, []);
+
   const advanceTime = useCallback((hours: number) => {
     setPlayer((prev) => {
       if (!prev) return prev;
@@ -110,6 +115,7 @@ export function useGameState(storage: UseStorageReturn): GameStateContext {
     setMessages,
     narrative,
     setNarrative,
+    appendNarrative,
     log,
     setLog,
     addMessage,

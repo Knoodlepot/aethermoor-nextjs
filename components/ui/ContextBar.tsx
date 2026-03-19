@@ -13,6 +13,7 @@ interface ContextBarProps {
   onQuests?: () => void;
   onDungeon?: () => void;
   dungeonAvailable?: boolean;
+  dungeonCooldown?: number;
   onCraft?: () => void;
   onGear?: () => void;
   onBestiary?: () => void;
@@ -21,7 +22,7 @@ interface ContextBarProps {
   bestiaryCount?: number;
 }
 
-export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount = 0 }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, dungeonCooldown = 0, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount = 0 }: ContextBarProps) {
   const { T, t } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -95,7 +96,7 @@ export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop:
                   animation: dungeonAvailable ? 'pulse 1.2s infinite' : 'none',
                 }}
               >
-                🕳️ {t('dungeon')}
+                🕳️ {dungeonCooldown > 0 ? `${dungeonCooldown}s` : t('dungeon')}
               </button>
             )}
           </div>

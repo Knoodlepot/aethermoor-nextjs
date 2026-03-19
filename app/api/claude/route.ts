@@ -122,101 +122,149 @@ export async function POST(request: NextRequest) {
       system = 'You are a fantasy RPG narrator. Respond with engaging, immersive narration.';
     }
 
-    // 6. Call Anthropic API
+    // 6. Call Anthropic API (streaming for narrator calls, buffered for utility)
     const model = utilityCall ? anthropic.selectModel(true) : anthropic.selectModelForTier(tier);
     const maxTokens = Math.min(Math.max(100, parseInt(max_tokens) || 1500), 2000);
 
-    const { status: apiStatus, data: apiData } = await anthropic.callAnthropic({
-      model,
-      max_tokens: maxTokens,
-      system,
-      messages,
-    });
+    const requestBody = { model, max_tokens: maxTokens, system, messages };
 
-    // Handle API errors
-    if (apiStatus !== 200) {
+    // Utility calls (screener, quest parser, etc.) use buffered JSON response
+    if (utilityCall) {
+      const { status: apiStatus, data: apiData } = await anthropic.callAnthropic(requestBody);
+      if (apiStatus !== 200) {
+        await tokens.addTokens(authCtx.playerId, tierCost, 'refund_api_error');
+        const freshBalance = await tokens.getBalance(authCtx.playerId);
+        return NextResponse.json({ error: 'ai_error', tokenBalance: freshBalance ?? 0 }, { status: 502 });
+      }
+      const narrative = anthropic.extractAnthropicText(apiData);
+      return NextResponse.json({ narrative, cleanNarrative: narrative, tokenBalance: spend.remaining }, { status: 200 });
+    }
+
+    // Narrator calls stream via SSE
+    let anthropicResp: Response;
+    try {
+      anthropicResp = await anthropic.callAnthropicStream(requestBody);
+    } catch {
       await tokens.addTokens(authCtx.playerId, tierCost, 'refund_api_error');
-      console.error(`Anthropic error ${apiStatus}:`, JSON.stringify(apiData).slice(0, 200));
+      return NextResponse.json({ error: 'ai_error' }, { status: 502 });
+    }
+
+    if (!anthropicResp.ok || !anthropicResp.body) {
+      await tokens.addTokens(authCtx.playerId, tierCost, 'refund_api_error');
       const freshBalance = await tokens.getBalance(authCtx.playerId);
       return NextResponse.json({ error: 'ai_error', tokenBalance: freshBalance ?? 0 }, { status: 502 });
     }
 
-    // 7. Extract narrative text
-    const narrative = anthropic.extractAnthropicText(apiData);
+    // Pipe Anthropic SSE → our SSE, buffer full text, then send done event
+    const encoder = new TextEncoder();
+    const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+    const writer = writable.getWriter();
 
-    // 8. Check output safety if narration
-    if (needsNarrationSafety) {
-      // Keyword check
-      if (anthropic.hasBlockedKeywords(narrative)) {
-        await tokens.addTokens(authCtx.playerId, tierCost, 'refund_safety_block');
-        const bal = await tokens.getBalance(authCtx.playerId);
-        return NextResponse.json(
-          {
-            narrative: anthropic.buildSafetyFallbackResponse('output_blocked_keywords'),
-            tokenBalance: (bal ?? 0) + tierCost,
-            safetyBlocked: true,
-          },
-          { status: 200 }
-        );
+    // Capture variables needed inside the async processor
+    const capturedAuthCtx = authCtx;
+    const capturedTierCost = tierCost;
+    const capturedSpend = spend;
+    const capturedEffectivePlayer = effectivePlayer;
+    const capturedEffectiveWorldSeed = effectiveWorldSeed;
+    const capturedNeedsNarrationSafety = needsNarrationSafety;
+
+    (async () => {
+      let fullText = '';
+      try {
+        const reader = anthropicResp.body!.getReader();
+        const decoder = new TextDecoder();
+        let sseBuffer = '';
+        let currentEvent = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          sseBuffer += decoder.decode(value, { stream: true });
+
+          const lines = sseBuffer.split('\n');
+          sseBuffer = lines.pop() ?? '';
+
+          for (const line of lines) {
+            if (line.startsWith('event: ')) {
+              currentEvent = line.slice(7).trim();
+            } else if (line.startsWith('data: ')) {
+              if (currentEvent === 'content_block_delta') {
+                try {
+                  const parsed = JSON.parse(line.slice(6));
+                  if (parsed?.delta?.type === 'text_delta' && parsed.delta.text) {
+                    const chunk: string = parsed.delta.text;
+                    fullText += chunk;
+                    await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'chunk', text: chunk })}\n\n`));
+                  }
+                } catch { /* ignore parse errors on individual chunks */ }
+              }
+              currentEvent = '';
+            }
+          }
+        }
+
+        // Full text received — run output safety check
+        if (capturedNeedsNarrationSafety && anthropic.hasBlockedKeywords(fullText)) {
+          await tokens.addTokens(capturedAuthCtx.playerId, capturedTierCost, 'refund_safety_block');
+          const safeNarrative = anthropic.buildSafetyFallbackResponse('output_blocked_keywords');
+          await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'done', narrative: safeNarrative, cleanNarrative: safeNarrative, tokenBalance: capturedSpend.remaining + capturedTierCost, safetyBlocked: true })}\n\n`));
+          return;
+        }
+
+        // Apply narration state (tag parsing, DB save)
+        let cleanNarrative = fullText;
+        let responsePlayer = capturedEffectivePlayer;
+        let responseWorldSeed = capturedEffectiveWorldSeed;
+        let responseSuggestions: string[] = [];
+        let responseStateChanges: Record<string, any> = {};
+
+        if (capturedEffectivePlayer) {
+          const applied = applyNarrationState({
+            player: capturedEffectivePlayer,
+            worldSeed: capturedEffectiveWorldSeed,
+            narrative: fullText,
+            messages,
+          });
+          cleanNarrative = applied.cleanNarrative;
+          responsePlayer = applied.player;
+          responseWorldSeed = applied.worldSeed;
+          responseSuggestions = applied.suggestions;
+          responseStateChanges = applied.stateChanges;
+
+          await persistCanonicalNarrationState(
+            capturedAuthCtx.playerId,
+            applied.player,
+            applied.worldSeed,
+            applied.fullMessages,
+            cleanNarrative
+          );
+        }
+
+        await writer.write(encoder.encode(`data: ${JSON.stringify({
+          type: 'done',
+          narrative: fullText,
+          cleanNarrative,
+          player: responsePlayer,
+          worldSeed: responseWorldSeed,
+          suggestions: responseSuggestions,
+          tokenBalance: capturedSpend.remaining,
+          stateChanges: responseStateChanges,
+        })}\n\n`));
+      } catch (streamErr) {
+        console.error('[STREAM] Error processing Anthropic stream:', streamErr);
+        await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'stream_error' })}\n\n`));
+      } finally {
+        await writer.close();
       }
+    })();
 
-      // AI screener check
-      const outGate = await anthropic.runSafetyScreen([{ role: 'assistant', content: narrative }]);
-      if (outGate.blocked) {
-        await tokens.addTokens(authCtx.playerId, tierCost, 'refund_safety_block');
-        const bal = await tokens.getBalance(authCtx.playerId);
-        return NextResponse.json(
-          {
-            narrative: anthropic.buildSafetyFallbackResponse(outGate.reason || 'output_blocked'),
-            tokenBalance: (bal ?? 0) + tierCost,
-            safetyBlocked: true,
-          },
-          { status: 200 }
-        );
-      }
-    }
-
-    let cleanNarrative = narrative;
-    let responsePlayer = effectivePlayer;
-    let responseWorldSeed = effectiveWorldSeed;
-    let responseSuggestions: string[] = [];
-    let responseStateChanges: Record<string, any> = {};
-
-    if (!utilityCall && effectivePlayer) {
-      const applied = applyNarrationState({
-        player: effectivePlayer,
-        worldSeed: effectiveWorldSeed,
-        narrative,
-        messages,
-      });
-      cleanNarrative = applied.cleanNarrative;
-      responsePlayer = applied.player;
-      responseWorldSeed = applied.worldSeed;
-      responseSuggestions = applied.suggestions;
-      responseStateChanges = applied.stateChanges;
-
-      await persistCanonicalNarrationState(
-        authCtx.playerId,
-        applied.player,
-        applied.worldSeed,
-        applied.fullMessages,
-        cleanNarrative
-      );
-    }
-
-    // 9. Return success response
-    return NextResponse.json(
-      {
-        narrative,
-        cleanNarrative,
-        player: responsePlayer,
-        worldSeed: responseWorldSeed,
-        suggestions: responseSuggestions,
-        tokenBalance: spend.remaining,
-        stateChanges: responseStateChanges,
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
       },
-      { status: 200 }
-    );
+    });
   } catch (error) {
     console.error('Claude API error:', error);
 
