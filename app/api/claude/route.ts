@@ -5,6 +5,7 @@ import * as anthropic from '@/lib/external/anthropic';
 import * as ratelimit from '@/lib/ratelimit';
 import * as db from '@/lib/db';
 import { applyNarrationState } from '@/lib/server/narrationState';
+import { generateNamePool } from '@/lib/nameGenerator';
 
 // Strip control characters and truncate
 function sanitiseStr(val: unknown, maxLen: number): string {
@@ -424,6 +425,13 @@ function buildNarratorSystem(p: any, w: any): string {
         return `${base}[met ${ago}]${interactionSuffix}${travelNote}`;
       }).join('; ') : '';
 
+  // Generate a seeded name pool unique to this character — filters out already-used NPC names
+  const usedNpcNames = new Set((p.knownNpcs || []).map((n: any) => n.name.toLowerCase()));
+  const availableNames = generateNamePool(`${p.name}${p.class}`, 40)
+    .filter(name => !usedNpcNames.has(name.toLowerCase()))
+    .slice(0, 30)
+    .join(', ');
+
   const knownPlaces = Array.isArray(p.namedPlaces) && p.namedPlaces.length > 0
     ? p.namedPlaces.map((pl: any) =>
         `${sanitiseStr(pl.name, 40)} (${sanitiseStr(pl.type || 'building', 20)}) @ ${sanitiseStr(pl.settlement || 'unknown', 30)}`
@@ -611,6 +619,7 @@ ABILITIES: ${abilities || 'none'}
 ACTIVE QUESTS: ${quests}
 CURRENT CONTEXT: ${context}
 ${knownNpcs ? `KNOWN NPCS: ${knownNpcs}` : ''}
+${availableNames ? `AVAILABLE NPC NAMES: ${availableNames}` : ''}
 ${knownPlaces ? `KNOWN PLACES: ${knownPlaces}` : ''}
 CURRENT TIME: ${timeStr}
 ${scheduledEvents ? `UPCOMING EVENTS: ${scheduledEvents}` : ''}
@@ -662,7 +671,7 @@ RULES:
 - Track consequences, remember NPCs, weave in main quest organically
 - When you introduce a NEW named NPC emit on its own line: {"npc":{"name":"Name","role":"Role","location":"SettlementName","relationship":"neutral","notes":"One sentence"}} — always include the settlement or place where this NPC lives or was first encountered in the "location" field. If this NPC gives the player a quest or commission, add "questGiver":true to the tag.
 - When an EXISTING NPC from KNOWN NPCS appears or is encountered in the narrative, emit on its own line: {"npcUpdate":{"name":"ExactName","lastInteractionNotes":"Brief outcome summary"}} — this updates their record and optionally records the interaction outcome. Reuse and reference known NPCs naturally across locations — have them reappear in other settlements, remember past interactions, grow or change based on what the player has done.
-- NPC UNIQUENESS RULE: Every name in KNOWN NPCS belongs exclusively to that character and their listed location. Never give a new character a name that already appears in KNOWN NPCS. Each settlement has its own distinct cast — do not reuse tavern names, innkeeper names, or merchant names from one location in another. If you need a new NPC, invent a completely different name.
+- NPC UNIQUENESS RULE: Every name in KNOWN NPCS belongs exclusively to that character and their listed location. Never give a new character a name that already appears in KNOWN NPCS. Each settlement has its own distinct cast — do not reuse names from one location in another. When creating a NEW named NPC, you MUST choose their name from AVAILABLE NPC NAMES — do not invent names outside this list.
 - PLACE NAMING RULE: When you name a building or establishment that is NOT in the LOCATION GRID — an inn, tavern, smithy, shop, guild hall, temple, stable, or any named interior space — first check KNOWN PLACES. If that settlement already has a named place of that type, use that exact name. Never rename or reinvent an established place. If no name exists yet, invent one and immediately emit on its own line: {"place":{"name":"The Crossed Keys","type":"inn","settlement":"Peniothornfall"}} — type must be one of: inn, tavern, smithy, shop, temple, guild, stable, market, other. Once emitted, that name is permanent for that settlement.
 - QUEST COMPLETE RULE: When a quest objective is clearly fulfilled, emit on its own line: {"questComplete":"Exact Quest Title"} — use the exact title from ACTIVE QUESTS. Also include "quest complete" naturally in your prose.
 - SHOP RULE: When the player browses a shop through conversation, describe available wares, prices, and the merchant's manner — but do not complete a transaction until a negotiation has concluded. When the player sends the "barter" command, they are opening a price negotiation — engage with it directly. Have the merchant name their asking price and let the scene unfold naturally. Do NOT redirect the player to "use the barter command" — they are already in one. When a barter negotiation ends without a completed purchase (player declines, walks away, or can't agree), give the player a clear final choice in prose (e.g. "The merchant shrugs. Last offer: 65 gold — take it or leave it.") and emit on its own line: {"shopPrice":{"item":"Exact Item Name","price":N}} where N is the final price the merchant was willing to accept. This updates the item's price in the shop for the player's next visit. Only emit shopPrice when a specific item's price was actively negotiated — not for general browsing or window shopping.
