@@ -299,6 +299,15 @@ export function extractGoldChangeTag(text: string): number | null {
 }
 
 /**
+ * Extract named place tag (inns, taverns, shops, etc.)
+ */
+export function extractPlaceTag(text: string): any {
+  const m = text.match(/\{"place"\s*:\s*(\{[^}]+\})\}/);
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch { return null; }
+}
+
+/**
  * Extract shop price negotiation tag
  */
 export function extractShopPriceTag(text: string): any {
@@ -477,6 +486,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     xpGain: extractXpGainTag(narrative),
     bestiary: extractBestiaryTag(narrative),
     travelTo: extractTravelToTag(narrative),
+    place: extractPlaceTag(narrative),
   };
 }
 
@@ -564,6 +574,22 @@ export function processParsedTags(
       inventory: (updatedPlayer.inventory || []).filter((i) => i !== removeName),
       equipped: newEquipped,
     };
+  }
+
+  // Named place registration
+  if (tags.place && tags.place.name) {
+    const newPlace = {
+      name: tags.place.name as string,
+      type: (tags.place.type as string) || 'other',
+      settlement: (tags.place.settlement as string) || '',
+    };
+    const existing: any[] = updatedPlayer.namedPlaces || [];
+    const alreadyExists = existing.some(
+      (pl: any) => pl.name?.toLowerCase() === newPlace.name.toLowerCase()
+    );
+    if (!alreadyExists) {
+      updatedPlayer = { ...updatedPlayer, namedPlaces: [...existing, newPlace] };
+    }
   }
 
   // New quest
