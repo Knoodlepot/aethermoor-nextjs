@@ -1,6 +1,10 @@
 ## [Unreleased]
 
 ### Fixed
+- **Event log now survives page refresh**: XP, gold, and reputation entries in the Event Log panel are saved to your browser's local storage and restored when you reload — no more losing your session history on refresh.
+- **Character name properly capped at 30 characters**: The name field in character creation now enforces the same 30-character limit the game uses internally.
+
+### Fixed
 - **Security: Several backend hardening improvements** — SQL injection vulnerability patched, admin API endpoints now require header-based authentication only, duplicate token grants from Stripe webhook retries are now prevented, and logged-out sessions are properly invalidated across all protected endpoints. Login, registration, and save endpoints are now rate-limited to prevent brute-force and spam.
 
 ### Added

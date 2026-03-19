@@ -125,8 +125,14 @@ export function useUI(): UIContext {
   // Combat state
   const [currentEnemy, setCurrentEnemy] = useState<Enemy | null>(null);
   const [combatLog, setCombatLog] = useState<string[]>([]);
-  // Event log
-  const [eventLog, setEventLog] = useState<EventLogEntry[]>([]);
+  // Event log — initialise from localStorage so it survives page refresh
+  const [eventLog, setEventLog] = useState<EventLogEntry[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem('ae-event-log');
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
   const [playerDefending, setPlayerDefending] = useState(false);
   const [playerStatusEffects, setPlayerStatusEffects] = useState<string[]>([]);
 
@@ -290,7 +296,11 @@ export function useUI(): UIContext {
    */
   const addEventLogEntries = useCallback((entries: EventLogEntry[]) => {
     if (!entries.length) return;
-    setEventLog(prev => [...prev, ...entries].slice(-100));
+    setEventLog(prev => {
+      const next = [...prev, ...entries].slice(-100);
+      try { localStorage.setItem('ae-event-log', JSON.stringify(next)); } catch {}
+      return next;
+    });
   }, []);
 
   /**
@@ -298,6 +308,7 @@ export function useUI(): UIContext {
    */
   const clearEventLog = useCallback(() => {
     setEventLog([]);
+    try { localStorage.removeItem('ae-event-log'); } catch {}
   }, []);
 
   return {

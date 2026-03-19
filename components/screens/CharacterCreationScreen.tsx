@@ -131,7 +131,7 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             placeholder="Enter your name..."
-            maxLength={32}
+            maxLength={30}
             style={{
               width: '100%',
               background: T.inputBg ?? T.panelAlt,

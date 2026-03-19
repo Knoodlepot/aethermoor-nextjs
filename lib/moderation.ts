@@ -198,6 +198,27 @@ export async function getRecentIncidents(accountId: string, daysBack: number = 3
 }
 
 /**
+ * Check if an account is on automatic moderation hold.
+ * Returns true if the account has 5+ pending incidents in the last 7 days.
+ * The hold is automatically lifted when an admin dismisses enough incidents.
+ */
+export async function isAccountOnModerationHold(accountId: string): Promise<boolean> {
+  try {
+    const result = await query<{ count: string }>(
+      `SELECT COUNT(*) as count FROM moderation_incidents
+       WHERE account_id = $1
+         AND status = 'pending'
+         AND created_at > NOW() - ($2 * INTERVAL '1 day')`,
+      [accountId, 7]
+    );
+    return parseInt(result.rows[0]?.count ?? '0') >= 5;
+  } catch (error) {
+    console.error('Moderation hold check error:', error);
+    return false; // fail open — don't block players if the check errors
+  }
+}
+
+/**
  * Count incidents by status
  */
 export async function countIncidentsByStatus(): Promise<{

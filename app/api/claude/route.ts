@@ -6,6 +6,7 @@ import * as ratelimit from '@/lib/ratelimit';
 import * as db from '@/lib/db';
 import { applyNarrationState } from '@/lib/server/narrationState';
 import { generateNamePool } from '@/lib/nameGenerator';
+import { isAccountOnModerationHold } from '@/lib/moderation';
 
 // Strip control characters and truncate
 function sanitiseStr(val: unknown, maxLen: number): string {
@@ -27,7 +28,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Check rate limits (10 AI calls per minute per account)
+    // 2. Check moderation hold (5+ pending incidents in last 7 days)
+    if (await isAccountOnModerationHold(authCtx.accountId)) {
+      return NextResponse.json(
+        { error: 'moderation_hold', message: 'Your account has been flagged for review. Please contact support.' },
+        { status: 403 }
+      );
+    }
+
+    // 3. Check rate limits (10 AI calls per minute per account)
     const ip = ratelimit.getIP(request);
     const ipLimited = await ratelimit.isIpRateLimited(ip);
     if (ipLimited) {
