@@ -906,7 +906,7 @@ export function processParsedTags(
       newSkillPoints += 1 * levelsGained;
       // Cap: unspent + unlocked must not exceed 9 skills per class
       const SKILLS_PER_CLASS = 9;
-      const alreadyUnlocked = (updatedPlayer.unlockedSkills || []).length;
+      const alreadyUnlocked = ((updatedPlayer as any).unlockedSkills as string[] || []).length;
       newSkillPoints = Math.min(newSkillPoints, Math.max(0, SKILLS_PER_CLASS - alreadyUnlocked));
     }
 
