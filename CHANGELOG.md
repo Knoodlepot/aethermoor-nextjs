@@ -2,6 +2,8 @@
 
 ### Added
 - **Every new character gets a unique cast of NPCs**: Each character now has their own name pool drawn from over 160 names spanning Nordic, Celtic, Mediterranean, Slavic, Eastern, and African-influenced styles. The narrator picks from this pool, so Captain Voss, Corvin, and Aldric won't follow you into every new game.
+- **Directions and maps actually reveal settlements**: When an NPC gives you directions to a town, hands you a map, or points out where a place is, those settlements now appear on your map. No more being told to "mark Beliogatespring on your map" and having it stay hidden.
+- **Main quest now paces itself properly**: The story no longer rushes through acts. Each act now requires a minimum number of turns played and side quests completed before the main plot can advance — so the world has time to breathe and feel earned rather than constant.
 
 ### Fixed
 - **Narrator now knows all your unlocked skills**: Previously the narrator only recognised a handful of skills with world-flavour effects (Ghost Walk, Master Thief, etc.) and was unaware of combat skills like Shadowstep, Blade Dance, Evasion, Knife Throw, and others. The narrator now sees your full skill list and will correctly let you use any ability you have unlocked.
