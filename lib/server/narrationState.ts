@@ -15,6 +15,7 @@ export interface NarrationStateResult {
   worldSeed: WorldSeed;
   suggestions: string[];
   fullMessages: Array<{ role: string; content: string }>;
+  stateChanges: Record<string, any>;
 }
 
 export function applyNarrationState({
@@ -38,5 +39,6 @@ export function applyNarrationState({
     worldSeed: finalWorldSeed,
     suggestions,
     fullMessages,
+    stateChanges: tagResult.stateChanges,
   };
 }

@@ -569,6 +569,12 @@ export function useGameLoop(
           ui.setLevelUpMsg(`LEVEL UP! You are now level ${updatedPlayer.level}! +3 Stat Points, +1 Skill Point!`);
         }
 
+        // 3c. Dispatch event log entries (XP, gold, rep changes with reasons)
+        const sc = narratorResponse.stateChanges;
+        if (sc?.eventLogEntries?.length) {
+          ui.addEventLogEntries(sc.eventLogEntries);
+        }
+
         // 3a. Handle player death (hp reached 0 from hpChange tag)
         if (updatedPlayer.hp <= 0) {
           const gravestone = {
@@ -660,6 +666,7 @@ export function useGameLoop(
       worldSeed?: WorldSeed;
       suggestions?: string[];
       tokenBalance?: number;
+      stateChanges?: Record<string, any>;
       error?: string;
     }> => {
       try {
@@ -688,6 +695,7 @@ export function useGameLoop(
             worldSeed: data.worldSeed,
             suggestions: data.suggestions,
             tokenBalance: data.tokenBalance,
+            stateChanges: data.stateChanges ?? {},
           };
         }
 

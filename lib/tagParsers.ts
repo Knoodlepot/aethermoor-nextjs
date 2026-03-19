@@ -1,6 +1,13 @@
 import type { Player } from './types';
 import { advanceGameTime, registerNpc, xpToLevel, HP_PER_LEVEL, LEVEL_CAP } from './helpers';
 
+export type EventLogEntry = {
+  type: 'xp' | 'gold' | 'rep';
+  value: number;
+  reason?: string;
+  timestamp: number;
+};
+
 /**
  * Strip all JSON tags from narrative text for display
  */
@@ -25,8 +32,8 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"worldEvent"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"grantAbility"\s*:\s*"[^"]+"\}/g, '');
   t = t.replace(/\{"questComplete"\s*:\s*"[^"]+"\}/g, '');
-  t = t.replace(/\{"repChange"\s*:\s*-?\d+\}/g, '');
-  t = t.replace(/\{"goldChange"\s*:\s*-?\d+\}/g, '');
+  t = t.replace(/\{"repChange"\s*:[^}]*\}/g, '');
+  t = t.replace(/\{"goldChange"\s*:[^}]*\}/g, '');
   t = t.replace(/\{"shopPrice"\s*:\s*\{[\s\S]+?\}\s*\}/g, '');
   t = t.replace(/\{"suggestions"\s*:\s*\[[^\]]+\]\}/g, '');
   t = t.replace(/\{"suggestions"\s*:[\s\S]*/g, ''); // Catch truncated suggestions
@@ -36,7 +43,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"addTerrain"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"playerStatus"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"hpChange"\s*:\s*-?\d+\}/g, '');
-  t = t.replace(/\{"xpGain"\s*:\s*\d+\}/g, '');
+  t = t.replace(/\{"xpGain"\s*:[^}]*\}/g, '');
   t = t.replace(/\{"bestiary"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"travelTo"\s*:\s*"[^"]+"\}/g, '');
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
@@ -283,19 +290,27 @@ export function extractQuestCompleteTag(text: string): string | null {
 }
 
 /**
- * Extract reputation change tag: {"repChange":N}
+ * Extract reputation change tag: {"repChange":N} or {"repChange":N,"reason":"..."}
  */
-export function extractRepChangeTag(text: string): number | null {
-  const m = text.match(/\{"repChange"\s*:\s*(-?\d+)\}/);
-  return m ? parseInt(m[1], 10) : null;
+export function extractRepChangeTag(text: string): { value: number; reason?: string } | null {
+  const m = text.match(/\{"repChange"\s*:[^}]*\}/);
+  if (!m) return null;
+  try {
+    const obj = JSON.parse(m[0]);
+    return typeof obj.repChange === 'number' ? { value: obj.repChange, reason: obj.reason } : null;
+  } catch { return null; }
 }
 
 /**
- * Extract gold change tag (purchases, fines, rewards, theft)
+ * Extract gold change tag (purchases, fines, rewards, theft): {"goldChange":N} or {"goldChange":N,"reason":"..."}
  */
-export function extractGoldChangeTag(text: string): number | null {
-  const m = text.match(/\{"goldChange"\s*:\s*(-?\d+)\}/);
-  return m ? parseInt(m[1], 10) : null;
+export function extractGoldChangeTag(text: string): { value: number; reason?: string } | null {
+  const m = text.match(/\{"goldChange"\s*:[^}]*\}/);
+  if (!m) return null;
+  try {
+    const obj = JSON.parse(m[0]);
+    return typeof obj.goldChange === 'number' ? { value: obj.goldChange, reason: obj.reason } : null;
+  } catch { return null; }
 }
 
 /**
@@ -381,11 +396,15 @@ export function extractAddTerrainTag(text: string): any {
 }
 
 /**
- * Extract XP gain tag: {"xpGain":50}
+ * Extract XP gain tag: {"xpGain":50} or {"xpGain":50,"reason":"..."}
  */
-export function extractXpGainTag(text: string): number | null {
-  const m = text.match(/\{"xpGain"\s*:\s*(\d+)\}/);
-  return m ? parseInt(m[1], 10) : null;
+export function extractXpGainTag(text: string): { value: number; reason?: string } | null {
+  const m = text.match(/\{"xpGain"\s*:[^}]*\}/);
+  if (!m) return null;
+  try {
+    const obj = JSON.parse(m[0]);
+    return typeof obj.xpGain === 'number' ? { value: obj.xpGain, reason: obj.reason } : null;
+  } catch { return null; }
 }
 
 /**
@@ -452,8 +471,8 @@ export interface ParsedTags {
   worldEvent: any;
   grantAbility: string | null;
   questComplete: string | null;
-  repChange: number | null;
-  goldChange: number | null;
+  repChange: { value: number; reason?: string } | null;
+  goldChange: { value: number; reason?: string } | null;
   shopPrice: any;
   mainQuestAct: string | null;
   disguisedReveal: string[] | null;
@@ -461,7 +480,7 @@ export interface ParsedTags {
   addTerrain: any;
   playerStatus: { add?: string; remove?: string } | null;
   hpChange: number | null;
-  xpGain: number | null;
+  xpGain: { value: number; reason?: string } | null;
   bestiary: any;
   travelTo: string | null;
   place: any;
@@ -527,6 +546,7 @@ export function processParsedTags(
 ): TagProcessingResult {
   const stateChanges: Record<string, any> = {};
   const warnings: string[] = [];
+  const eventLogEntries: EventLogEntry[] = [];
   let updatedPlayer = { ...player };
   let updatedSeed = { ...worldSeed };
 
@@ -703,14 +723,16 @@ export function processParsedTags(
 
   // Reputation change
   if (tags.repChange !== null) {
-    const newRep = Math.max(-100, (updatedPlayer.reputation || 0) + tags.repChange);
+    const newRep = Math.max(-100, (updatedPlayer.reputation || 0) + tags.repChange.value);
     updatedPlayer = { ...updatedPlayer, reputation: newRep };
+    eventLogEntries.push({ type: 'rep', value: tags.repChange.value, reason: tags.repChange.reason, timestamp: Date.now() });
   }
 
   // Gold change
   if (tags.goldChange !== null) {
-    const newGold = Math.max(0, (updatedPlayer.gold || 0) + tags.goldChange);
+    const newGold = Math.max(0, (updatedPlayer.gold || 0) + tags.goldChange.value);
     updatedPlayer = { ...updatedPlayer, gold: newGold };
+    eventLogEntries.push({ type: 'gold', value: tags.goldChange.value, reason: tags.goldChange.reason, timestamp: Date.now() });
   }
 
   // Wanted level
@@ -866,9 +888,10 @@ export function processParsedTags(
   }
 
   // XP gain — grant XP, check for level-up, apply rewards per level gained
-  if (tags.xpGain !== null && tags.xpGain > 0) {
+  if (tags.xpGain !== null && tags.xpGain.value > 0) {
     const oldLevel = updatedPlayer.level || 1;
-    const newXp = (updatedPlayer.xp || 0) + tags.xpGain;
+    const newXp = (updatedPlayer.xp || 0) + tags.xpGain.value;
+    eventLogEntries.push({ type: 'xp', value: tags.xpGain.value, reason: tags.xpGain.reason, timestamp: Date.now() });
     const newLevel = Math.min(xpToLevel(newXp), LEVEL_CAP);
     const levelsGained = newLevel - oldLevel;
 
@@ -925,6 +948,10 @@ export function processParsedTags(
       newBestiary = [...existing, newEntry];
     }
     updatedPlayer = { ...updatedPlayer, bestiary: newBestiary } as any;
+  }
+
+  if (eventLogEntries.length > 0) {
+    stateChanges.eventLogEntries = eventLogEntries;
   }
 
   return {

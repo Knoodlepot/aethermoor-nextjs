@@ -19,6 +19,7 @@ import { CombatPanel } from '@/components/panels/CombatPanel';
 import { MainQuestPanel } from '@/components/panels/MainQuestPanel';
 import { SideQuestPanel } from '@/components/panels/SideQuestPanel';
 import { ContextActionPanel } from '@/components/panels/ContextActionPanel';
+import { EventLogPanel } from '@/components/panels/EventLogPanel';
 
 // UI
 import { NarrativePanel } from '@/components/ui/NarrativePanel';
@@ -812,6 +813,7 @@ function GameContent() {
         onOpenMap={() => ui.setMapOpen(true)}
       />
     ) : null,
+    eventLog: <EventLogPanel entries={ui.eventLog} />,
   };
 
   // Right column width — from layout config or default 280px
@@ -828,6 +830,7 @@ function GameContent() {
         { id: 'mainQuest', label: 'Main Quest', h: 0 },
         { id: 'sideQuests', label: 'Side Quests', h: 0 },
         { id: 'miniMap', label: 'Mini Map', h: 0 },
+        { id: 'eventLog', label: 'Event Log', h: 0 },
       ];
 
   const rightColumn = (
@@ -848,7 +851,7 @@ function GameContent() {
           if (!node) return null;
           const style = layoutCfg && h > 0
             ? { flexBasis: h, flexShrink: 0, overflow: 'hidden' }
-            : (id === 'combat' || id === 'mainQuest' || id === 'sideQuests' || id === 'miniMap')
+            : (id === 'combat' || id === 'mainQuest' || id === 'sideQuests' || id === 'miniMap' || id === 'eventLog')
               ? undefined  // these go in the scroll area when no config
               : { flexShrink: 0 };
           return <div key={id} style={style}>{node}</div>;
@@ -883,6 +886,7 @@ function GameContent() {
           {worldSeed && PANEL_MAP.mainQuest}
           {PANEL_MAP.sideQuests}
           {player && worldSeed && PANEL_MAP.miniMap}
+          {PANEL_MAP.eventLog}
         </div>
       )}
 

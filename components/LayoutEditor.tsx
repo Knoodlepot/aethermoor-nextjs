@@ -45,6 +45,7 @@ const PANEL_CATALOG = [
   { id: 'mainQuest',  label: 'Main Quest',       color: '#5a2a8a' },
   { id: 'sideQuests', label: 'Side Quests',      color: '#3a3a9a' },
   { id: 'miniMap',    label: 'Mini Map',         color: '#2a6a30' },
+  { id: 'eventLog',   label: 'Event Log',        color: '#3a6a4a' },
 ] as const;
 
 // Default layout mirrors the real game (~70% left / ~30% right split).

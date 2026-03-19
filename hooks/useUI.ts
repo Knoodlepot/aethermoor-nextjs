@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import type { Enemy } from '../lib/types';
+import type { EventLogEntry } from '../lib/tagParsers';
 
 export type ScreenType = 'loading' | 'title' | 'game' | 'out_of_tokens' | 'death';
 
@@ -86,6 +87,11 @@ export interface UIContext {
   // Death screen
   deathInfo: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string } | null;
   showDeathScreen: (info: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string }) => void;
+
+  // Event log
+  eventLog: EventLogEntry[];
+  addEventLogEntries: (entries: EventLogEntry[]) => void;
+  clearEventLog: () => void;
 }
 
 /**
@@ -117,6 +123,8 @@ export function useUI(): UIContext {
   // Combat state
   const [currentEnemy, setCurrentEnemy] = useState<Enemy | null>(null);
   const [combatLog, setCombatLog] = useState<string[]>([]);
+  // Event log
+  const [eventLog, setEventLog] = useState<EventLogEntry[]>([]);
   const [playerDefending, setPlayerDefending] = useState(false);
   const [playerStatusEffects, setPlayerStatusEffects] = useState<string[]>([]);
 
@@ -274,6 +282,21 @@ export function useUI(): UIContext {
     setCombatLog([]);
   }, []);
 
+  /**
+   * Add entries to the event log (XP, gold, rep changes)
+   */
+  const addEventLogEntries = useCallback((entries: EventLogEntry[]) => {
+    if (!entries.length) return;
+    setEventLog(prev => [...prev, ...entries].slice(-100));
+  }, []);
+
+  /**
+   * Clear event log
+   */
+  const clearEventLog = useCallback(() => {
+    setEventLog([]);
+  }, []);
+
   return {
     screen,
     setScreen,
@@ -330,5 +353,8 @@ export function useUI(): UIContext {
     clearQuestLogInitialId,
     deathInfo,
     showDeathScreen,
+    eventLog,
+    addEventLogEntries,
+    clearEventLog,
   };
 }
