@@ -1047,13 +1047,38 @@ function GameContent() {
             ))}
           </div>
         )}
-        {/* Input bar */}
-        <InputBar
-          player={gameState.player}
-          onFreeText={handleFreeText}
-          isLoading={gameLoop.isLoading}
-          fillInput={ui.fillInput || null}
-        />
+        {/* Bottom row: input bar, and any bottom-row panels from layout config */}
+        {layoutCfg?.bottomPanels?.length ? (
+          <div style={{ display: 'flex', flexShrink: 0 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <InputBar
+                player={gameState.player}
+                onFreeText={handleFreeText}
+                isLoading={gameLoop.isLoading}
+                fillInput={ui.fillInput || null}
+              />
+            </div>
+            {layoutCfg.bottomPanels.map(({ id, label, w }) => {
+              const node = id in PANEL_MAP ? PANEL_MAP[id] : null;
+              return (
+                <div key={id} style={{ width: w, flexShrink: 0, overflow: 'hidden', borderLeft: `1px solid ${T.border}` }}>
+                  {node ?? (
+                    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textMuted, fontFamily: "'Cinzel',serif", fontSize: 11, letterSpacing: '0.08em', background: '#1a1a2a33' }}>
+                      {label}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <InputBar
+            player={gameState.player}
+            onFreeText={handleFreeText}
+            isLoading={gameLoop.isLoading}
+            fillInput={ui.fillInput || null}
+          />
+        )}
       </div>
 
       {rightColumn}

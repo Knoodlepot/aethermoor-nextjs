@@ -33,6 +33,7 @@ const MIN_W = 80;
 const MIN_H = 40;
 const TOOLBAR_H = 48;
 const LS_KEY = 'ae-layout-editor-panels';
+const SNAP_THRESHOLD = 8;
 
 // All predefined panel types — used both for defaults and the Add Panel menu
 const PANEL_CATALOG = [
@@ -113,6 +114,17 @@ function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
 }
 
+/** Snap a value to the nearest candidate if within threshold, else return as-is */
+function snap(v: number, candidates: number[], threshold: number): number {
+  let best = v;
+  let bestDist = threshold + 1;
+  for (const c of candidates) {
+    const d = Math.abs(v - c);
+    if (d < bestDist) { bestDist = d; best = c; }
+  }
+  return bestDist <= threshold ? best : v;
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function LayoutEditor() {
@@ -185,35 +197,69 @@ export function LayoutEditor() {
     const cw = canvasSize.w;
     const ch = canvasSize.h;
 
-    setPanels(prev => prev.map(p => {
-      if (p.id !== dragState.panelId) return p;
+    setPanels(prev => {
+      // Collect all edge positions from other panels + canvas borders for snapping
+      const dragged = prev.find(p => p.id === dragState.panelId)!;
+      const others = prev.filter(p => p.id !== dragState.panelId);
+      const xEdges = [0, cw, ...others.flatMap(o => [o.x, o.x + o.w])];
+      const yEdges = [0, ch, ...others.flatMap(o => [o.y, o.y + o.h])];
+      const T = SNAP_THRESHOLD;
 
-      if (dragState.type === 'move') {
-        return {
-          ...p,
-          x: clamp(dragState.origX + dx, 0, cw - p.w),
-          y: clamp(dragState.origY + dy, 0, ch - p.h),
-        };
-      }
+      return prev.map(p => {
+        if (p.id !== dragState.panelId) return p;
 
-      // Resize
-      let { origX: nx, origY: ny, origW: nw, origH: nh } = dragState;
+        if (dragState.type === 'move') {
+          const rawX = clamp(dragState.origX + dx, 0, cw - p.w);
+          const rawY = clamp(dragState.origY + dy, 0, ch - p.h);
 
-      const h = dragState.handle!;
-      if (h.includes('e')) { nw = clamp(dragState.origW + dx, MIN_W, cw - nx); }
-      if (h.includes('s')) { nh = clamp(dragState.origH + dy, MIN_H, ch - ny); }
-      if (h.includes('w')) {
-        const rawW = dragState.origW - dx;
-        nw = clamp(rawW, MIN_W, dragState.origX + dragState.origW);
-        nx = dragState.origX + dragState.origW - nw;
-      }
-      if (h.includes('n')) {
-        const rawH = dragState.origH - dy;
-        nh = clamp(rawH, MIN_H, dragState.origY + dragState.origH);
-        ny = dragState.origY + dragState.origH - nh;
-      }
-      return { ...p, x: nx, y: ny, w: nw, h: nh };
-    }));
+          // Snap left or right edge to xEdges
+          let snappedX = rawX;
+          const sl = snap(rawX, xEdges, T);
+          const sr = snap(rawX + p.w, xEdges, T);
+          if (sl !== rawX) snappedX = clamp(sl, 0, cw - p.w);
+          else if (sr !== rawX + p.w) snappedX = clamp(sr - p.w, 0, cw - p.w);
+
+          // Snap top or bottom edge to yEdges
+          let snappedY = rawY;
+          const st = snap(rawY, yEdges, T);
+          const sb = snap(rawY + p.h, yEdges, T);
+          if (st !== rawY) snappedY = clamp(st, 0, ch - p.h);
+          else if (sb !== rawY + p.h) snappedY = clamp(sb - p.h, 0, ch - p.h);
+
+          return { ...p, x: snappedX, y: snappedY };
+        }
+
+        // Resize
+        let { origX: nx, origY: ny, origW: nw, origH: nh } = dragState;
+        const h = dragState.handle!;
+
+        if (h.includes('e')) {
+          const rawRight = dragState.origX + dragState.origW + dx;
+          const snappedRight = snap(rawRight, xEdges, T);
+          nw = clamp(snappedRight - nx, MIN_W, cw - nx);
+        }
+        if (h.includes('s')) {
+          const rawBottom = dragState.origY + dragState.origH + dy;
+          const snappedBottom = snap(rawBottom, yEdges, T);
+          nh = clamp(snappedBottom - ny, MIN_H, ch - ny);
+        }
+        if (h.includes('w')) {
+          const rawLeft = dragState.origX + dx;
+          const snappedLeft = snap(rawLeft, xEdges, T);
+          const maxNx = dragState.origX + dragState.origW - MIN_W;
+          nx = clamp(snappedLeft, 0, maxNx);
+          nw = dragState.origX + dragState.origW - nx;
+        }
+        if (h.includes('n')) {
+          const rawTop = dragState.origY + dy;
+          const snappedTop = snap(rawTop, yEdges, T);
+          const maxNy = dragState.origY + dragState.origH - MIN_H;
+          ny = clamp(snappedTop, 0, maxNy);
+          nh = dragState.origY + dragState.origH - ny;
+        }
+        return { ...p, x: nx, y: ny, w: nw, h: nh };
+      });
+    });
   }, [dragState, canvasSize]);
 
   const handlePointerUp = useCallback(() => {

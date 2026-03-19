@@ -20,6 +20,8 @@ export type DerivedLayout = {
   rightColW: number;
   /** Right-column panels sorted top-to-bottom, with their heights */
   rightPanels: Array<{ id: string; label: string; h: number }>;
+  /** Bottom-row panels (same y level as input bar), sorted left-to-right, with widths */
+  bottomPanels: Array<{ id: string; label: string; w: number }>;
   /** Whether the narrative panel is in the layout */
   hasNarrative: boolean;
   /** Whether the input bar is in the layout */
@@ -52,10 +54,11 @@ function parseStored(raw: string): StoredLayout | null {
 }
 
 /**
- * Reads the layout editor config from localStorage and derives
- * right-column panel order/heights + left/right split for GameView.
- * Scales panel dimensions proportionally if the game screen differs from
- * the canvas used when the layout was saved.
+ * Reads the layout editor config from localStorage and derives:
+ * - rightColW: right column width
+ * - rightPanels: panels in the right column (above the input bar row), sorted top-to-bottom
+ * - bottomPanels: panels in the bottom row (same y level as input bar), sorted left-to-right
+ * Scales all dimensions proportionally if the game screen differs from the saved canvas.
  * Returns null if no config is saved (GameView falls back to defaults).
  */
 export function useLayoutConfig(): DerivedLayout | null {
@@ -92,15 +95,27 @@ export function useLayoutConfig(): DerivedLayout | null {
     : Math.round(screenW * 0.70);
   const rightColW = Math.max(200, screenW - narrativeW);
 
-  // Right column panels: everything except narrative + input, sorted by y
+  // The "bottom row" threshold: panels at or below the narrative bottom
+  // Use narrative.h (scaled) as the dividing line; small tolerance for pixel offsets
+  const narrativeH = narrative?.h ?? 0;
+  const bottomThreshold = narrativeH > 0 ? narrativeH * scaleH * 0.9 : Infinity;
+
+  // Bottom-row panels: y >= bottomThreshold, sorted left to right
+  const bottomPanels = panels
+    .filter(p => p.id !== 'narrative' && p.id !== 'input' && p.y * scaleH >= bottomThreshold)
+    .sort((a, b) => a.x - b.x)
+    .map(p => ({ id: p.id, label: p.label, w: Math.max(60, Math.round(p.w * scaleW)) }));
+
+  // Right-column panels: y < bottomThreshold, sorted top to bottom
   const rightPanels = panels
-    .filter(p => p.id !== 'narrative' && p.id !== 'input')
+    .filter(p => p.id !== 'narrative' && p.id !== 'input' && p.y * scaleH < bottomThreshold)
     .sort((a, b) => a.y - b.y)
     .map(p => ({ id: p.id, label: p.label, h: Math.max(40, Math.round(p.h * scaleH)) }));
 
   return {
     rightColW,
     rightPanels,
+    bottomPanels,
     hasNarrative: !!narrative,
     hasInput: !!input,
     raw: panels,
