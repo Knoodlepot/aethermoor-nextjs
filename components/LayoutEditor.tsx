@@ -276,6 +276,21 @@ export function LayoutEditor() {
     };
   }, [handlePointerMove, handlePointerUp]);
 
+  // ── Keyboard: Delete/Backspace removes selected panel ─────────────────────
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selected) {
+        // Don't fire if focus is inside an input
+        if (document.activeElement && (document.activeElement as HTMLElement).tagName !== 'INPUT') {
+          deletePanel(selected);
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selected]);
+
   // ── Panel interactions ────────────────────────────────────────────────────
 
   function bringToFront(id: string) {
@@ -417,6 +432,15 @@ export function LayoutEditor() {
           {saved ? 'Saved!' : 'Save'}
         </button>
         <button style={btnStyle} onClick={() => setShowExport(true)}>Export Config</button>
+        {selected && (
+          <button
+            style={{ ...btnStyle, color: '#ff8080', borderColor: '#ff8080' }}
+            onClick={() => deletePanel(selected)}
+            title="Delete selected panel (or press Delete key)"
+          >
+            Delete Panel
+          </button>
+        )}
 
         {/* Add Panel dropdown */}
         <div style={{ position: 'relative' }}>
@@ -549,14 +573,12 @@ export function LayoutEditor() {
                 onPointerDown={(e) => startMove(e, panel)}
               >
                 <span style={{ flex: 1, textAlign: 'center' }}>{panel.label}</span>
-                {isSelected && (
-                  <span
-                    style={{ cursor: 'pointer', padding: '0 4px', fontSize: 14, color: '#ffaaaa', lineHeight: 1, flexShrink: 0 }}
-                    onPointerDown={e => e.stopPropagation()}
-                    onClick={e => { e.stopPropagation(); deletePanel(panel.id); }}
-                    title="Remove panel"
-                  >×</span>
-                )}
+                <span
+                  style={{ cursor: 'pointer', padding: '0 6px', fontSize: 15, color: isSelected ? '#ff8080' : '#cc666688', lineHeight: 1, flexShrink: 0 }}
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={e => { e.stopPropagation(); deletePanel(panel.id); }}
+                  title="Remove panel"
+                >×</span>
               </div>
 
               {/* Size label */}
