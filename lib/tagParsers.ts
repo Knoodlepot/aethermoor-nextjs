@@ -326,6 +326,21 @@ export function extractMainQuestActTag(text: string): string | null {
 }
 
 /**
+ * Extract location reveal tag: {"revealLocations":["LocationName",...]}
+ * Emitted when narrator gives directions or tells player to mark a location on their map.
+ */
+export function extractRevealLocationsTag(text: string): string[] | null {
+  const m = text.match(/\{"revealLocations"\s*:\s*(\[[^\]]*\])\}/);
+  if (!m) return null;
+  try {
+    const arr = JSON.parse(m[1]);
+    return Array.isArray(arr) ? arr.filter((s: any) => typeof s === 'string') : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Extract disguised item reveal tag: {"disguisedReveal":["MundaneItem",...]}
  */
 export function extractDisguisedRevealTag(text: string): string[] | null {
@@ -450,6 +465,7 @@ export interface ParsedTags {
   bestiary: any;
   travelTo: string | null;
   place: any;
+  revealLocations: string[] | null;
 }
 
 /**
@@ -488,6 +504,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     bestiary: extractBestiaryTag(narrative),
     travelTo: extractTravelToTag(narrative),
     place: extractPlaceTag(narrative),
+    revealLocations: extractRevealLocationsTag(narrative),
   };
 }
 
@@ -513,6 +530,9 @@ export function processParsedTags(
   let updatedPlayer = { ...player };
   let updatedSeed = { ...worldSeed };
 
+  // Increment action counter — used for main quest pacing gates
+  updatedPlayer = { ...updatedPlayer, actionCount: (updatedPlayer.actionCount || 0) + 1 };
+
   // Context change
   if (tags.context) {
     stateChanges.context = tags.context;
@@ -530,6 +550,13 @@ export function processParsedTags(
       exploredLocations: Array.from(explored),
     } as any;
     stateChanges.travelTo = dest;
+  }
+
+  // Reveal locations on the map without moving the player
+  if (tags.revealLocations && tags.revealLocations.length > 0) {
+    const explored = new Set<string>((updatedPlayer as any).exploredLocations || [(updatedPlayer as any).location]);
+    tags.revealLocations.forEach((name: string) => explored.add(name));
+    updatedPlayer = { ...updatedPlayer, exploredLocations: Array.from(explored) } as any;
   }
 
   // NPC registration — properly call registerNpc to update knownNpcs
@@ -712,11 +739,20 @@ export function processParsedTags(
     }
   }
 
-  // Main quest act advancement — goes on worldSeed
+  // Main quest act advancement — gated by action count and completed quests
   if (tags.mainQuestAct) {
     const actNum = parseInt(tags.mainQuestAct, 10);
-    if (!isNaN(actNum) && actNum > (updatedSeed.currentAct || 0)) {
-      updatedSeed = { ...updatedSeed, currentAct: actNum };
+    if (!isNaN(actNum) && actNum > (updatedSeed.currentAct || 1)) {
+      const ACT_MIN_ACTIONS: Record<number, number> = { 2: 15, 3: 40, 4: 70, 5: 100, 6: 140 };
+      const ACT_MIN_QUESTS:  Record<number, number> = { 2: 1,  3: 2,  4: 3,  5: 3,  6: 3  };
+      const minActions = ACT_MIN_ACTIONS[actNum] ?? 0;
+      const minQuests  = ACT_MIN_QUESTS[actNum]  ?? 0;
+      const doneQuests = (updatedPlayer.quests || []).filter((q: any) => q.status === 'done').length;
+      const actions    = updatedPlayer.actionCount || 0;
+      if (actions >= minActions && doneQuests >= minQuests) {
+        updatedSeed = { ...updatedSeed, currentAct: actNum };
+      }
+      // If gate fails, tag is silently ignored — narrator will retry on a later action
     }
   }
 
