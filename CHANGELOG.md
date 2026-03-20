@@ -1,6 +1,9 @@
 ## [Unreleased]
 
 ### Added
+- **The Dungeon of Echoes now has distinct biomes by depth**: Every floor range feels different. Floors 1–5 are the Shallow Halls — crumbling stonework, skeleton sentinels, and old bandit camps. Floors 6–10 are the Ossuary — bone-lined corridors, the restless dead, cold dry air. Floors 11–16 are the Flooded Tunnels — black water, drowned things, and pale bioluminescent growths. Floors 17–22 are the Fungal Depths — towering mushrooms, spore husks, sweet-rotten air. Floors 23–28 are the Burning Dark — basalt walls cracked with magma veins, ember drakes, punishing heat. Floors 29–35 are the Frost Crypts — unnatural cold below the magma, frozen figures mid-stride. Floor 36 and beyond is the Abyss — geometry stops working, shadows move against the light, and something old has been here longer than the world has had a name for it. Named floors (13, 26, 33) carry a unique mark — something scratched into the wall by those who came before.
+
+### Added
 - **Feedback button in the toolbar**: A "Feedback" button now appears in the game header. Click it to send a bug report, suggestion, or general message — your Player ID, current location, and last action are attached automatically so support has context. No email client needed.
 - **Pricing page**: A standalone page at `/pricing` shows all six token bundles with prices, the token cost per turn for each AI narrator model, and answers to common questions. Useful for sharing with friends before they sign up.
 
