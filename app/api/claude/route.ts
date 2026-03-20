@@ -126,7 +126,10 @@ export async function POST(request: NextRequest) {
     const model = utilityCall ? anthropic.selectModel(true) : anthropic.selectModelForTier(tier);
     const maxTokens = Math.min(Math.max(100, parseInt(max_tokens) || 1500), 2000);
 
-    const requestBody = { model, max_tokens: maxTokens, system, messages };
+    // For narrator calls the client may send up to 40 messages (rolling buffer),
+    // but we only pass the last 20 to Anthropic to keep context costs constant.
+    const anthropicMessages = messages.slice(-20);
+    const requestBody = { model, max_tokens: maxTokens, system, messages: anthropicMessages };
 
     // Utility calls (screener, quest parser, etc.) use buffered JSON response
     if (utilityCall) {
@@ -231,9 +234,40 @@ export async function POST(request: NextRequest) {
           responseSuggestions = applied.suggestions;
           responseStateChanges = applied.stateChanges;
 
+          // Rolling narrative summary: if the client sent more than 20 messages,
+          // the excess falls outside the Anthropic window. Summarize those now so
+          // the narrator retains long-term memory on future turns.
+          if (messages.length > 20) {
+            try {
+              const excessMessages = messages.slice(0, messages.length - 20);
+              const dialogue = excessMessages
+                .map((m: { role: string; content: string }) =>
+                  `${m.role === 'user' ? 'Player' : 'Narrator'}: ${m.content}`
+                )
+                .join('\n\n');
+              const summaryResp = await anthropic.callAnthropic({
+                model: anthropic.selectModel(true), // Haiku
+                max_tokens: 300,
+                system: anthropic.SERVER_SYSTEM_PROMPTS.SUMMARIZER,
+                messages: [{ role: 'user', content: dialogue }],
+              });
+              const newSummary = anthropic.extractAnthropicText(summaryResp.data);
+              if (newSummary) {
+                const existing = (responsePlayer as any).narrativeSummary ?? '';
+                const combined = existing ? `${existing}\n${newSummary}` : newSummary;
+                // Cap at 2000 chars to keep system prompt size stable
+                (responsePlayer as any).narrativeSummary = combined.length > 2000
+                  ? combined.slice(combined.length - 2000)
+                  : combined;
+              }
+            } catch (summaryErr) {
+              console.warn('[SUMMARIZER] Failed to generate narrative summary:', summaryErr);
+            }
+          }
+
           await persistCanonicalNarrationState(
             capturedAuthCtx.playerId,
-            applied.player,
+            responsePlayer as any,
             applied.worldSeed,
             applied.fullMessages,
             cleanNarrative
@@ -669,7 +703,9 @@ function buildNarratorSystem(p: any, w: any): string {
       ? FUN_LANG_INSTRUCTIONS[language] + '\n'
       : `LANGUAGE: Write all narration in ${language} only. Do not switch to English.\n`;
 
-  return `${langInstruction}You are the AI Dungeon Master for "Aethermoor" — an epic heroic fantasy text RPG.
+  const storySoFar = p.narrativeSummary ? `STORY SO FAR: ${p.narrativeSummary}\n\n` : '';
+
+  return `${langInstruction}${storySoFar}You are the AI Dungeon Master for "Aethermoor" — an epic heroic fantasy text RPG.
 ${questTitle ? `MAIN QUEST: "${questTitle}" — Act ${act}/6${act1Hook ? `\nACT 1 HOOK: ${act1Hook}` : ''}${act >= 2 && mq.act2Escalation ? `\nACT 2 ESCALATION: ${mq.act2Escalation}` : ''}${act >= 3 && mq.act3Confrontation ? `\nACT 3 CONFRONTATION: ${mq.act3Confrontation}` : ''}${act >= 4 && mq.act4Complication ? `\nACT 4 COMPLICATION: ${mq.act4Complication}` : ''}${act >= 5 && mq.act5Revelation ? `\nACT 5 REVELATION: ${mq.act5Revelation}` : ''}${threat ? `\nTHREAT: ${threat}` : ''}${mq.villainLair ? `\nVILLAIN LAIR: ${mq.villainLair}` : ''}` : ''}${villainName ? `\nVILLAIN: ${villainName}` : ''}${villainAllied ? `\nVILLAIN ALLIANCE: ACTIVE — player has pledged to serve the villain. Villain forces are non-hostile allies. Hero arc suspended. Alternate villain-victory ending path active.` : ''}
 
 PLAYER: ${name} | ${cls} Lv.${level} | HP:${hp}/${maxHp} | STR:${str} AGI:${agi} INT:${int_} WIL:${wil} | Gold:${gold} | Reputation:${rep} (${repLabel}) | Wanted:${wantedLevel} | Loc:${location}

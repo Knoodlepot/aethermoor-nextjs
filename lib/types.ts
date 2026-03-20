@@ -57,6 +57,7 @@ export interface Player {
   modelTier?: 'haiku' | 'sonnet' | 'opus';
   language?: string;
   namedPlaces?: Array<{ name: string; type: string; settlement: string }>;
+  narrativeSummary?: string;
 }
 
 export interface CombatState {

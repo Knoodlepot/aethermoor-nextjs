@@ -446,7 +446,7 @@ export function useGameLoop(
         }
 
         // 1. Add user message to conversation history
-        const userMessages = [...gs.messages.slice(-19), { role: 'user', content: command }];
+        const userMessages = [...gs.messages.slice(-39), { role: 'user', content: command }];
         gs.setMessages(userMessages);
 
         // 2. Call Claude API for narration (streaming — clear narrative first so chunks build it up)

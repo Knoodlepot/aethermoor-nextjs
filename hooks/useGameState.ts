@@ -64,13 +64,14 @@ export function useGameState(storage: UseStorageReturn): GameStateContext {
   }, [storage]);
 
   /**
-   * Add message to conversation history (max 20 recent messages)
+   * Add message to conversation history (max 40 recent messages).
+   * We buffer 40 so the server can detect and summarize content that
+   * falls outside the 20-message Anthropic window.
    */
   const addMessage = useCallback((role: string, content: string) => {
     setMessages((prev) => {
       const newMessages = [...prev, { role, content }];
-      // Keep only last 20 messages
-      return newMessages.slice(Math.max(0, newMessages.length - 20));
+      return newMessages.slice(Math.max(0, newMessages.length - 40));
     });
   }, []);
 
