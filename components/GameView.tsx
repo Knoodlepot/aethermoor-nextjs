@@ -129,6 +129,16 @@ function GameContent() {
 
   /** Start a new game: generate world, init player, get opening narrative */
   const handleStartNewGame = async (name: string, cls: string, seedStr?: string) => {
+    // Strip control characters, zero-width spaces, bidirectional markers, and
+    // other invisible Unicode before the name is stored or injected into prompts.
+    const sanitiseName = (s: string) =>
+      s.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200D\u2028\u2029\uFEFF\u202A-\u202E]/g, '')
+       .replace(/\s+/g, ' ')
+       .trim()
+       .slice(0, 30);
+    name = sanitiseName(name);
+    if (!name) return; // bail if nothing remains after sanitisation
+
     storage.clearAllSaves();
     setNewGameLoading(true);
     try {

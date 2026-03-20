@@ -130,6 +130,16 @@ export async function POST(request: NextRequest) {
     }
     playerPayload.playerId = playerId;
 
+    // Sanitise character name server-side (defence-in-depth against invisible
+    // Unicode, control characters, and bidirectional markers injected directly).
+    if (typeof playerPayload.name === 'string') {
+      playerPayload.name = playerPayload.name
+        .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200D\u2028\u2029\uFEFF\u202A-\u202E]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 30);
+    }
+
     const safePlayerJson = JSON.stringify(playerPayload);
     const safeSeedJson = JSON.stringify(parsedSeed);
     const safeMessagesJson = JSON.stringify(Array.isArray(parsedMessages) ? parsedMessages : []);
