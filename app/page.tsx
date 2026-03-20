@@ -8,6 +8,25 @@ import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 import { SaveSlotModal } from '@/components/modals/SaveSlotModal';
 import type { SlotSummary } from '@/hooks/useStorage';
 
+const FEATURES = [
+  {
+    title: 'AI-Powered Narrator',
+    desc: 'Every action shapes a living story written by Claude in real time. The world remembers what you do.',
+  },
+  {
+    title: 'Procedural Worlds',
+    desc: 'A unique continent generated fresh every game — named lands, factions, roads, and dark secrets.',
+  },
+  {
+    title: 'Four Classes',
+    desc: 'Warrior, Rogue, Mage, or Cleric. Each has a full skill tree and a distinct way the world reacts to you.',
+  },
+  {
+    title: 'Pay Per Turn',
+    desc: 'Start free with 50 tokens. Top up when you want more story. No subscription, no time pressure.',
+  },
+];
+
 export default function Home() {
   const [showGuide, setShowGuide] = useState(false);
   const [showPatches, setShowPatches] = useState(false);
@@ -18,6 +37,7 @@ export default function Home() {
   const [showLoadSlot, setShowLoadSlot] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [playerIdCopied, setPlayerIdCopied] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
@@ -29,8 +49,11 @@ export default function Home() {
 
     fetch('/api/auth/me', { credentials: 'include' })
       .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.playerId != null) setPlayerId(String(d.playerId)); })
-      .catch(() => {});
+      .then((d) => {
+        if (d?.playerId != null) setPlayerId(String(d.playerId));
+        setAuthLoaded(true);
+      })
+      .catch(() => { setAuthLoaded(true); });
 
     if (window.location.search.includes('payment=success')) {
       setPaymentSuccess(true);
@@ -102,6 +125,8 @@ export default function Home() {
     display: 'inline-block',
   };
 
+  const showMarketing = authLoaded && !playerId;
+
   return (
     <div style={{
       display: 'flex',
@@ -113,9 +138,10 @@ export default function Home() {
       color: '#d4b896',
       padding: '1rem',
     }}>
-      <div style={{ maxWidth: '700px', width: '100%', textAlign: 'center' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '3rem' }}>
+      <div style={{ maxWidth: showMarketing ? '760px' : '700px', width: '100%', textAlign: 'center' }}>
+
+        {/* Header — always visible */}
+        <div style={{ marginBottom: showMarketing ? '2rem' : '3rem' }}>
           <p style={{
             fontSize: '0.75rem',
             color: '#b8925a',
@@ -158,7 +184,72 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Main Action Buttons */}
+        {/* Marketing section — only for visitors who are not logged in */}
+        {showMarketing && (
+          <>
+            {/* Feature grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '0.75rem',
+              marginBottom: '2rem',
+              textAlign: 'left',
+            }}>
+              {FEATURES.map((f) => (
+                <div key={f.title} style={{
+                  background: '#13100a',
+                  border: '1px solid #2e2010',
+                  borderRadius: '4px',
+                  padding: '1rem 1.25rem',
+                }}>
+                  <div style={{
+                    color: '#c9a84c',
+                    fontFamily: 'Cinzel, serif',
+                    fontSize: '0.8rem',
+                    letterSpacing: '0.08em',
+                    marginBottom: '0.4rem',
+                  }}>
+                    {f.title}
+                  </div>
+                  <div style={{
+                    color: '#9a7f5a',
+                    fontSize: '0.85rem',
+                    lineHeight: '1.6',
+                  }}>
+                    {f.desc}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Primary CTA */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              <a href="/auth?mode=register" style={{
+                ...buttonStyle,
+                fontSize: '1rem',
+                padding: '1rem 2.5rem',
+                letterSpacing: '0.08em',
+              }}>
+                Create Free Account — 50 Tokens Free
+              </a>
+            </div>
+            <div style={{ marginBottom: '2rem' }}>
+              <a href="/auth" style={{
+                fontSize: '0.8rem',
+                color: '#7a6040',
+                textDecoration: 'underline',
+                textUnderlineOffset: 3,
+              }}>
+                Already have an account? Log in
+              </a>
+            </div>
+
+            {/* Separator */}
+            <hr style={{ border: 'none', borderTop: '1px solid #2e2010', margin: '0 auto 2rem', maxWidth: 320 }} />
+          </>
+        )}
+
+        {/* Main Action Buttons — always visible */}
         <div style={{
           display: 'flex',
           gap: '1rem',
@@ -241,7 +332,6 @@ export default function Home() {
               </span>
             </div>
           )}
-
         </div>
 
         {/* Footer */}
@@ -251,15 +341,21 @@ export default function Home() {
           fontSize: '0.8rem',
           color: '#7a6040',
         }}>
-          <p>v0.3.0 — Next.js Migration Phase 5</p>
+          <p>Early Access</p>
           <p style={{ marginTop: '0.75rem' }}>
+            <a
+              href="/pricing"
+              style={{ color: '#7a6040', textDecoration: 'underline', textUnderlineOffset: 2, fontSize: '0.75rem', marginRight: '1rem' }}
+            >
+              Pricing
+            </a>
             <a
               href="/legal"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: '#7a6040', textDecoration: 'underline', textUnderlineOffset: 2, fontSize: '0.75rem' }}
             >
-              Legal (Terms · Privacy · Refund Policy)
+              Terms · Privacy · Refund Policy
             </a>
           </p>
         </div>
