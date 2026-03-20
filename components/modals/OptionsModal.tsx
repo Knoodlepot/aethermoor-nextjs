@@ -52,10 +52,12 @@ const SECTION = { fontFamily: "'Cinzel',serif", fontSize: 10, letterSpacing: 3, 
 interface OptionsModalProps {
   currentTier: ModelTier;
   onSelectTier: (tier: ModelTier) => void;
+  narrativeNudges: boolean;
+  onToggleNudges: (value: boolean) => void;
   onClose: () => void;
 }
 
-export function OptionsModal({ currentTier, onSelectTier, onClose }: OptionsModalProps) {
+export function OptionsModal({ currentTier, onSelectTier, narrativeNudges, onToggleNudges, onClose }: OptionsModalProps) {
   const { themeKey, setThemeKey, isDyslexic, setIsDyslexic, textSize, setTextSize, language, setLanguage } = useTheme();
   const [pendingLang, setPendingLang] = React.useState<string | null>(null);
   const selectedLangData = [...LANGUAGES, ...FUN_LANGUAGES].find(l => l.name === (pendingLang ?? language));
@@ -121,6 +123,23 @@ export function OptionsModal({ currentTier, onSelectTier, onClose }: OptionsModa
               </button>
             );
           })}
+        </div>
+
+        {/* GAMEPLAY */}
+        <div style={SECTION}>GAMEPLAY</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #2e2515', padding: '10px 12px' }}>
+            <div>
+              <div style={{ fontFamily: "'Cinzel',serif", fontSize: 10, color: narrativeNudges ? '#c9a84c' : '#8a7a5a', letterSpacing: 1 }}>NARRATIVE NUDGES</div>
+              <div style={{ fontSize: 11, color: '#5a4a2a', marginTop: 2, fontFamily: "'Crimson Text',Georgia,serif" }}>NPCs and the world will occasionally remind you of your main quest if you wander too long</div>
+            </div>
+            <button
+              onClick={() => onToggleNudges(!narrativeNudges)}
+              style={{ width: 44, height: 24, borderRadius: 12, background: narrativeNudges ? '#4a7a4a' : '#2e2515', border: 'none', cursor: 'pointer', position: 'relative' as const, flexShrink: 0, transition: 'background 0.2s' }}
+            >
+              <span style={{ position: 'absolute' as const, top: 3, left: narrativeNudges ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', display: 'block' }} />
+            </button>
+          </div>
         </div>
 
         {/* ACCESSIBILITY */}

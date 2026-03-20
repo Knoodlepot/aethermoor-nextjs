@@ -58,6 +58,7 @@ export interface Player {
   language?: string;
   namedPlaces?: Array<{ name: string; type: string; settlement: string }>;
   narrativeSummary?: string;
+  narrativeNudges?: boolean;
 }
 
 export interface CombatState {

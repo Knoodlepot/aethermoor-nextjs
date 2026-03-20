@@ -13,6 +13,7 @@ export default function Home() {
   const [showPatches, setShowPatches] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [optionsTier, setOptionsTier] = useState<ModelTier>('haiku');
+  const [narrativeNudges, setNarrativeNudges] = useState<boolean>(true);
   const [showTokenShop, setShowTokenShop] = useState(false);
   const [showLoadSlot, setShowLoadSlot] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
@@ -49,7 +50,7 @@ export default function Home() {
     setShowOptions(true);
   };
 
-  const saveOption = (key: 'modelTier', value: string) => {
+  const saveOption = (key: 'modelTier' | 'narrativeNudges', value: string | boolean) => {
     try {
       const raw = localStorage.getItem('rpg-player-slot1');
       const p = raw ? JSON.parse(raw) : {};
@@ -269,6 +270,8 @@ export default function Home() {
         <OptionsModal
           currentTier={optionsTier}
           onSelectTier={(t) => { setOptionsTier(t); saveOption('modelTier', t); }}
+          narrativeNudges={narrativeNudges}
+          onToggleNudges={(v) => { setNarrativeNudges(v); saveOption('narrativeNudges', v); }}
           onClose={() => setShowOptions(false)}
         />
       )}
