@@ -119,11 +119,47 @@ export async function sendWelcomeEmail(
 ): Promise<{ success: boolean; error?: string }> {
   return sendEmail({
     to: email,
-    subject: 'Welcome to Aethermoor!',
-    text: `Welcome to Aethermoor, ${playerName}!\n\nYour adventure awaits. Begin your journey and uncover the mysteries of this fantastical world.`,
+    subject: 'Welcome to Aethermoor — your adventure begins',
+    text: [
+      `Welcome to Aethermoor, ${playerName}!`,
+      '',
+      'You have 50 free tokens waiting for you.',
+      '',
+      'A few tips before you begin:',
+      '  • Choose your class on the character screen — Warrior, Rogue, Mage, or Cleric each play differently.',
+      '  • Type naturally. The narrator responds to anything — ask questions, try odd things, push the world.',
+      '  • Cloud Save often. Hit the Save button after each big moment so your progress is safe.',
+      '  • Tokens: Haiku costs 1/turn (fast), Sonnet costs 4/turn (richer prose). Change in Options.',
+      '',
+      'Play now: https://aethermoor.com',
+      '',
+      'Need help? Email support.aethermoor@gmail.com',
+    ].join('\n'),
     html: `
-      <p>Welcome to Aethermoor, <strong>${playerName}</strong>!</p>
-      <p>Your adventure awaits. Begin your journey and uncover the mysteries of this fantastical world.</p>
+      <div style="background:#0d0b07;color:#c4a87a;font-family:Georgia,serif;padding:32px 28px;max-width:520px;margin:0 auto">
+        <h1 style="font-family:'Cinzel',Georgia,serif;color:#f0c060;font-size:1.5rem;letter-spacing:2px;margin-top:0">
+          ⚔ AETHERMOOR
+        </h1>
+        <p style="font-size:1rem;margin-top:0">Welcome, <strong style="color:#f0c060">${playerName}</strong>.</p>
+        <p>You have <strong style="color:#80c060">50 free tokens</strong> waiting — enough to begin your adventure right now.</p>
+        <hr style="border:none;border-top:1px solid #2e2010;margin:24px 0"/>
+        <p style="color:#a08060;font-size:0.9rem;margin-bottom:8px"><strong style="color:#c4a87a">A few tips before you enter:</strong></p>
+        <ul style="color:#a08060;font-size:0.9rem;line-height:1.8;padding-left:20px;margin:0 0 24px">
+          <li>Pick your class — Warrior, Rogue, Mage, or Cleric all play differently.</li>
+          <li>Type naturally. The narrator understands anything — questions, odd choices, pushing back.</li>
+          <li>Hit <strong style="color:#c4a87a">Save</strong> after big moments so your progress is safe in the cloud.</li>
+          <li>Haiku costs 1 token/turn (fast), Sonnet costs 4/turn (richer prose). Change in Options.</li>
+        </ul>
+        <a href="https://aethermoor.com"
+           style="display:inline-block;background:#c4873a;color:#0d0b07;font-family:'Cinzel',Georgia,serif;font-weight:700;padding:12px 28px;text-decoration:none;border-radius:3px;font-size:0.95rem;letter-spacing:1px">
+          Enter Aethermoor
+        </a>
+        <hr style="border:none;border-top:1px solid #2e2010;margin:28px 0 16px"/>
+        <p style="color:#6a5535;font-size:0.8rem;margin:0">
+          Questions? Reply to this email or write to
+          <a href="mailto:support.aethermoor@gmail.com" style="color:#a08060">support.aethermoor@gmail.com</a>
+        </p>
+      </div>
     `,
   });
 }

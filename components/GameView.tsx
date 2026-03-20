@@ -50,6 +50,7 @@ import { FactionOfferModal } from '@/components/modals/FactionOfferModal';
 import { UserProfileModal } from '@/components/modals/UserProfileModal';
 import { SaveSlotModal } from '@/components/modals/SaveSlotModal';
 import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
+import { FeedbackModal } from '@/components/modals/FeedbackModal';
 
 import { CLASSES, STATUS_EFFECTS, FACTIONS } from '@/lib/constants';
 import { countItem, XP_TABLE } from '@/lib/helpers';
@@ -106,6 +107,7 @@ function GameContent() {
   const [seedCopied, setSeedCopied] = useState(false);
   const [playerIdCopied, setPlayerIdCopied] = useState(false);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const prevGoldRef = useRef<number | null>(null);
   const [goldFlash, setGoldFlash] = useState<'gain' | 'loss' | null>(null);
   const prevHpRef = useRef<number | null>(null);
@@ -1047,6 +1049,13 @@ function GameContent() {
                 {playerIdCopied ? '✓ ID Copied' : '🪪 Player ID'}
               </button>
             )}
+            <button
+              onClick={() => setShowFeedback(true)}
+              title="Send feedback or report a bug"
+              style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+            >
+              Feedback
+            </button>
           </>
         )}
         {ui.isMobile && (
@@ -1656,6 +1665,15 @@ function GameContent() {
 
       {ui.showHowToPlay && (
         <HowToPlayModal onClose={() => ui.closeModal('howToPlay')} />
+      )}
+
+      {showFeedback && (
+        <FeedbackModal
+          playerId={auth.playerId}
+          currentLocation={player?.location}
+          lastInput={ui.lastInput}
+          onClose={() => setShowFeedback(false)}
+        />
       )}
 
       {ui.showUserProfile && auth.email && (
