@@ -1,6 +1,13 @@
 ## [Unreleased]
 
 ### Added
+- **Feedback button in the toolbar**: A "Feedback" button now appears in the game header. Click it to send a bug report, suggestion, or general message — your Player ID, current location, and last action are attached automatically so support has context. No email client needed.
+- **Pricing page**: A standalone page at `/pricing` shows all six token bundles with prices, the token cost per turn for each AI narrator model, and answers to common questions. Useful for sharing with friends before they sign up.
+
+### Changed
+- **Welcome email now gives you a quick-start guide**: New player welcome emails now include the five most useful tips for getting started (class choice, how to type actions, cloud saving, token costs) plus a direct "Enter Aethermoor" button.
+
+### Added
 - **Save conflict detection**: If two browser tabs are both playing and one saves more recently, the other tab now detects the conflict and shows a banner letting you choose to load the latest save or keep playing in your current session.
 - **Session expiry warning**: A notice now appears when your login session is within 3 days of expiring, so you can log out and back in before it silently drops mid-session.
 
