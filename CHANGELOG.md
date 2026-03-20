@@ -1,6 +1,13 @@
 ## [Unreleased]
 
 ### Added
+- **Save conflict detection**: If two browser tabs are both playing and one saves more recently, the other tab now detects the conflict and shows a banner letting you choose to load the latest save or keep playing in your current session.
+- **Session expiry warning**: A notice now appears when your login session is within 3 days of expiring, so you can log out and back in before it silently drops mid-session.
+
+### Fixed
+- **Error messages are now consistent across all game systems**: Internal API errors now always include a human-readable message alongside the error code, making edge-case failures clearer in all contexts.
+
+### Added
 - **Story text now streams in as it's written**: Instead of waiting for the full narrator response, text now appears word by word in real time — the world reacts as Claude thinks, not after.
 - **Low token warning**: When you drop to 5 tokens or fewer after a turn, an amber warning bar appears with a direct link to buy more. Dismiss it with × whenever you're ready.
 - **Dungeon cooldown shown on button**: If you try to descend twice in quick succession the game now shows the remaining wait time (e.g. "🕳️ 12s") directly on the dungeon button, instead of silently ignoring the click.
