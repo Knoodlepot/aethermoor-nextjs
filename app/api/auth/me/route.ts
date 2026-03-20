@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const authCtx = await auth.authenticateRequestAsync(request);
 
     if (!authCtx) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'unauthorized', message: 'Authentication required' }, { status: 401 });
     }
 
     const { accountId, playerId, email } = authCtx;
@@ -15,9 +15,14 @@ export async function GET(request: NextRequest) {
     await tokens.ensurePlayerRow(playerId);
     const balance = await tokens.getBalance(playerId);
 
-    return NextResponse.json({ accountId, playerId, email, balance });
+    // Extract session expiry from the JWT (exp claim is in seconds, convert to ms)
+    const rawToken = auth.getTokenFromRequest(request);
+    const decoded = rawToken ? auth.verifyJwt(rawToken) : null;
+    const sessionExpiresAt = decoded ? decoded.exp * 1000 : null;
+
+    return NextResponse.json({ accountId, playerId, email, balance, sessionExpiresAt });
   } catch (error) {
     console.error('[AUTH ME]', error);
-    return NextResponse.json({ error: 'server_error' }, { status: 500 });
+    return NextResponse.json({ error: 'server_error', message: 'Internal server error' }, { status: 500 });
   }
 }

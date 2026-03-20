@@ -6,6 +6,7 @@ export interface AuthContext {
   token: string | null;
   email: string | null;
   authStatus: 'loading' | 'authed' | 'unauthed';
+  sessionExpiresAt: number | null; // ms timestamp
 }
 
 export interface LoginRequest {
@@ -35,6 +36,7 @@ export function useAuth() {
   const [email, setEmail] = useState<string | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<'loading' | 'authed' | 'unauthed'>('loading');
+  const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
 
   /**
    * Verify cookie-backed session by calling /auth/me
@@ -48,11 +50,13 @@ export function useAuth() {
         setToken('cookie-session');
         setEmail(data.email || null);
         setPlayerId(data.playerId ? String(data.playerId) : null);
+        setSessionExpiresAt(data.sessionExpiresAt ?? null);
         setAuthStatus('authed');
       } else {
         setToken(null);
         setEmail(null);
         setPlayerId(null);
+        setSessionExpiresAt(null);
         setAuthStatus('unauthed');
       }
     } catch (error) {
@@ -234,6 +238,7 @@ export function useAuth() {
 
     setToken(null);
     setEmail(null);
+    setSessionExpiresAt(null);
     setAuthStatus('unauthed');
   }, []);
 
@@ -242,6 +247,7 @@ export function useAuth() {
     email,
     playerId,
     authStatus,
+    sessionExpiresAt,
     register,
     login,
     logout,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { storageGet, storageSet, storageGetJson, storageSetJson } from './useLocalStorage';
 import type { Player, WorldSeed } from '../lib/types';
 
@@ -46,6 +46,8 @@ export interface UseStorageReturn {
   loadSlots: () => Promise<SlotSummary[]>;
   isSyncingCloud: boolean;
   clearAllSaves: () => void;
+  saveConflict: boolean;
+  clearSaveConflict: () => void;
 }
 
 /**
@@ -54,6 +56,9 @@ export interface UseStorageReturn {
 export function useStorage(authToken?: string | null, initialSlot: number = 1): UseStorageReturn {
   const [isSyncingCloud, setIsSyncingCloud] = useState(false);
   const [currentSlot, setCurrentSlot] = useState(initialSlot);
+  const [saveConflict, setSaveConflict] = useState(false);
+  // Track the last known cloud save timestamp per slot for conflict detection
+  const lastCloudSavedAt = useRef<Record<number, string | null>>({});
 
   /**
    * Save to localStorage (synchronous, always succeeds)
@@ -154,8 +159,17 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
             narrative,
             log_json: JSON.stringify(log),
             slot,
+            clientSavedAt: lastCloudSavedAt.current[slot] ?? null,
           }),
         });
+        if (res.status === 409) {
+          setSaveConflict(true);
+          return false;
+        }
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          if (data.savedAt) lastCloudSavedAt.current[slot] = data.savedAt;
+        }
         return res.ok;
       } catch (error) {
         console.warn('Cloud save failed (localStorage will persist):', error);
@@ -177,6 +191,10 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
       if (res.ok) {
         const data = await res.json();
         if (!data.player_json) return null;
+        // Record this slot's server timestamp so future saves can detect conflicts
+        if (data.saved_at) {
+          lastCloudSavedAt.current[slot] = data.saved_at;
+        }
         const worldSeed: any = JSON.parse(data.seed_json);
         // Recover seed string from localStorage if missing in cloud data
         if (worldSeed && !worldSeed.seed) {
@@ -283,6 +301,8 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
     }
   }, []);
 
+  const clearSaveConflict = useCallback(() => setSaveConflict(false), []);
+
   return useMemo(() => ({
     currentSlot,
     setCurrentSlot,
@@ -293,5 +313,7 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
     loadSlots,
     isSyncingCloud,
     clearAllSaves,
-  }), [currentSlot, setCurrentSlot, loadGame, saveGame, saveToCloud, loadFromCloud, loadSlots, isSyncingCloud, clearAllSaves]);
+    saveConflict,
+    clearSaveConflict,
+  }), [currentSlot, setCurrentSlot, loadGame, saveGame, saveToCloud, loadFromCloud, loadSlots, isSyncingCloud, clearAllSaves, saveConflict, clearSaveConflict]);
 }

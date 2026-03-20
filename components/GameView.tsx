@@ -1488,6 +1488,59 @@ function GameContent() {
     >
       {toolbar}
 
+      {/* Session expiry warning — shown when JWT expires within 3 days */}
+      {(() => {
+        const expiresAt = auth.sessionExpiresAt;
+        if (!expiresAt) return null;
+        const daysLeft = Math.ceil((expiresAt - Date.now()) / (1000 * 60 * 60 * 24));
+        if (daysLeft > 3) return null;
+        return (
+          <div style={{
+            background: '#1a3a1a', color: '#80d080',
+            borderBottom: `1px solid #2a5a2a`,
+            padding: '5px 14px',
+            fontSize: '0.78rem',
+            fontFamily: "'Crimson Text',serif",
+            flexShrink: 0,
+          }}>
+            {daysLeft <= 0
+              ? 'Your session has expired — please log out and log back in to continue saving.'
+              : `Your session expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'} — log out and back in to refresh it.`}
+          </div>
+        );
+      })()}
+
+      {/* Save conflict banner */}
+      {storage.saveConflict && (
+        <div style={{
+          background: '#3a1a00', color: '#ffb347',
+          borderBottom: `1px solid #6a3a00`,
+          padding: '5px 14px',
+          fontSize: '0.78rem',
+          fontFamily: "'Crimson Text',serif",
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}>
+          <span style={{ flex: 1 }}>
+            Save conflict — another session saved more recently. Your progress is safe locally.
+          </span>
+          <span
+            style={{ textDecoration: 'underline', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
+            onClick={() => window.location.reload()}
+          >
+            Load latest
+          </span>
+          <span
+            style={{ textDecoration: 'underline', cursor: 'pointer', whiteSpace: 'nowrap' as const }}
+            onClick={() => storage.clearSaveConflict()}
+          >
+            Keep playing
+          </span>
+        </div>
+      )}
+
       {/* Main content area — desktop or mobile layout */}
       {ui.isMobile ? mobileLayout : desktopLayout}
 

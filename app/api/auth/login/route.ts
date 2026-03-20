@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: 'email and password required' },
+        { error: 'invalid_request', message: 'Email and password are required' },
         { status: 400 }
       );
     }
@@ -36,6 +36,6 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('[AUTH LOGIN]', error);
-    return NextResponse.json({ error: 'server_error' }, { status: 500 });
+    return NextResponse.json({ error: 'server_error', message: 'Internal server error' }, { status: 500 });
   }
 }

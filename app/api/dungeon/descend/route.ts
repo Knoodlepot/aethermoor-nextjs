@@ -8,14 +8,14 @@ const COOLDOWN_MS = 15 * 1000; // 15 seconds
 export async function POST(request: NextRequest) {
   try {
     const authCtx = await auth.authenticateRequestAsync(request);
-    if (!authCtx) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+    if (!authCtx) return NextResponse.json({ error: 'unauthorized', message: 'Authentication required' }, { status: 401 });
 
     const { playerId } = authCtx;
     const body = await request.json();
     const { floor, heroName, heroClass, heroLevel, ngPlus } = body;
 
     if (!floor || floor < 1) {
-      return NextResponse.json({ error: 'floor must be >= 1' }, { status: 400 });
+      return NextResponse.json({ error: 'invalid_request', message: 'floor must be >= 1' }, { status: 400 });
     }
 
     // Check cooldown
@@ -82,6 +82,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, floor, deepest: newDeepest });
   } catch (error) {
     console.error('[DUNGEON DESCEND]', error);
-    return NextResponse.json({ error: 'server_error' }, { status: 500 });
+    return NextResponse.json({ error: 'server_error', message: 'Internal server error' }, { status: 500 });
   }
 }

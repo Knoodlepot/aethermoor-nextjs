@@ -88,8 +88,27 @@ export async function POST(request: NextRequest) {
     const { playerId } = authCtx;
 
     const body = await request.json();
-    const { player_json, seed_json, messages_json, narrative, log_json, slot: rawSlot } = body;
+    const { player_json, seed_json, messages_json, narrative, log_json, slot: rawSlot, clientSavedAt } = body;
     const slot = Math.min(3, Math.max(1, parseInt(rawSlot ?? '1', 10) || 1));
+
+    // Conflict detection: if client sends clientSavedAt, check whether the DB has a newer save
+    if (clientSavedAt) {
+      const existing = await db.query(
+        'SELECT updated_at FROM game_saves WHERE player_id = $1 AND slot = $2',
+        [playerId, slot]
+      );
+      if (existing.rows.length > 0 && existing.rows[0].updated_at) {
+        const dbUpdatedAt = new Date(existing.rows[0].updated_at).getTime();
+        const clientTs = new Date(clientSavedAt).getTime();
+        // Allow 2s buffer for clock skew / in-flight requests
+        if (dbUpdatedAt > clientTs + 2000) {
+          return NextResponse.json(
+            { error: 'conflict', message: 'A newer save exists from another session. Reload to see the latest.' },
+            { status: 409 }
+          );
+        }
+      }
+    }
 
     if (!player_json || !seed_json) {
       return NextResponse.json({ error: 'missing_fields', message: 'player_json and seed_json are required' }, { status: 400 });
@@ -132,7 +151,7 @@ export async function POST(request: NextRequest) {
     );
 
     await clearSaveCache(playerId, slot);
-    return NextResponse.json({ ok: true }, { status: 200 });
+    return NextResponse.json({ ok: true, savedAt: new Date().toISOString() }, { status: 200 });
   } catch (error) {
     console.error('[SAVE POST]', error);
     return NextResponse.json({ error: 'server_error', message: 'Failed to save game' }, { status: 500 });
