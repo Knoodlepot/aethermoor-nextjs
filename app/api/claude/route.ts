@@ -391,6 +391,56 @@ async function spendTokenSafely(
 }
 
 /**
+ * Return the dungeon biome descriptor for a given floor number.
+ * Biomes gate at fixed floor thresholds matching the Dungeon of Echoes lore.
+ */
+function getDungeonBiome(floor: number): { name: string; description: string; enemies: string; atmosphere: string } {
+  if (floor <= 5) return {
+    name: 'Shallow Halls',
+    description: 'Crumbling stonework, dust and cobwebs, the echo of long-dead footsteps. Evidence of past occupation — old campsites, scratched warnings on walls, rusted iron fixtures.',
+    enemies: 'Giant rats, feral dogs, bandit scavengers, skeleton sentinels, cultist stragglers',
+    atmosphere: 'Faint torchlight, the smell of damp stone and old ash, occasional distant dripping',
+  };
+  if (floor <= 10) return {
+    name: 'The Ossuary',
+    description: 'Corridors lined with stacked bones and mortared skulls. Burial alcoves, collapsed crypts, the restless dead who remember their names.',
+    enemies: 'Skeletons, risen dead, spectral shades, grave wardens, bone constructs',
+    atmosphere: 'Cold and dry, the air carries grave-dust and old incense, candles that burn without flame source',
+  };
+  if (floor <= 16) return {
+    name: 'Flooded Tunnels',
+    description: 'Ankle-deep black water reflects warped light. Drowned things claw at the walls. Bioluminescent growths cling to the ceiling in pale blue clusters.',
+    enemies: 'Drowned walkers, black eels, fungal horrors, sightless cave fish, marsh-wraiths',
+    atmosphere: 'The slap of dark water, brine and decay, faint phosphorescent glow from the ceiling, cold that seeps through boots',
+  };
+  if (floor <= 22) return {
+    name: 'Fungal Depths',
+    description: 'Giant mushrooms tower overhead, their caps broader than a wagon wheel. Spores drift like snow. Things grown fat on decay lurk between the stalks.',
+    enemies: 'Spore husks, fungal horrors, mycelium crawlers, things that were once human and are not anymore',
+    atmosphere: 'Sweet-rotten smell, soft amber and violet bioluminescence, spores that blur the edges of vision if inhaled',
+  };
+  if (floor <= 28) return {
+    name: 'The Burning Dark',
+    description: 'Heat radiates from the walls. Red veins of magma crack the basalt floor. The air shimmers and the shadows seem to burn at their edges.',
+    enemies: 'Ember drakes, lava golems, fire cultists who descended too deep and were changed, salamanders, scorched undead',
+    atmosphere: 'Intense dry heat, the crack and hiss of cooling rock, distant low roar of something vast and molten below',
+  };
+  if (floor <= 35) return {
+    name: 'Frost Crypts',
+    description: 'Unnatural cold below the magma tier — the world\'s logic inverted. Ice formations grow in impossible shapes. Frozen figures mid-stride in the walls, their expressions wrong.',
+    enemies: 'Frost wraiths, ice golems, frozen knights still carrying out orders, white wolves that should not exist this deep',
+    atmosphere: 'Biting cold after the heat above, silence thick as snow, breath clouds, the crack of ice under weight',
+  };
+  // floor 36+
+  return {
+    name: 'The Abyss',
+    description: 'Geometry stops working. Corridors loop back on themselves. Shadows move against the light source. Something ancient has been here longer than the world has had a name for what it is.',
+    enemies: 'Things without archetypes, void-touched aberrations, echoes of adventurers who came before and did not leave, the dungeon\'s own hunger made flesh',
+    atmosphere: 'No sound carries right. The air smells of nothing. Torchlight retreats rather than illuminates. A sense of being observed from every direction at once.',
+  };
+}
+
+/**
  * Compute enemy HP and damage values scaled to player level.
  * Base stats match ENEMY_ARCHETYPES in lib/constants.ts.
  * HP grows by 5 per level, damage by 1 per 2 levels.
@@ -472,6 +522,9 @@ function buildNarratorSystem(p: any, w: any): string {
 
   const VALID_CONTEXTS = new Set(['explore', 'town', 'combat', 'npc', 'camp', 'dungeon']);
   const context   = VALID_CONTEXTS.has(p.context) ? p.context : 'explore';
+
+  const dungeonFloor = Math.max(1, parseInt(p.dungeon?.floor) || 1);
+  const biome = context === 'dungeon' ? getDungeonBiome(dungeonFloor) : null;
 
   const inventory = Array.isArray(p.inventory)
     ? p.inventory.slice(0, 30).map((i: any) => sanitiseStr(i, 40)).join(', ') || 'empty' : 'empty';
@@ -716,6 +769,10 @@ INVENTORY: ${inventory}
 ABILITIES: ${abilities || 'none'}
 ACTIVE QUESTS: ${quests}
 CURRENT CONTEXT: ${context}
+${biome ? `DUNGEON FLOOR: ${dungeonFloor} | BIOME: ${biome.name}
+BIOME DESCRIPTION: ${biome.description}
+BIOME ENEMIES: ${biome.enemies}
+BIOME ATMOSPHERE: ${biome.atmosphere}` : ''}
 ${knownNpcs ? `KNOWN NPCS: ${knownNpcs}` : ''}
 ${availableNames ? `AVAILABLE NPC NAMES: ${availableNames}` : ''}
 ${knownPlaces ? `KNOWN PLACES: ${knownPlaces}` : ''}
@@ -858,6 +915,7 @@ ${villainName.startsWith('Xfu') ? `- XFU RULE: Xfu cannot help himself — whene
   - Keep N believable. Cap at 24 for any single continuous activity.
 - SCHEDULE RULE: When the player and an NPC explicitly agree to meet at a specific time and place, you MUST emit on its own line: {"scheduleEvent":{"npcName":"Name","location":"Place","day":N,"hour":H,"description":"Short description"}} where day/hour are game-calendar values. Use CURRENT TIME as the reference baseline for the future meeting time. Do not let NPC commitments go untracked — if an NPC says they will find the player, meet them somewhere, or send word by a certain time, that is a commitment requiring a scheduleEvent tag. Always include the exact settlement name in the location field.
 - OVERDUE EVENTS RULE: When UPCOMING EVENTS contains any item marked [OVERDUE], you must address it in your current response. Do not silently ignore it. Have the NPC appear looking for the player, send a messenger, be found waiting at the agreed place, or show visible frustration or relief — whatever fits their character. An overdue event is an active narrative obligation; treat it as such every turn until resolved.
+- DUNGEON BIOME RULE: When DUNGEON FLOOR and BIOME are present above, you are narrating inside the Dungeon of Echoes. Every response must reflect the biome — its atmosphere, enemy types, visual details, and sensory texture. Do not describe stone corridors and cobwebs on Floor 22 (Fungal Depths); do not describe spores and mushrooms on Floor 3 (Shallow Halls). Biome-appropriate enemies should appear naturally — a frost wraith on floor 5 is wrong, a skeleton sentinel on floor 32 is wrong. As the player descends deeper, descriptions should feel increasingly alien and dangerous. Named floors (13, 26, 33) are legendary — add a unique detail or warning scratched into the wall. Emit {"context":"dungeon"} after every response inside the dungeon.
 - UNFINISHED LOCATION RULE: When the player leaves a dungeon, ruin, cathedral, or named point-of-interest where a clear objective remains incomplete — a mentioned prisoner, an unexplored passage, an unresolved threat, a locked door not yet opened — you must do two things: (1) acknowledge it in narration, having the player or a companion note the unresolved business, and (2) emit a self-reminder scheduleEvent using the exact location name from the LOCATION GRID, e.g. {"scheduleEvent":{"npcName":"[Reminder]","location":"ExactLocationName","day":N,"hour":N,"description":"Return to investigate — prisoner reported inside"}}. This pins the location on the player's map so they can find their way back.
 - NPC TRAVEL RULE: When an NPC announces they are departing on a journey with a destination and route, estimate realistic travel time (boat voyage = 1–3 days, wagon cross-country = 1–4 days, short road travel = a few hours) and emit on its own line: {"npcTravel":{"npcName":"Name","destination":"Place","arrivesDay":N,"arrivesHour":H,"route":"brief route"}} using CURRENT TIME as the departure baseline. If a known NPC's travel note shows they are in transit or have arrived, reference that naturally in the narrative.
 - DAY/NIGHT RULE: Current time of day is ${hPeriod}. Adjust the world accordingly:
