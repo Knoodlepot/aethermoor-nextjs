@@ -394,42 +394,48 @@ async function spendTokenSafely(
  * Return the dungeon biome descriptor for a given floor number.
  * Biomes gate at fixed floor thresholds matching the Dungeon of Echoes lore.
  */
-function getDungeonBiome(floor: number): { name: string; description: string; enemies: string; atmosphere: string } {
+function getDungeonBiome(floor: number): { name: string; description: string; enemies: string; atmosphere: string; hazard: string } {
   if (floor <= 5) return {
     name: 'Shallow Halls',
     description: 'Crumbling stonework, dust and cobwebs, the echo of long-dead footsteps. Evidence of past occupation — old campsites, scratched warnings on walls, rusted iron fixtures.',
     enemies: 'Giant rats, feral dogs, bandit scavengers, skeleton sentinels, cultist stragglers',
     atmosphere: 'Faint torchlight, the smell of damp stone and old ash, occasional distant dripping',
+    hazard: 'None. The Shallow Halls are the most survivable tier — no passive hazard applies. Occasional unstable ceilings may shower debris (describe narratively only, no hpChange unless the player ignores clear warnings).',
   };
   if (floor <= 10) return {
     name: 'The Ossuary',
     description: 'Corridors lined with stacked bones and mortared skulls. Burial alcoves, collapsed crypts, the restless dead who remember their names.',
     enemies: 'Skeletons, risen dead, spectral shades, grave wardens, bone constructs',
     atmosphere: 'Cold and dry, the air carries grave-dust and old incense, candles that burn without flame source',
+    hazard: 'GRAVE CHILL: The bone-cold air saps vitality. Once every 2–3 turns, if the player is not actively moving or fighting, emit {"hpChange":-4} described as the cold seeping into their bones. Clerics and WIL≥8 players resist (skip the hpChange but still describe the chill). Undead enemies deal +15% damage here — they are on home ground.',
   };
   if (floor <= 16) return {
     name: 'Flooded Tunnels',
     description: 'Ankle-deep black water reflects warped light. Drowned things claw at the walls. Bioluminescent growths cling to the ceiling in pale blue clusters.',
     enemies: 'Drowned walkers, black eels, fungal horrors, sightless cave fish, marsh-wraiths',
     atmosphere: 'The slap of dark water, brine and decay, faint phosphorescent glow from the ceiling, cold that seeps through boots',
+    hazard: 'COLD WADE: Wading through black water is exhausting and chilling. Once every 2 turns, emit {"hpChange":-6} described as the cold water draining warmth and energy. Warriors in heavy armour suffer an extra -3 HP (describe as the weight dragging them down). AGI-based actions (fleeing, dodging, stealth) are harder here — describe near-misses and slowed movement. A torch carried in this biome has a 1-in-3 chance of being extinguished each turn — describe the sudden darkness vividly if it happens.',
   };
   if (floor <= 22) return {
     name: 'Fungal Depths',
     description: 'Giant mushrooms tower overhead, their caps broader than a wagon wheel. Spores drift like snow. Things grown fat on decay lurk between the stalks.',
     enemies: 'Spore husks, fungal horrors, mycelium crawlers, things that were once human and are not anymore',
     atmosphere: 'Sweet-rotten smell, soft amber and violet bioluminescence, spores that blur the edges of vision if inhaled',
+    hazard: 'SPORE INHALATION: The air is thick with mutagenic spores. Once every 2 turns, emit {"hpChange":-7} described as spores burning the lungs or clouding the mind. If the player has a face covering, mask, or cloth in their inventory, they are protected (skip the hpChange). INT≥8 players may recognise safe paths between spore clouds (50% chance to skip hpChange — describe them holding their breath and moving carefully). Additionally, emit {"statusEffect":"poisoned"} once per dungeon run in this biome (on the first instance of spore damage) to represent accumulating toxin.',
   };
   if (floor <= 28) return {
     name: 'The Burning Dark',
     description: 'Heat radiates from the walls. Red veins of magma crack the basalt floor. The air shimmers and the shadows seem to burn at their edges.',
     enemies: 'Ember drakes, lava golems, fire cultists who descended too deep and were changed, salamanders, scorched undead',
     atmosphere: 'Intense dry heat, the crack and hiss of cooling rock, distant low roar of something vast and molten below',
+    hazard: 'HEAT EXHAUSTION: The extreme heat is punishing. Once every 2 turns, emit {"hpChange":-9} described as the searing heat blistering skin and scorching lungs. Warriors in heavy armour suffer an additional -5 HP (the metal conducts the heat). Mages with INT≥7 may partially resist by channelling cool arcane energy (reduce hpChange to -4). Players carrying water skins can consume one to skip a heat tick (emit {"remove":{"item":"Water Skin"}} and describe the relief). Fire-resistant gear or the Ward Undead/Avatar Divine skill may grant full immunity — use your judgement.',
   };
   if (floor <= 35) return {
     name: 'Frost Crypts',
     description: 'Unnatural cold below the magma tier — the world\'s logic inverted. Ice formations grow in impossible shapes. Frozen figures mid-stride in the walls, their expressions wrong.',
     enemies: 'Frost wraiths, ice golems, frozen knights still carrying out orders, white wolves that should not exist this deep',
     atmosphere: 'Biting cold after the heat above, silence thick as snow, breath clouds, the crack of ice under weight',
+    hazard: 'DEEP FREEZE: The cold here is supernatural — it seeps through armour and will. Once every 2 turns, emit {"hpChange":-11} described as the cold locking joints, frosting breath, and numbing the sword hand. WIL≥8 players can resist through sheer willpower (reduce to -5 and describe gritted determination). A lit torch, campfire, or heat source carried by the player skips one cold tick per use (consume it narratively). The frozen figures in the walls occasionally crack and lunge — treat these as ambush moments, once per floor, dealing an extra -15 HP if the player is not paying attention.',
   };
   // floor 36+
   return {
@@ -437,6 +443,7 @@ function getDungeonBiome(floor: number): { name: string; description: string; en
     description: 'Geometry stops working. Corridors loop back on themselves. Shadows move against the light source. Something ancient has been here longer than the world has had a name for what it is.',
     enemies: 'Things without archetypes, void-touched aberrations, echoes of adventurers who came before and did not leave, the dungeon\'s own hunger made flesh',
     atmosphere: 'No sound carries right. The air smells of nothing. Torchlight retreats rather than illuminates. A sense of being observed from every direction at once.',
+    hazard: 'VOID CORRUPTION: Reality itself is hostile. Every single turn, emit {"hpChange":-14} described as the void pressing inward — a crushing wrongness behind the eyes, memories that don\'t belong, the sense of being unmade. No stat or item provides full immunity; WIL≥10 reduces the damage to -6 (describe extraordinary mental fortitude barely holding the void at bay). Additionally, once every 3 turns, emit one random status effect from: poisoned, stunned, cursed — described as the Abyss reaching through. This biome should feel genuinely dangerous and escalating. The player should understand they are not meant to be here.',
   };
 }
 
@@ -772,7 +779,8 @@ CURRENT CONTEXT: ${context}
 ${biome ? `DUNGEON FLOOR: ${dungeonFloor} | BIOME: ${biome.name}
 BIOME DESCRIPTION: ${biome.description}
 BIOME ENEMIES: ${biome.enemies}
-BIOME ATMOSPHERE: ${biome.atmosphere}` : ''}
+BIOME ATMOSPHERE: ${biome.atmosphere}
+BIOME HAZARD: ${biome.hazard}` : ''}
 ${knownNpcs ? `KNOWN NPCS: ${knownNpcs}` : ''}
 ${availableNames ? `AVAILABLE NPC NAMES: ${availableNames}` : ''}
 ${knownPlaces ? `KNOWN PLACES: ${knownPlaces}` : ''}
@@ -915,7 +923,7 @@ ${villainName.startsWith('Xfu') ? `- XFU RULE: Xfu cannot help himself — whene
   - Keep N believable. Cap at 24 for any single continuous activity.
 - SCHEDULE RULE: When the player and an NPC explicitly agree to meet at a specific time and place, you MUST emit on its own line: {"scheduleEvent":{"npcName":"Name","location":"Place","day":N,"hour":H,"description":"Short description"}} where day/hour are game-calendar values. Use CURRENT TIME as the reference baseline for the future meeting time. Do not let NPC commitments go untracked — if an NPC says they will find the player, meet them somewhere, or send word by a certain time, that is a commitment requiring a scheduleEvent tag. Always include the exact settlement name in the location field.
 - OVERDUE EVENTS RULE: When UPCOMING EVENTS contains any item marked [OVERDUE], you must address it in your current response. Do not silently ignore it. Have the NPC appear looking for the player, send a messenger, be found waiting at the agreed place, or show visible frustration or relief — whatever fits their character. An overdue event is an active narrative obligation; treat it as such every turn until resolved.
-- DUNGEON BIOME RULE: When DUNGEON FLOOR and BIOME are present above, you are narrating inside the Dungeon of Echoes. Every response must reflect the biome — its atmosphere, enemy types, visual details, and sensory texture. Do not describe stone corridors and cobwebs on Floor 22 (Fungal Depths); do not describe spores and mushrooms on Floor 3 (Shallow Halls). Biome-appropriate enemies should appear naturally — a frost wraith on floor 5 is wrong, a skeleton sentinel on floor 32 is wrong. As the player descends deeper, descriptions should feel increasingly alien and dangerous. Named floors (13, 26, 33) are legendary — add a unique detail or warning scratched into the wall. Emit {"context":"dungeon"} after every response inside the dungeon.
+- DUNGEON BIOME RULE: When DUNGEON FLOOR and BIOME are present above, you are narrating inside the Dungeon of Echoes. Every response must reflect the biome — its atmosphere, enemy types, visual details, and sensory texture. Do not describe stone corridors and cobwebs on Floor 22 (Fungal Depths); do not describe spores and mushrooms on Floor 3 (Shallow Halls). Biome-appropriate enemies should appear naturally — a frost wraith on floor 5 is wrong, a skeleton sentinel on floor 32 is wrong. As the player descends deeper, descriptions should feel increasingly alien and dangerous. Named floors (13, 26, 33) are legendary — add a unique detail or warning scratched into the wall. Emit {"context":"dungeon"} after every response inside the dungeon. BIOME HAZARD (mandatory): The BIOME HAZARD field above describes a passive environmental effect for this biome. Apply it exactly as specified — the correct hpChange amounts, the correct resistances, and the correct frequency. This is a mechanical obligation, not flavour. If the hazard says to emit {"hpChange":-N} every 2 turns, do it. If it specifies that a stat or item provides resistance, check the player's stats and inventory and apply the reduction. Describe the hazard vividly each time it triggers so the player understands what is draining them.
 - UNFINISHED LOCATION RULE: When the player leaves a dungeon, ruin, cathedral, or named point-of-interest where a clear objective remains incomplete — a mentioned prisoner, an unexplored passage, an unresolved threat, a locked door not yet opened — you must do two things: (1) acknowledge it in narration, having the player or a companion note the unresolved business, and (2) emit a self-reminder scheduleEvent using the exact location name from the LOCATION GRID, e.g. {"scheduleEvent":{"npcName":"[Reminder]","location":"ExactLocationName","day":N,"hour":N,"description":"Return to investigate — prisoner reported inside"}}. This pins the location on the player's map so they can find their way back.
 - NPC TRAVEL RULE: When an NPC announces they are departing on a journey with a destination and route, estimate realistic travel time (boat voyage = 1–3 days, wagon cross-country = 1–4 days, short road travel = a few hours) and emit on its own line: {"npcTravel":{"npcName":"Name","destination":"Place","arrivesDay":N,"arrivesHour":H,"route":"brief route"}} using CURRENT TIME as the departure baseline. If a known NPC's travel note shows they are in transit or have arrived, reference that naturally in the narrative.
 - DAY/NIGHT RULE: Current time of day is ${hPeriod}. Adjust the world accordingly:
