@@ -7,6 +7,7 @@ import * as db from '@/lib/db';
 import { applyNarrationState } from '@/lib/server/narrationState';
 import { generateNamePool } from '@/lib/nameGenerator';
 import { isAccountOnModerationHold } from '@/lib/moderation';
+import { DUNGEON_EXCLUSIVE_ENEMIES } from '@/lib/constants';
 
 // Strip control characters and truncate
 function sanitiseStr(val: unknown, maxLen: number): string {
@@ -394,11 +395,17 @@ async function spendTokenSafely(
  * Return the dungeon biome descriptor for a given floor number.
  * Biomes gate at fixed floor thresholds matching the Dungeon of Echoes lore.
  */
-function getDungeonBiome(floor: number): { name: string; description: string; enemies: string; atmosphere: string; hazard: string } {
+function getDungeonBiome(floor: number): { name: string; description: string; enemies: string; exclusiveEnemies: string; atmosphere: string; hazard: string } {
+  const exclusive = (biome: string) =>
+    Object.entries(DUNGEON_EXCLUSIVE_ENEMIES)
+      .filter(([, e]) => e.biome === biome)
+      .map(([id, e]) => `${e.name} (${e.icon} archetypeId:${id} tier:${e.tier}) — ${e.description}`)
+      .join(' | ');
   if (floor <= 5) return {
     name: 'Shallow Halls',
     description: 'Crumbling stonework, dust and cobwebs, the echo of long-dead footsteps. Evidence of past occupation — old campsites, scratched warnings on walls, rusted iron fixtures.',
     enemies: 'Giant rats, feral dogs, bandit scavengers, skeleton sentinels, cultist stragglers',
+    exclusiveEnemies: exclusive('Shallow Halls'),
     atmosphere: 'Faint torchlight, the smell of damp stone and old ash, occasional distant dripping',
     hazard: 'None. The Shallow Halls are the most survivable tier — no passive hazard applies. Occasional unstable ceilings may shower debris (describe narratively only, no hpChange unless the player ignores clear warnings).',
   };
@@ -406,6 +413,7 @@ function getDungeonBiome(floor: number): { name: string; description: string; en
     name: 'The Ossuary',
     description: 'Corridors lined with stacked bones and mortared skulls. Burial alcoves, collapsed crypts, the restless dead who remember their names.',
     enemies: 'Skeletons, risen dead, spectral shades, grave wardens, bone constructs',
+    exclusiveEnemies: exclusive('The Ossuary'),
     atmosphere: 'Cold and dry, the air carries grave-dust and old incense, candles that burn without flame source',
     hazard: 'GRAVE CHILL: The bone-cold air saps vitality. Once every 2–3 turns, if the player is not actively moving or fighting, emit {"hpChange":-4} described as the cold seeping into their bones. Clerics and WIL≥8 players resist (skip the hpChange but still describe the chill). Undead enemies deal +15% damage here — they are on home ground.',
   };
@@ -413,6 +421,7 @@ function getDungeonBiome(floor: number): { name: string; description: string; en
     name: 'Flooded Tunnels',
     description: 'Ankle-deep black water reflects warped light. Drowned things claw at the walls. Bioluminescent growths cling to the ceiling in pale blue clusters.',
     enemies: 'Drowned walkers, black eels, fungal horrors, sightless cave fish, marsh-wraiths',
+    exclusiveEnemies: exclusive('Flooded Tunnels'),
     atmosphere: 'The slap of dark water, brine and decay, faint phosphorescent glow from the ceiling, cold that seeps through boots',
     hazard: 'COLD WADE: Wading through black water is exhausting and chilling. Once every 2 turns, emit {"hpChange":-6} described as the cold water draining warmth and energy. Warriors in heavy armour suffer an extra -3 HP (describe as the weight dragging them down). AGI-based actions (fleeing, dodging, stealth) are harder here — describe near-misses and slowed movement. A torch carried in this biome has a 1-in-3 chance of being extinguished each turn — describe the sudden darkness vividly if it happens.',
   };
@@ -420,6 +429,7 @@ function getDungeonBiome(floor: number): { name: string; description: string; en
     name: 'Fungal Depths',
     description: 'Giant mushrooms tower overhead, their caps broader than a wagon wheel. Spores drift like snow. Things grown fat on decay lurk between the stalks.',
     enemies: 'Spore husks, fungal horrors, mycelium crawlers, things that were once human and are not anymore',
+    exclusiveEnemies: exclusive('Fungal Depths'),
     atmosphere: 'Sweet-rotten smell, soft amber and violet bioluminescence, spores that blur the edges of vision if inhaled',
     hazard: 'SPORE INHALATION: The air is thick with mutagenic spores. Once every 2 turns, emit {"hpChange":-7} described as spores burning the lungs or clouding the mind. If the player has a face covering, mask, or cloth in their inventory, they are protected (skip the hpChange). INT≥8 players may recognise safe paths between spore clouds (50% chance to skip hpChange — describe them holding their breath and moving carefully). Additionally, emit {"statusEffect":"poisoned"} once per dungeon run in this biome (on the first instance of spore damage) to represent accumulating toxin.',
   };
@@ -427,6 +437,7 @@ function getDungeonBiome(floor: number): { name: string; description: string; en
     name: 'The Burning Dark',
     description: 'Heat radiates from the walls. Red veins of magma crack the basalt floor. The air shimmers and the shadows seem to burn at their edges.',
     enemies: 'Ember drakes, lava golems, fire cultists who descended too deep and were changed, salamanders, scorched undead',
+    exclusiveEnemies: exclusive('The Burning Dark'),
     atmosphere: 'Intense dry heat, the crack and hiss of cooling rock, distant low roar of something vast and molten below',
     hazard: 'HEAT EXHAUSTION: The extreme heat is punishing. Once every 2 turns, emit {"hpChange":-9} described as the searing heat blistering skin and scorching lungs. Warriors in heavy armour suffer an additional -5 HP (the metal conducts the heat). Mages with INT≥7 may partially resist by channelling cool arcane energy (reduce hpChange to -4). Players carrying water skins can consume one to skip a heat tick (emit {"remove":{"item":"Water Skin"}} and describe the relief). Fire-resistant gear or the Ward Undead/Avatar Divine skill may grant full immunity — use your judgement.',
   };
@@ -434,6 +445,7 @@ function getDungeonBiome(floor: number): { name: string; description: string; en
     name: 'Frost Crypts',
     description: 'Unnatural cold below the magma tier — the world\'s logic inverted. Ice formations grow in impossible shapes. Frozen figures mid-stride in the walls, their expressions wrong.',
     enemies: 'Frost wraiths, ice golems, frozen knights still carrying out orders, white wolves that should not exist this deep',
+    exclusiveEnemies: exclusive('Frost Crypts'),
     atmosphere: 'Biting cold after the heat above, silence thick as snow, breath clouds, the crack of ice under weight',
     hazard: 'DEEP FREEZE: The cold here is supernatural — it seeps through armour and will. Once every 2 turns, emit {"hpChange":-11} described as the cold locking joints, frosting breath, and numbing the sword hand. WIL≥8 players can resist through sheer willpower (reduce to -5 and describe gritted determination). A lit torch, campfire, or heat source carried by the player skips one cold tick per use (consume it narratively). The frozen figures in the walls occasionally crack and lunge — treat these as ambush moments, once per floor, dealing an extra -15 HP if the player is not paying attention.',
   };
@@ -442,6 +454,7 @@ function getDungeonBiome(floor: number): { name: string; description: string; en
     name: 'The Abyss',
     description: 'Geometry stops working. Corridors loop back on themselves. Shadows move against the light source. Something ancient has been here longer than the world has had a name for what it is.',
     enemies: 'Things without archetypes, void-touched aberrations, echoes of adventurers who came before and did not leave, the dungeon\'s own hunger made flesh',
+    exclusiveEnemies: exclusive('The Abyss'),
     atmosphere: 'No sound carries right. The air smells of nothing. Torchlight retreats rather than illuminates. A sense of being observed from every direction at once.',
     hazard: 'VOID CORRUPTION: Reality itself is hostile. Every single turn, emit {"hpChange":-14} described as the void pressing inward — a crushing wrongness behind the eyes, memories that don\'t belong, the sense of being unmade. No stat or item provides full immunity; WIL≥10 reduces the damage to -6 (describe extraordinary mental fortitude barely holding the void at bay). Additionally, once every 3 turns, emit one random status effect from: poisoned, stunned, cursed — described as the Abyss reaching through. This biome should feel genuinely dangerous and escalating. The player should understand they are not meant to be here.',
   };
@@ -779,6 +792,7 @@ CURRENT CONTEXT: ${context}
 ${biome ? `DUNGEON FLOOR: ${dungeonFloor} | BIOME: ${biome.name}
 BIOME DESCRIPTION: ${biome.description}
 BIOME ENEMIES: ${biome.enemies}
+BIOME EXCLUSIVE ENEMIES (dungeon-only — use archetypeId exactly as given when emitting bestiary tag): ${biome.exclusiveEnemies}
 BIOME ATMOSPHERE: ${biome.atmosphere}
 BIOME HAZARD: ${biome.hazard}` : ''}
 ${knownNpcs ? `KNOWN NPCS: ${knownNpcs}` : ''}

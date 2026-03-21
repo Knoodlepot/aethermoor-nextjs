@@ -646,6 +646,278 @@ export const ENEMY_ARCHETYPES = {
 } as const;
 
 // ============================================
+// DUNGEON-EXCLUSIVE ENEMIES
+// 5 per biome × 7 biomes = 35 total
+// These only appear inside the Dungeon of Echoes.
+// tier: 1=minion, 2=standard, 3=tough/veteran, 4=elite/named, 5=boss
+// ============================================
+export interface DungeonEnemy {
+  name: string;
+  icon: string;
+  tier: 1 | 2 | 3 | 4 | 5;
+  biome: string;
+  description: string;
+}
+
+export const DUNGEON_EXCLUSIVE_ENEMIES: Record<string, DungeonEnemy> = {
+  // --- Shallow Halls (floors 1-5) ---
+  dust_crawler: {
+    name: 'Dust Crawler',
+    icon: '🕷️',
+    tier: 1,
+    biome: 'Shallow Halls',
+    description: 'A bloated pale spider that nests in dusty alcoves and feeds on old remains. Drops silently from the ceiling.',
+  },
+  hollow_sentry: {
+    name: 'Hollow Sentry',
+    icon: '🗿',
+    tier: 2,
+    biome: 'Shallow Halls',
+    description: 'A stone guardian worn featureless by centuries. Still responds to intrusion with mechanical, unhurried precision.',
+  },
+  lost_explorer: {
+    name: 'Lost Explorer',
+    icon: '🧍',
+    tier: 2,
+    biome: 'Shallow Halls',
+    description: 'A half-mad adventurer who descended years ago and never found the way out. Not hostile until they see your supplies.',
+  },
+  rubble_lurker: {
+    name: 'Rubble Lurker',
+    icon: '🦎',
+    tier: 1,
+    biome: 'Shallow Halls',
+    description: 'A pale lizard the size of a dog that evolved to ambush from collapsed stonework. Moves only when prey is close.',
+  },
+  trapped_revenant: {
+    name: 'Trapped Revenant',
+    icon: '👻',
+    tier: 3,
+    biome: 'Shallow Halls',
+    description: 'The spirit of someone who sealed themselves in to avoid what lay below. Violent when its long solitude is disturbed.',
+  },
+  // --- The Ossuary (floors 6-10) ---
+  bone_architect: {
+    name: 'Bone Architect',
+    icon: '🦷',
+    tier: 3,
+    biome: 'The Ossuary',
+    description: 'Assembles new forms from surrounding bones during combat. Each kill gives it material to grow larger.',
+  },
+  osseous_hound: {
+    name: 'Osseous Hound',
+    icon: '🦴',
+    tier: 1,
+    biome: 'The Ossuary',
+    description: 'A skeleton dog still wearing the memory of loyalty. Fast, relentless, and utterly silent on its bone feet.',
+  },
+  wailing_shade: {
+    name: 'Wailing Shade',
+    icon: '😱',
+    tier: 2,
+    biome: 'The Ossuary',
+    description: 'The voice of someone who died in fear. Its scream rattles bone and mind alike, capable of causing the stunned status.',
+  },
+  gravekeeper: {
+    name: 'Gravekeeper',
+    icon: '⚰️',
+    tier: 3,
+    biome: 'The Ossuary',
+    description: 'A corpse so saturated with grave-dust it moves with near-living purpose. Deeply hostile to anything that disrupts order among the dead.',
+  },
+  death_curator: {
+    name: 'Death Curator',
+    icon: '📜',
+    tier: 4,
+    biome: 'The Ossuary',
+    description: 'Robed and ancient, it catalogues the dead with eerie precision. Does not appreciate the arrival of the living — or those who have killed its records.',
+  },
+  // --- Flooded Tunnels (floors 11-16) ---
+  tide_wraith: {
+    name: 'Tide Wraith',
+    icon: '🌊',
+    tier: 3,
+    biome: 'Flooded Tunnels',
+    description: 'A spirit that drowned and never stopped moving. Pulls victims beneath the black water with cold, purposeful grip.',
+  },
+  blind_angler: {
+    name: 'Blind Angler',
+    icon: '🎣',
+    tier: 2,
+    biome: 'Flooded Tunnels',
+    description: 'A cave fish grown to man-size, drawing prey with a dim bioluminescent lure before striking from below.',
+  },
+  drowned_knight: {
+    name: 'Drowned Knight',
+    icon: '⚔️',
+    tier: 3,
+    biome: 'Flooded Tunnels',
+    description: 'A heavily armoured warrior who sank and never surfaced. Still fights with practiced technique, waterlogged and relentless.',
+  },
+  pressure_eel: {
+    name: 'Pressure Eel',
+    icon: '⚡',
+    tier: 2,
+    biome: 'Flooded Tunnels',
+    description: 'A massive electric eel evolved in total darkness. Its discharge stuns everyone in the water within reach.',
+  },
+  flood_horror: {
+    name: 'Flood Horror',
+    icon: '🫧',
+    tier: 4,
+    biome: 'Flooded Tunnels',
+    description: 'Something that arrived with the water and has been here ever since. It has no eyes. It does not need them.',
+  },
+  // --- Fungal Depths (floors 17-22) ---
+  spore_priest: {
+    name: 'Spore Priest',
+    icon: '🍄',
+    tier: 3,
+    biome: 'Fungal Depths',
+    description: 'A humanoid body colonised by fungus until the original host is merely a vessel. Commands lesser fungal creatures with pheromone signals.',
+  },
+  mycelium_stalker: {
+    name: 'Mycelium Stalker',
+    icon: '🕸️',
+    tier: 2,
+    biome: 'Fungal Depths',
+    description: 'Travels through the underground mycelium network beneath the floor, emerging exactly where least expected.',
+  },
+  bloom_horror: {
+    name: 'Bloom Horror',
+    icon: '🌺',
+    tier: 4,
+    biome: 'Fungal Depths',
+    description: 'A flowering mass of fungal growth that was once many separate things. Releases toxic spore bursts in a wide radius when struck.',
+  },
+  decay_husk: {
+    name: 'Decay Husk',
+    icon: '🧟',
+    tier: 1,
+    biome: 'Fungal Depths',
+    description: 'A corpse fully colonised by mycelium until the fungus walks it. Still moves. Spreads the infection on contact.',
+  },
+  spore_echo: {
+    name: 'Spore Echo',
+    icon: '👁️',
+    tier: 2,
+    biome: 'Fungal Depths',
+    description: 'A hallucination given limited physical form by concentrated spores. Mirrors the player\'s appearance. Deeply disconcerting.',
+  },
+  // --- The Burning Dark (floors 23-28) ---
+  magma_seraph: {
+    name: 'Magma Seraph',
+    icon: '🔥',
+    tier: 4,
+    biome: 'The Burning Dark',
+    description: 'A winged humanoid shape of cooling and re-melting rock. The fire cultists worship it as proof of divine favour in the deep.',
+  },
+  slag_crawler: {
+    name: 'Slag Crawler',
+    icon: '🦂',
+    tier: 1,
+    biome: 'The Burning Dark',
+    description: 'An insectoid creature with a carapace hardened by volcanic minerals. Fast and surprisingly acidic at close range.',
+  },
+  cinder_wraith: {
+    name: 'Cinder Wraith',
+    icon: '💨',
+    tier: 3,
+    biome: 'The Burning Dark',
+    description: 'The ashen ghost of someone who burned to nothing. Leaves scorched footprints in the stone. Contact inflicts the burning status.',
+  },
+  heat_mirage: {
+    name: 'Heat Mirage',
+    icon: '🌀',
+    tier: 2,
+    biome: 'The Burning Dark',
+    description: 'An entity that exists only in the distortion between extreme heat and slightly cooler air. Difficult to track, disorienting to fight.',
+  },
+  lava_warden: {
+    name: 'Lava Warden',
+    icon: '🪨',
+    tier: 3,
+    biome: 'The Burning Dark',
+    description: 'A golem built to manage the magma flows. Its master is gone. It now interprets all movement as a threat to be eliminated.',
+  },
+  // --- Frost Crypts (floors 29-35) ---
+  glacial_revenant: {
+    name: 'Glacial Revenant',
+    icon: '❄️',
+    tier: 3,
+    biome: 'Frost Crypts',
+    description: 'A warrior frozen mid-charge who thaws when warmth approaches. Resumes the charge immediately, exactly where it left off.',
+  },
+  hoarfrost_witch: {
+    name: 'Hoarfrost Witch',
+    icon: '🧙‍♀️',
+    tier: 4,
+    biome: 'Frost Crypts',
+    description: 'An ancient spellcaster who sought immortality in the cold. She found it. She has had a long time to regret nothing.',
+  },
+  ice_echo: {
+    name: 'Ice Echo',
+    icon: '🔮',
+    tier: 2,
+    biome: 'Frost Crypts',
+    description: 'A reflection in the ice that stepped out. Imitates your movements with a half-second delay and a cold smile.',
+  },
+  frozen_hound: {
+    name: 'Frozen Hound',
+    icon: '🐕',
+    tier: 1,
+    biome: 'Frost Crypts',
+    description: 'A wolf frozen for centuries, perfectly preserved by the unnatural cold. Now it hunts again, as if no time has passed.',
+  },
+  null_knight: {
+    name: 'Null Knight',
+    icon: '🏴',
+    tier: 4,
+    biome: 'Frost Crypts',
+    description: 'A knight in black ice armour with nothing behind the visor. Absolute in purpose. Empty of memory. It does not stop.',
+  },
+  // --- The Abyss (floors 36+) ---
+  void_speaker: {
+    name: 'Void Speaker',
+    icon: '📢',
+    tier: 3,
+    biome: 'The Abyss',
+    description: 'Learned language from listening to adventurers die. Speaks in your voice. Says things you haven\'t said yet.',
+  },
+  mirror_self: {
+    name: 'Mirror Self',
+    icon: '🪞',
+    tier: 3,
+    biome: 'The Abyss',
+    description: 'A perfect copy that steps from the darkness. Same stats, same equipment. It is here to replace you.',
+  },
+  the_unravelling: {
+    name: 'The Unravelling',
+    icon: '🌀',
+    tier: 4,
+    biome: 'The Abyss',
+    description: 'A mass of contradictions with no stable form. Its attacks change type each turn. Looking directly at it causes the stunned status.',
+  },
+  hunger_of_the_deep: {
+    name: 'Hunger of the Deep',
+    icon: '🕳️',
+    tier: 5,
+    biome: 'The Abyss',
+    description: 'The dungeon\'s own appetite given form. Cannot be killed through conventional means — it must be outwitted, bargained with, or fled.',
+  },
+  echo_warden: {
+    name: 'Echo Warden',
+    icon: '👁️',
+    tier: 4,
+    biome: 'The Abyss',
+    description: 'The last guardian of whatever lies at the very bottom. Ancient, patient, and fully aware that you are here.',
+  },
+};
+
+export const TOTAL_KNOWN_ENEMIES =
+  Object.keys(ENEMY_ARCHETYPES).length + Object.keys(DUNGEON_EXCLUSIVE_ENEMIES).length;
+
+// ============================================
 // ENEMY TIERS (Difficulty Multipliers)
 // ============================================
 export const ENEMY_TIERS = [

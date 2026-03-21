@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import type { Player } from '@/lib/types';
+import { DUNGEON_EXCLUSIVE_ENEMIES, TOTAL_KNOWN_ENEMIES } from '@/lib/constants';
 
 interface BestiaryScreenProps {
   player: Player;
@@ -28,18 +29,26 @@ export function BestiaryScreen({ player, onClose }: BestiaryScreenProps) {
 
   const totalKills = allEntries.reduce((s, b) => s + b.timesKilled, 0);
 
-  const tabs = ['all', 'minion', 'standard', 'veteran', 'boss'];
+  const dungeonDiscovered = allEntries.filter((b) => b.archetypeId in DUNGEON_EXCLUSIVE_ENEMIES);
+  const dungeonUndiscovered = Object.entries(DUNGEON_EXCLUSIVE_ENEMIES).filter(
+    ([id]) => !allEntries.some((b) => b.archetypeId === id)
+  );
+
+  const tabs = ['all', 'minion', 'standard', 'veteran', 'boss', 'dungeon'];
   const tabLabels: Record<string, string> = {
     all: '⚔️ All',
     minion: '💀 Minion',
     standard: '🗡️ Standard',
     veteran: '🛡️ Veteran',
     boss: '👑 Boss',
+    dungeon: `🕳️ Dungeon`,
   };
 
   const shown =
     tab === 'all'
       ? allEntries
+      : tab === 'dungeon'
+      ? dungeonDiscovered
       : allEntries.filter((b) => getTierStr(b.tier) === tab);
 
   const tierColor: Record<string, string> = {
@@ -92,7 +101,7 @@ export function BestiaryScreen({ player, onClose }: BestiaryScreenProps) {
               📖 BESTIARY
             </div>
             <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
-              {totalKills} total kills · {allEntries.length} enemy types discovered
+              {totalKills} total kills · {allEntries.length} of {TOTAL_KNOWN_ENEMIES} enemy types discovered
             </div>
           </div>
           <button
@@ -153,7 +162,11 @@ export function BestiaryScreen({ player, onClose }: BestiaryScreenProps) {
 
         {/* Entry list */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          {shown.length === 0 ? (
+          {tab === 'dungeon' && shown.length === 0 && dungeonUndiscovered.length === 0 ? (
+            <div style={{ padding: 40, textAlign: 'center', color: T.textFaint, fontSize: 14, fontStyle: 'italic' }}>
+              No dungeon enemies recorded yet — descend into the Dungeon of Echoes.
+            </div>
+          ) : tab !== 'dungeon' && shown.length === 0 ? (
             <div
               style={{
                 padding: 40,
@@ -237,6 +250,50 @@ export function BestiaryScreen({ player, onClose }: BestiaryScreenProps) {
                 </div>
               );
             })
+          )}
+          {/* Locked dungeon entries — shown only on dungeon tab */}
+          {tab === 'dungeon' && dungeonUndiscovered.length > 0 && (
+            <>
+              {dungeonUndiscovered.map(([id, e]) => (
+                <div
+                  key={id}
+                  style={{
+                    padding: '12px 16px',
+                    borderBottom: `1px solid ${T.border}`,
+                    opacity: 0.45,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 22, lineHeight: '1', filter: 'grayscale(1)' }}>
+                      {e.icon}
+                    </span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ ...tf, color: T.textMuted, fontSize: 13 }}>???</span>
+                        <span
+                          style={{
+                            fontSize: 9,
+                            ...tf,
+                            color: T.textFaint,
+                            border: `1px solid ${T.border}`,
+                            padding: '1px 5px',
+                            letterSpacing: 1,
+                          }}
+                        >
+                          {e.biome.toUpperCase()}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11, color: T.textFaint, marginTop: 2, fontStyle: 'italic' }}>
+                        Not yet encountered
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ ...tf, color: T.textFaint, fontSize: 18 }}>🔒</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
           )}
         </div>
       </div>
