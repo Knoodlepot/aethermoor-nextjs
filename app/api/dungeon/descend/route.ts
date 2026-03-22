@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const { playerId } = authCtx;
     const body = await request.json();
-    const { floor, heroName, heroClass, heroLevel, ngPlus, worldSeed, worldName } = body;
+    const { floor, heroName, heroClass, heroLevel, ngPlus } = body;
     const countryCode = request.headers.get('x-vercel-ip-country') || null;
 
     if (!floor || floor < 1) {
@@ -64,19 +64,17 @@ export async function POST(request: NextRequest) {
     // Update leaderboard if new personal record
     if (floor > prevDeepest && heroName && heroClass) {
       await query(
-        `INSERT INTO leaderboard_entries (player_id, hero_name, hero_class, hero_level, deepest_floor, ng_plus, world_seed, world_name, country_code, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+        `INSERT INTO leaderboard_entries (player_id, hero_name, hero_class, hero_level, deepest_floor, ng_plus, country_code, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
          ON CONFLICT (player_id) DO UPDATE SET
            hero_name = $2,
            hero_class = $3,
            hero_level = $4,
            deepest_floor = GREATEST(leaderboard_entries.deepest_floor, $5),
            ng_plus = $6,
-           world_seed = $7,
-           world_name = $8,
-           country_code = $9,
+           country_code = $7,
            updated_at = NOW()`,
-        [playerId, heroName, heroClass, heroLevel || 1, floor, ngPlus || 0, worldSeed || null, worldName || null, countryCode]
+        [playerId, heroName, heroClass, heroLevel || 1, floor, ngPlus || 0, countryCode]
       );
     }
 
