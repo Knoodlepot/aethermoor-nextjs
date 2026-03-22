@@ -44,11 +44,27 @@ const ACT_HINTS = [
 ];
 
 interface LeaderboardEntry {
-  name: string;
-  class: string;
-  floor: number;
-  score?: number;
+  player_id: string;
+  hero_name: string;
+  hero_class: string;
+  hero_level: number;
+  deepest_floor: number;
+  ng_plus: number;
+  updated_at: string;
 }
+
+function floorBiome(floor: number): string {
+  if (floor <= 0)  return '—';
+  if (floor <= 5)  return 'Shallow Halls';
+  if (floor <= 10) return 'The Ossuary';
+  if (floor <= 16) return 'Flooded Tunnels';
+  if (floor <= 22) return 'Fungal Depths';
+  if (floor <= 28) return 'The Burning Dark';
+  if (floor <= 35) return 'Frost Crypts';
+  return 'The Abyss';
+}
+
+const RANK_MEDAL = ['🥇', '🥈', '🥉'];
 
 interface QuestLogScreenProps {
   player: Player;
@@ -465,18 +481,46 @@ export function QuestLogScreen({
               {lbLoading ? (
                 <div style={{ color: T.textFaint, fontSize: 12, fontStyle: 'italic' }}>Loading...</div>
               ) : leaderboard.length === 0 ? (
-                <div style={{ color: T.textFaint, fontSize: 12, fontStyle: 'italic' }}>No leaderboard data yet.</div>
+                <div style={{ color: T.textFaint, fontSize: 12, fontStyle: 'italic' }}>No records yet — be the first to descend.</div>
               ) : (
-                leaderboard.map((entry, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: `1px solid ${T.border}`, background: i === 0 ? '#1a1505' : 'transparent' }}>
-                    <span style={{ ...tf, color: i < 3 ? T.gold : T.textFaint, fontSize: 13, width: 28 }}>{i + 1}.</span>
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: 12, color: T.text }}>{entry.name}</span>
-                      <span style={{ fontSize: 10, color: T.textFaint, marginLeft: 8 }}>{entry.class}</span>
+                leaderboard.map((entry, i) => {
+                  const isMe = entry.hero_name === player.name && entry.hero_class === player.class;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '10px 12px',
+                        borderBottom: `1px solid ${T.border}`,
+                        background: isMe ? T.selectedBg : i === 0 ? T.panelAlt : 'transparent',
+                        borderLeft: isMe ? `3px solid ${T.accent}` : '3px solid transparent',
+                      }}
+                    >
+                      <span style={{ ...tf, fontSize: i < 3 ? 18 : 13, width: 32, textAlign: 'center', color: T.textFaint }}>
+                        {i < 3 ? RANK_MEDAL[i] : `${i + 1}.`}
+                      </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: 13, color: isMe ? T.gold : T.text, ...tf }}>{entry.hero_name}</span>
+                          <span style={{ fontSize: 10, color: T.textFaint }}>{entry.hero_class} Lv.{entry.hero_level}</span>
+                          {entry.ng_plus > 0 && (
+                            <span style={{ fontSize: 9, color: T.accent, border: `1px solid ${T.accent}44`, padding: '1px 4px', ...tf, letterSpacing: 1 }}>
+                              NG+{entry.ng_plus}
+                            </span>
+                          )}
+                          {isMe && (
+                            <span style={{ fontSize: 9, color: T.gold, border: `1px solid ${T.gold}44`, padding: '1px 4px', ...tf, letterSpacing: 1 }}>YOU</span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 10, color: T.textFaint, marginTop: 2 }}>{floorBiome(entry.deepest_floor)}</div>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ ...tf, color: T.gold, fontSize: 15 }}>Floor {entry.deepest_floor}</div>
+                      </div>
                     </div>
-                    <span style={{ ...tf, color: T.gold, fontSize: 14 }}>Floor {entry.floor}</span>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}
