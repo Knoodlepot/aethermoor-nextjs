@@ -489,6 +489,9 @@ export function QuestLogScreen({
                 </div>
               </div>
               <div style={{ ...tf, color: T.accent, fontSize: 10, letterSpacing: 2, marginBottom: 8 }}>LEADERBOARD</div>
+              <div style={{ fontSize: 10, color: T.textFaint, marginBottom: 12, padding: '6px 10px', border: `1px solid ${T.border}`, lineHeight: 1.5 }}>
+                When you enter the dungeon, your country (derived from your IP address — never your precise location) is recorded alongside your deepest floor and shown as a flag on this leaderboard.
+              </div>
               {lbLoading ? (
                 <div style={{ color: T.textFaint, fontSize: 12, fontStyle: 'italic' }}>Loading...</div>
               ) : leaderboard.length === 0 ? (
