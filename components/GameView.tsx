@@ -1150,7 +1150,7 @@ function GameContent() {
               </button>
               {showAudioPanel && (
                 <div style={{
-                  position: 'absolute', top: '110%', right: 0, zIndex: 200,
+                  position: 'fixed', top: 44, right: 8, zIndex: 1000,
                   background: T.panel, border: `1px solid ${T.border}`,
                   borderRadius: 8, padding: '12px 16px', minWidth: 200,
                   boxShadow: '0 4px 20px #0008',
