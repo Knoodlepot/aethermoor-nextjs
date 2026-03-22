@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     const result = await query(
-      `SELECT player_id, hero_name, hero_class, hero_level, deepest_floor, ng_plus, world_seed, world_name, updated_at
+      `SELECT player_id, hero_name, hero_class, hero_level, deepest_floor, ng_plus, world_seed, world_name, country_code, updated_at
        FROM leaderboard_entries
        ORDER BY deepest_floor DESC, ng_plus DESC, hero_level DESC
        LIMIT 100`,

@@ -52,7 +52,15 @@ interface LeaderboardEntry {
   ng_plus: number;
   world_seed: string | null;
   world_name: string | null;
+  country_code: string | null;
   updated_at: string;
+}
+
+function countryFlag(code: string | null): string {
+  if (!code || code.length !== 2) return '';
+  return code.toUpperCase().split('').map(
+    c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)
+  ).join('');
 }
 
 function floorBiome(floor: number): string {
@@ -563,7 +571,10 @@ export function QuestLogScreen({
                           </span>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                              <span style={{ fontSize: 13, color: isMe ? T.gold : T.text, ...tf }}>{entry.hero_name}</span>
+                              {countryFlag(entry.country_code) && (
+                            <span style={{ fontSize: 14 }} title={entry.country_code || ''}>{countryFlag(entry.country_code)}</span>
+                          )}
+                          <span style={{ fontSize: 13, color: isMe ? T.gold : T.text, ...tf }}>{entry.hero_name}</span>
                               <span style={{ fontSize: 10, color: T.textFaint }}>{entry.hero_class} Lv.{entry.hero_level}</span>
                               {entry.ng_plus > 0 && (
                                 <span style={{ fontSize: 9, color: T.accent, border: `1px solid ${T.accent}44`, padding: '1px 4px', ...tf, letterSpacing: 1 }}>
