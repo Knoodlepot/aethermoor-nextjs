@@ -1,6 +1,17 @@
 ## [Unreleased]
 
 ### Added
+- **Armour now reduces damage (DEF stat)**: Equipped armour, helms, boots, and shields now grant a DEF value that subtracts from every incoming physical hit. A basic padded jacket gives DEF 1; plate armour gives DEF 7; a tower shield adds DEF 5. Your current DEF is shown in the Attributes tab of the Character screen. The narrator applies this automatically — heavier armour means fewer hit points lost.
+- **Expanded crafting recipes**: Smithing, alchemy, cooking, and enchanting now have a much larger recipe pool. Forge iron and plate helms, greaves, a steel shield, war axe, and silver sword at a smithy. Brew status cures (eyewash, purification charm, warming draught, courage draught) at an alchemist's bench. Cook hearty stew and spiced provisions at a campfire. Enchant an arcane staff or a ring of warding at an enchanter's table.
+- **More equippable gear**: Iron helms, leather hoods, plate helms, iron greaves, leather boots, plate greaves, steel shields, enchanted chainmail, war plate, padded jackets, war axes, silver swords, iron daggers, staves of arcane power, enchanted daggers, and rings of warding can all be equipped to their appropriate slots. Previously some of these items existed but couldn't be equipped.
+
+### Added
+- **Companions**: You can now recruit a travelling companion through natural roleplay — meet a sellsword at a tavern, rescue a stranded scholar, earn the trust of a wanderer. Companions travel with you, comment on events, and apply a passive ability that affects combat and exploration. You can only have one companion at a time. View their stats, HP, relationship, and passive ability at any time via the Companion button in the toolbar. Dismiss them whenever you choose, or lose them if the story takes a dark turn.
+
+### Added
+- **Achievements**: 30 achievements to discover across five categories — Combat, Dungeon, Progression, World, and Legacy. Eight of them are hidden: they show as "???" until you unlock them. Visible locked achievements show a hint so you know what you're working toward. Unlock one and a toast notification slides in from the corner. View your full collection any time via the "Achievements" button in the toolbar, which shows your current unlock count.
+
+### Added
 - **The Dungeon of Echoes now has distinct biomes by depth**: Every floor range feels different. Floors 1–5 are the Shallow Halls — crumbling stonework, skeleton sentinels, and old bandit camps. Floors 6–10 are the Ossuary — bone-lined corridors, the restless dead, cold dry air. Floors 11–16 are the Flooded Tunnels — black water, drowned things, and pale bioluminescent growths. Floors 17–22 are the Fungal Depths — towering mushrooms, spore husks, sweet-rotten air. Floors 23–28 are the Burning Dark — basalt walls cracked with magma veins, ember drakes, punishing heat. Floors 29–35 are the Frost Crypts — unnatural cold below the magma, frozen figures mid-stride. Floor 36 and beyond is the Abyss — geometry stops working, shadows move against the light, and something old has been here longer than the world has had a name for it. Named floors (13, 26, 33) carry a unique mark — something scratched into the wall by those who came before.
 
 ### Added

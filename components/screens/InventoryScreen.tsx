@@ -5,7 +5,7 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 import type { Player } from '@/lib/types';
 import { EQUIP_SLOTS, ITEM_INFO, ITEM_STAT_BONUSES, ABILITY_INFO } from '@/lib/constants';
 import * as helpers from '@/lib/helpers';
-import { HP_PER_LEVEL, getProfessionLevel, getProfessionXp } from '@/lib/helpers';
+import { HP_PER_LEVEL, getProfessionLevel, getProfessionXp, getEffectiveDef } from '@/lib/helpers';
 
 // ── Helpers not yet in helpers.ts — accessed via module cast ──
 const getItemInfo = (helpers as any).getItemInfo as ((name: string) => any) | undefined;
@@ -964,6 +964,38 @@ export function InventoryScreen({ player, onEquip, onUnequip, onUse, onDrop, onU
                   </div>
                 );
               })}
+
+              {/* DEF card */}
+              {(() => {
+                const def = getEffectiveDef(player.equipped ?? {});
+                return (
+                  <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: '12px 14px', marginBottom: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                      <span style={{ fontSize: 22 }}>🛡️</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                          <span style={{ ...tf, color: T.gold, fontSize: 14, letterSpacing: 1 }}>DEF</span>
+                          <span style={{ color: T.text, fontSize: 13 }}>Defence</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: T.textMuted, marginTop: 1 }}>Damage reduction from equipped armour.</div>
+                      </div>
+                      <div style={{ ...tf, color: def > 0 ? T.gold : T.textMuted, fontSize: 22, minWidth: 32, textAlign: 'center' as const }}>
+                        {def}
+                      </div>
+                    </div>
+                    <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 8 }}>
+                      <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 3, display: 'flex', gap: 6 }}>
+                        <span style={{ color: T.accent, flexShrink: 0 }}>›</span>
+                        <span>Each point subtracts 1 from incoming physical hits (minimum 1 damage)</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: T.textMuted, display: 'flex', gap: 6 }}>
+                        <span style={{ color: T.accent, flexShrink: 0 }}>›</span>
+                        <span>{def === 0 ? 'Equip armour, helms, boots, or shields to gain DEF' : `Current gear grants ${def} DEF`}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Level-up rewards */}
               <div style={{ background: T.panelAlt, border: `1px solid ${T.border}`, padding: '12px 14px', marginTop: 6 }}>

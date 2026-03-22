@@ -33,7 +33,7 @@ export function clamp(val: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, val));
 }
 import type { Player, NPC, WorldSeed } from './types';
-import { ITEM_INFO, CONSUMABLE_EFFECTS, DISGUISED_ITEMS, ITEM_STAT_BONUSES, EQUIP_SLOTS, LOCATION_TIERS, TIERED_GEAR } from './constants';
+import { ITEM_INFO, CONSUMABLE_EFFECTS, DISGUISED_ITEMS, ITEM_STAT_BONUSES, EQUIP_SLOTS, LOCATION_TIERS, TIERED_GEAR, ITEM_DEF_VALUES } from './constants';
 
 /**
  * Advance game time by hours, handling day wraparound
@@ -365,6 +365,8 @@ export function getItemInfo(name: string): { icon: string; type: string; desc: s
 const ITEM_SLOT_MAP: Record<string, string> = {
   // Weapons
   dagger: 'weapon', sword: 'weapon', 'iron sword': 'weapon', 'steel sword': 'weapon',
+  'iron dagger': 'weapon', 'war axe': 'weapon', 'silver sword': 'weapon',
+  'enchanted dagger': 'weapon', 'staff of arcane power': 'weapon',
   'arcane wand': 'weapon', staff: 'weapon', 'blade of aethermoor': 'weapon',
   'staff of ages': 'weapon', 'war hammer': 'weapon', 'hunting bow': 'weapon',
   'enchanted blade': 'weapon', 'battle axe': 'weapon', 'masterwork sword': 'weapon',
@@ -375,18 +377,22 @@ const ITEM_SLOT_MAP: Record<string, string> = {
   shield: 'offhand', 'iron shield': 'offhand', 'steel shield': 'offhand',
   'tower shield': 'offhand', 'obsidian shield': 'offhand', "champion's pauldrons": 'offhand',
   // Head
+  'iron helm': 'head', 'leather hood': 'head', 'plate helm': 'head',
   'war helm': 'head', 'shadow hood': 'head', 'antler crown': 'head', 'broken crown': 'head',
   // Body
   'leather armour': 'body', chainmail: 'body', 'plate armour': 'body',
+  'enchanted chainmail': 'body', 'war plate': 'body', 'padded jacket': 'body',
   'dragon scale armour': 'body', 'mage robes': 'body', 'voidsteel armour': 'body',
   'thornwood leathers': 'body', 'ember robes': 'body', 'vestments of light': 'body',
   'royal armour': 'body', 'robes of the academy': 'body', 'wolf coat': 'body',
   'ragged cloak': 'body', 'compact coat': 'body', "warlord's plate": 'body',
   'shadowmere cloak': 'body',
   // Feet
+  'leather boots': 'feet', 'iron greaves': 'feet', 'plate greaves': 'feet',
   'shadow boots': 'feet', 'root boots': 'feet', 'gold-threaded boots': 'feet',
   // Accessories
-  'amulet of warding': 'accessory', 'ring of strength': 'accessory',
+  'amulet of warding': 'accessory', 'ring of warding': 'accessory',
+  'ring of strength': 'accessory',
   'ring of agility': 'accessory', 'ring of wisdom': 'accessory', 'ring of power': 'accessory',
   'silver amulet': 'accessory', "scholar's ring": 'accessory', "merchant's ring": 'accessory',
   "warden's badge": 'accessory', "navigator's compass": 'accessory',
@@ -436,6 +442,17 @@ export function getConsumableEffect(name: string): { hp?: number; hpFull?: boole
   if (!name) return undefined;
   const key = name.toLowerCase();
   return (CONSUMABLE_EFFECTS as Record<string, any>)[key];
+}
+
+/**
+ * Compute total DEF from all equipped items.
+ * DEF reduces each incoming physical hit by this amount (minimum 1 damage).
+ */
+export function getEffectiveDef(equipped: Record<string, string | null>): number {
+  return Object.values(equipped).reduce((total, item) => {
+    if (!item) return total;
+    return total + ((ITEM_DEF_VALUES as Record<string, number>)[item.toLowerCase()] ?? 0);
+  }, 0);
 }
 
 // ============================================

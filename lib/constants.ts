@@ -375,7 +375,68 @@ export const ITEM_INFO = {
     type: "Food",
     desc: "A dense wild meal from the best the land offers. Fully restores HP.",
   },
+  // ── New armour ──
+  "iron helm":           { icon: "⛑️",  type: "Armour",     desc: "A solid iron helm. Reduces blows to the head." },
+  "leather hood":        { icon: "🪖",  type: "Armour",     desc: "A supple leather hood. Light and quiet, offering modest head protection." },
+  "plate helm":          { icon: "🪖",  type: "Armour",     desc: "A full visor helm of beaten plate. Heavy but formidable." },
+  "iron greaves":        { icon: "🦵",  type: "Armour",     desc: "Iron leg guards strapped over cloth padding." },
+  "leather boots":       { icon: "👢",  type: "Armour",     desc: "Sturdy leather boots. Light protection for the feet." },
+  "plate greaves":       { icon: "🦵",  type: "Armour",     desc: "Heavy plate greaves. Maximum leg protection." },
+  "steel shield":        { icon: "🛡️",  type: "Armour",     desc: "A well-forged steel shield. Tougher than iron." },
+  "enchanted chainmail": { icon: "✨",  type: "Armour",     desc: "Chainmail reinforced with arcane binding. Lighter and faintly magic-resistant." },
+  "war plate":           { icon: "🛡️",  type: "Armour",     desc: "Battle-hardened plate armour. The heaviest protection available." },
+  "padded jacket":       { icon: "🥋",  type: "Armour",     desc: "A quilted jacket stuffed with wool and leather. Basic protection for travellers." },
+  // ── New weapons ──
+  "war axe":             { icon: "🪓",  type: "Weapon",     desc: "A single-headed war axe. Brutal and effective against armoured targets." },
+  "silver sword":        { icon: "⚔️",  type: "Weapon",     desc: "A silver-alloyed sword. Particularly effective against undead and lycanthropes." },
+  "iron dagger":         { icon: "🗡️",  type: "Weapon",     desc: "A plain iron dagger. Reliable if unexceptional." },
+  "staff of arcane power": { icon: "🪄", type: "Weapon",    desc: "A staff wound with arcane wire. Amplifies spell damage significantly." },
+  "enchanted dagger":    { icon: "✨",  type: "Weapon",     desc: "A dagger inscribed with binding runes. Cuts through magical protections." },
+  // ── New accessories ──
+  "ring of warding":     { icon: "💍",  type: "Magic",      desc: "A ring etched with warding runes. Provides a faint but persistent magical defence." },
+  // ── New foods ──
+  "hearty stew":         { icon: "🍲",  type: "Food",       desc: "A thick stew packed with meat and root vegetables. Substantial restoration." },
+  "spiced provisions":   { icon: "🎒",  type: "Food",       desc: "Cured meat with medicinal herbs. Restores HP and clears poison." },
+  // ── Status cure consumables ──
+  bandage:               { icon: "🩹",  type: "Consumable", desc: "A strip of clean linen. Stops bleeding immediately." },
+  "courage draught":     { icon: "🟡",  type: "Consumable", desc: "A bitter amber draught. Drives back fear and steadies the will." },
+  "warming draught":     { icon: "🔴",  type: "Consumable", desc: "A fiery drink that floods the body with warmth, countering magical cold." },
+  eyewash:               { icon: "💧",  type: "Consumable", desc: "A clear herbal wash that clears blinding agents from the eyes." },
+  "stamina draught":     { icon: "🟤",  type: "Consumable", desc: "A rough tincture that cuts through exhaustion and restores some HP." },
+  "tonic of might":      { icon: "💪",  type: "Consumable", desc: "A sour tonic that reverses weakening effects and strengthens the muscles." },
+  "purification charm":  { icon: "🔮",  type: "Consumable", desc: "Compressed moonpetal and glowcap. Crushed in the palm to dispel curses." },
 } as const;
+
+// ============================================
+// ARMOUR DEF VALUES — damage reduction per equipped item
+// ============================================
+export const ITEM_DEF_VALUES: Record<string, number> = {
+  // Light body
+  'padded jacket': 1,
+  'leather armour': 2,
+  // Medium body
+  'chainmail': 4,
+  'enchanted chainmail': 6,
+  // Heavy body
+  'plate armour': 7,
+  'war plate': 9,
+  // Head
+  'leather hood': 1,
+  'iron helm': 2,
+  'plate helm': 3,
+  // Feet
+  'leather boots': 1,
+  'iron greaves': 2,
+  'plate greaves': 2,
+  // Offhand
+  'shield': 2,
+  'iron shield': 2,
+  'steel shield': 3,
+  'tower shield': 5,
+  // Accessories
+  'amulet of warding': 1,
+  'ring of warding': 1,
+};
 
 // ============================================
 // STATUS EFFECTS — canonical list with display info
@@ -444,6 +505,9 @@ export const CONSUMABLE_EFFECTS: Record<string, ConsumableEffect> = {
   eyewash:                { clearStatus: ['blinded'], msg: "You apply the Eyewash. Your vision clears." },
   "warming draught":      { clearStatus: ['chilled'], msg: "You drink the Warming Draught. Warmth floods your limbs." },
   "tonic of might":       { clearStatus: ['weakened'], str: 1, msg: "You drink the Tonic of Might. Strength returns to your muscles. +1 STR." },
+  "stamina draught":      { hp: 15, clearStatus: ['exhausted'], msg: "You drink the Stamina Draught. Fatigue fades. +15 HP." },
+  "hearty stew":          { hp: 50, msg: "You eat the Hearty Stew. +50 HP." },
+  "spiced provisions":    { hp: 35, clearStatus: ['poisoned'], msg: "You eat the Spiced Provisions. +35 HP. Poison neutralised." },
 };
 
 // ============================================
@@ -1077,6 +1141,29 @@ export const RECIPES: Recipe[] = [
   { id: "scroll_of_lightning", type: "enchanting", name: "Scroll of Lightning", icon: "⚡", ingredients: [{ item: "Iron Ore", qty: 2 }, { item: "Ember Crystal", qty: 1 }, { item: "Moonpetal", qty: 1 }], result: "Scroll of Lightning", resultQty: 1, minCraftLevel: 3, locationTypeRequired: ["city", "capital"], desc: "A crackling scroll of electrical discharge.", xpReward: 50 },
   { id: "ring_of_agility", type: "enchanting", name: "Ring of Agility", icon: "💍", ingredients: [{ item: "Iron Ore", qty: 2 }, { item: "Moonpetal", qty: 2 }], result: "Ring of Agility", resultQty: 1, minCraftLevel: 3, locationTypeRequired: ["city", "capital"], desc: "A slender ring that quickens the hands — +2 AGI.", xpReward: 50 },
   { id: "amulet_of_warding", type: "enchanting", name: "Amulet of Warding", icon: "📿", ingredients: [{ item: "Iron Ore", qty: 2 }, { item: "Ember Crystal", qty: 2 }, { item: "Moonpetal", qty: 1 }], result: "Amulet of Warding", resultQty: 1, minCraftLevel: 4, locationTypeRequired: ["city", "capital"], desc: "An amulet that bolsters magical resistance.", xpReward: 65 },
+  // ---- ALCHEMY (status cures) ----
+  { id: "bandage_craft", type: "alchemy", name: "Bandage x2", icon: "🩹", ingredients: [{ item: "Leather Scraps", qty: 1 }, { item: "Medicinal Herb", qty: 1 }], result: "Bandage", resultQty: 2, minCraftLevel: 1, desc: "Strips of herb-treated linen. Stops bleeding on contact.", xpReward: 12 },
+  { id: "courage_draught", type: "alchemy", name: "Courage Draught", icon: "🟡", ingredients: [{ item: "Nightbloom", qty: 1 }, { item: "Starweed", qty: 1 }], result: "Courage Draught", resultQty: 1, minCraftLevel: 2, desc: "Drives back fear and steadies the will.", xpReward: 25 },
+  { id: "warming_draught", type: "alchemy", name: "Warming Draught x2", icon: "🔴", ingredients: [{ item: "Starweed", qty: 1 }, { item: "Firewood", qty: 1 }], result: "Warming Draught", resultQty: 2, minCraftLevel: 2, desc: "Counters magical cold and chilled status.", xpReward: 25 },
+  { id: "eyewash_craft", type: "alchemy", name: "Eyewash x2", icon: "💧", ingredients: [{ item: "Moonpetal", qty: 2 }], result: "Eyewash", resultQty: 2, minCraftLevel: 1, desc: "Clears blinding agents and magical blindness.", xpReward: 20 },
+  { id: "tonic_of_might", type: "alchemy", name: "Tonic of Might", icon: "💪", ingredients: [{ item: "Bitter Root", qty: 1 }, { item: "Ember Crystal", qty: 1 }], result: "Tonic of Might", resultQty: 1, minCraftLevel: 2, desc: "Reverses weakening effects and boosts STR.", xpReward: 30 },
+  { id: "stamina_draught", type: "alchemy", name: "Stamina Draught x2", icon: "🟤", ingredients: [{ item: "Starweed", qty: 1 }, { item: "Glowcap Mushroom", qty: 1 }], result: "Stamina Draught", resultQty: 2, minCraftLevel: 1, desc: "Cuts through exhaustion and restores some HP.", xpReward: 18 },
+  { id: "purification_charm", type: "alchemy", name: "Purification Charm", icon: "🔮", ingredients: [{ item: "Moonpetal", qty: 1 }, { item: "Glowcap Mushroom", qty: 1 }], result: "Purification Charm", resultQty: 1, minCraftLevel: 3, desc: "Dispels curses and dark magic.", xpReward: 40 },
+  // ---- COOKING (new) ----
+  { id: "hearty_stew", type: "cooking", name: "Hearty Stew", icon: "🍲", ingredients: [{ item: "Rations", qty: 2 }, { item: "Dried Meat", qty: 1 }], result: "Hearty Stew", resultQty: 1, minCraftLevel: 2, desc: "A thick meaty stew. Substantial restoration.", xpReward: 35 },
+  { id: "spiced_provisions", type: "cooking", name: "Spiced Provisions x2", icon: "🎒", ingredients: [{ item: "Rations", qty: 1 }, { item: "Dried Meat", qty: 1 }, { item: "Medicinal Herb", qty: 1 }], result: "Spiced Provisions", resultQty: 2, minCraftLevel: 2, desc: "Cured travel food with herbs. Heals and clears poison.", xpReward: 35 },
+  // ---- SMITHING (new armour & weapons) ----
+  { id: "iron_helm", type: "smithing", name: "Iron Helm", icon: "⛑️", ingredients: [{ item: "Iron Ore", qty: 2 }, { item: "Leather Scraps", qty: 1 }], result: "Iron Helm", resultQty: 1, minCraftLevel: 2, locationTypeRequired: ["town", "city", "capital"], desc: "A solid iron helm that reduces blows to the head. DEF +2.", xpReward: 40 },
+  { id: "iron_greaves", type: "smithing", name: "Iron Greaves", icon: "🦵", ingredients: [{ item: "Iron Ore", qty: 2 }, { item: "Leather Scraps", qty: 1 }], result: "Iron Greaves", resultQty: 1, minCraftLevel: 2, locationTypeRequired: ["town", "city", "capital"], desc: "Iron leg guards for the feet slot. DEF +2.", xpReward: 40 },
+  { id: "leather_boots", type: "smithing", name: "Leather Boots", icon: "👢", ingredients: [{ item: "Leather Scraps", qty: 2 }], result: "Leather Boots", resultQty: 1, minCraftLevel: 1, locationTypeRequired: ["town", "city", "capital"], desc: "Sturdy boots that offer light foot protection. DEF +1.", xpReward: 20 },
+  { id: "steel_shield", type: "smithing", name: "Steel Shield", icon: "🛡️", ingredients: [{ item: "Iron Ore", qty: 3 }, { item: "Shadow Ore", qty: 1 }, { item: "Timber", qty: 1 }], result: "Steel Shield", resultQty: 1, minCraftLevel: 4, locationTypeRequired: ["town", "city", "capital"], desc: "A well-forged steel shield. Tougher than iron. DEF +3.", xpReward: 65 },
+  { id: "plate_armour", type: "smithing", name: "Plate Armour", icon: "🛡️", ingredients: [{ item: "Iron Ore", qty: 6 }, { item: "Shadow Ore", qty: 2 }], result: "Plate Armour", resultQty: 1, minCraftLevel: 5, locationTypeRequired: ["city", "capital"], desc: "Full plate — the peak of a blacksmith's craft. DEF +7.", xpReward: 90 },
+  { id: "war_axe", type: "smithing", name: "War Axe", icon: "🪓", ingredients: [{ item: "Iron Ore", qty: 4 }, { item: "Timber", qty: 1 }], result: "War Axe", resultQty: 1, minCraftLevel: 3, locationTypeRequired: ["town", "city", "capital"], desc: "A brutal single-headed war axe.", xpReward: 55 },
+  { id: "silver_sword", type: "smithing", name: "Silver Sword", icon: "⚔️", ingredients: [{ item: "Iron Ore", qty: 4 }, { item: "Silver Ore", qty: 2 }], result: "Silver Sword", resultQty: 1, minCraftLevel: 4, locationTypeRequired: ["town", "city", "capital"], desc: "Silver-alloyed blade. Effective against undead and lycanthropes.", xpReward: 70 },
+  // ---- ENCHANTING (new) ----
+  { id: "ring_of_warding", type: "enchanting", name: "Ring of Warding", icon: "💍", ingredients: [{ item: "Iron Ore", qty: 2 }, { item: "Ember Crystal", qty: 1 }, { item: "Moonpetal", qty: 1 }], result: "Ring of Warding", resultQty: 1, minCraftLevel: 3, locationTypeRequired: ["city", "capital"], desc: "A ring that provides persistent magical defence. DEF +1.", xpReward: 55 },
+  { id: "enchanted_chainmail", type: "enchanting", name: "Enchanted Chainmail", icon: "✨", ingredients: [{ item: "Chainmail", qty: 1 }, { item: "Ember Crystal", qty: 1 }, { item: "Moonpetal", qty: 2 }], result: "Enchanted Chainmail", resultQty: 1, minCraftLevel: 5, locationTypeRequired: ["city", "capital"], desc: "Chainmail reinforced with arcane binding. Lighter and magic-resistant. DEF +6.", xpReward: 80 },
+  { id: "enchanted_dagger", type: "enchanting", name: "Enchanted Dagger", icon: "✨", ingredients: [{ item: "Iron Dagger", qty: 1 }, { item: "Ember Crystal", qty: 2 }], result: "Enchanted Dagger", resultQty: 1, minCraftLevel: 4, locationTypeRequired: ["city", "capital"], desc: "A dagger with binding runes — cuts through magical protections.", xpReward: 60 },
 ];
 
 // ============================================

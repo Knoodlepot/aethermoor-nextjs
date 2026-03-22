@@ -7,7 +7,7 @@ import * as db from '@/lib/db';
 import { applyNarrationState } from '@/lib/server/narrationState';
 import { generateNamePool } from '@/lib/nameGenerator';
 import { isAccountOnModerationHold } from '@/lib/moderation';
-import { DUNGEON_EXCLUSIVE_ENEMIES } from '@/lib/constants';
+import { DUNGEON_EXCLUSIVE_ENEMIES, ITEM_DEF_VALUES } from '@/lib/constants';
 
 // Strip control characters and truncate
 function sanitiseStr(val: unknown, maxLen: number): string {
@@ -486,7 +486,7 @@ Variants add ×1.4 HP and dmg for Veteran/named prefix; ×2 for Boss tier. Annou
 }
 
 /** Compute mechanical stat rules injected into the narrator prompt as hard numbers. */
-function buildStatRules(str: number, agi: number, int_: number, wil: number): string {
+function buildStatRules(str: number, agi: number, int_: number, wil: number, def: number): string {
   const meleeDmg     = 5 + Math.floor(str / 2);
   const heavyBonus   = Math.floor(str / 3);
   const shoveStatus  = str >= 10 ? 'guaranteed' : str >= 6 ? 'reliable' : 'unlikely';
@@ -505,12 +505,14 @@ function buildStatRules(str: number, agi: number, int_: number, wil: number): st
   const fearStatus   = wil >= 8 ? 'immune to all fear (fearful effect cannot be applied)' : wil >= 5 ? 'resists basic fear (50% chance to resist fearful effect)' : 'susceptible to fear';
   const poisonNote   = wil >= 9 ? ' | Near-immune to poison/curses' : wil >= 6 ? ' | Partial poison/curse resist' : '';
 
+  const defNote = def > 0 ? `DEF ${def}: subtract ${def} from each incoming physical hit (minimum 1 damage)\n` : '';
+
   return `COMBAT MECHANICS — apply these as firm rules in all combat and skill checks:
 STR ${str}: melee base damage=${meleeDmg} | heavy weapon bonus=+${heavyBonus} | shove/grapple=${shoveStatus}
 AGI ${agi}: dodge=${dodgePct}% | backstab damage=${backstabDmg} | stealth=${stealthStatus} | goes first if AGI > enemy AGI
 INT ${int_}: spell damage=~${spellDmg} | potions/scrolls=${potionEffect} | lore/puzzles=${loreStatus}${autoId}
 WIL ${wil}: divine strike/heal=${divineDmg} | magic resistance=${magicResist}% dmg reduction | fear=${fearStatus}${poisonNote}
-Do NOT invent different numbers — use these exact values when describing hits, dodges, spells, and checks.`;
+${defNote}Do NOT invent different numbers — use these exact values when describing hits, dodges, spells, and checks.`;
 }
 
 /**
@@ -557,6 +559,13 @@ function buildNarratorSystem(p: any, w: any): string {
   const equipped = p.equipped && typeof p.equipped === 'object'
     ? Object.entries(p.equipped).filter(([, v]) => v)
         .map(([slot, n]) => `${sanitiseStr(slot, 20)}:${sanitiseStr(n as any, 40)}`).join(', ') || 'none' : 'none';
+
+  const effectiveDef = p.equipped && typeof p.equipped === 'object'
+    ? Object.values(p.equipped).reduce((total: number, item: any) => {
+        if (!item) return total;
+        return total + ((ITEM_DEF_VALUES as Record<string, number>)[String(item).toLowerCase()] ?? 0);
+      }, 0)
+    : 0;
 
   const knownNpcs = Array.isArray(p.knownNpcs)
     ? p.knownNpcs.filter((n: any) => {
@@ -812,7 +821,7 @@ ${travelMatrixStr ? travelMatrixStr : ''}
 ${worldEventsStr ? `WORLD EVENTS: ${worldEventsStr}\n` : ''}
 XEPHITA ROLL: ${Math.floor(Math.random() * 10) + 1}
 
-${buildStatRules(str, agi, int_, wil)}
+${buildStatRules(str, agi, int_, wil, effectiveDef)}
 
 ${buildEnemyScalingBlock(level)}
 
