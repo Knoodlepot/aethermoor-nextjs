@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import type { Enemy } from '../lib/types';
 import type { EventLogEntry } from '../lib/tagParsers';
+import type { AchievementDef } from '../lib/achievements';
 
 export type ScreenType = 'loading' | 'title' | 'game' | 'out_of_tokens' | 'death';
 
@@ -26,6 +27,12 @@ export interface UIContext {
   showNGPlusScreen: boolean;
   showDungeonWarning: boolean;
   showTokenShop: boolean;
+  showAchievements: boolean;
+
+  // Achievement toasts
+  achievementToasts: AchievementDef[];
+  pushAchievementToast: (def: AchievementDef) => void;
+  shiftAchievementToast: () => void;
 
   // Token warning
   lowTokenWarning: boolean;
@@ -122,6 +129,18 @@ export function useUI(): UIContext {
   const [showNGPlusScreen, setShowNGPlusScreen] = useState(false);
   const [showDungeonWarning, setShowDungeonWarning] = useState(false);
   const [showTokenShop, setShowTokenShop] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+
+  // Achievement toasts
+  const [achievementToasts, setAchievementToasts] = useState<AchievementDef[]>([]);
+
+  const pushAchievementToast = useCallback((def: AchievementDef) => {
+    setAchievementToasts((prev) => [...prev, def]);
+  }, []);
+
+  const shiftAchievementToast = useCallback(() => {
+    setAchievementToasts((prev) => prev.slice(1));
+  }, []);
 
   // Token warning
   const [lowTokenWarning, setLowTokenWarning] = useState(false);
@@ -205,6 +224,7 @@ export function useUI(): UIContext {
       ngPlus: setShowNGPlusScreen,
       dungeonWarning: setShowDungeonWarning,
       tokenShop: setShowTokenShop,
+      achievements: setShowAchievements,
       map: setMapOpen,
     };
 
@@ -232,6 +252,7 @@ export function useUI(): UIContext {
       ngPlus: setShowNGPlusScreen,
       dungeonWarning: setShowDungeonWarning,
       tokenShop: setShowTokenShop,
+      achievements: setShowAchievements,
       map: setMapOpen,
     };
 
@@ -259,6 +280,7 @@ export function useUI(): UIContext {
       ngPlus: [showNGPlusScreen, setShowNGPlusScreen],
       dungeonWarning: [showDungeonWarning, setShowDungeonWarning],
       tokenShop: [showTokenShop, setShowTokenShop],
+      achievements: [showAchievements, setShowAchievements],
       map: [mapOpen, setMapOpen],
     };
 
@@ -282,6 +304,7 @@ export function useUI(): UIContext {
     showDungeonWarning,
     mapOpen,
     showTokenShop,
+    showAchievements,
   ]);
 
   /**
@@ -335,6 +358,10 @@ export function useUI(): UIContext {
     showNGPlusScreen,
     showDungeonWarning,
     showTokenShop,
+    showAchievements,
+    achievementToasts,
+    pushAchievementToast,
+    shiftAchievementToast,
     lowTokenWarning,
     setLowTokenWarning,
     openModal,

@@ -8,6 +8,7 @@ import type { UseStorageReturn } from './useStorage';
 import { FACTION_JOIN_OFFERS, PROTECTED_ITEMS, RECIPES, CONSUMABLE_EFFECTS } from '../lib/constants';
 import { getItemSlotEx, formatGameTime, advanceGameTime, xpToLevel, HP_PER_LEVEL, LEVEL_CAP } from '../lib/helpers';
 import { extractBestiaryTag } from '../lib/tagParsers';
+import { checkAchievements, NON_HIDDEN_ACHIEVEMENT_IDS, ACHIEVEMENTS } from '../lib/achievements';
 
 export interface GameLoopContext {
   executeCommand: (
@@ -610,7 +611,33 @@ export function useGameLoop(
           return { success: true };
         }
 
-        // 4. Update all game state
+        // 4. Check for newly unlocked achievements
+        {
+          const newIds = checkAchievements(updatedPlayer, updatedSeed as any);
+          // Two-pass: check completionist against combined set
+          const alreadyIds = new Set((updatedPlayer.achievements ?? []).map((a: any) => a.id));
+          const combined = new Set([...alreadyIds, ...newIds]);
+          const completionistDone = NON_HIDDEN_ACHIEVEMENT_IDS.every((id) => combined.has(id));
+          if (completionistDone && !combined.has('completionist')) {
+            newIds.push('completionist');
+          }
+
+          if (newIds.length > 0) {
+            const now = updatedPlayer.gameDay ?? 1;
+            const newUnlocks = newIds.map((id) => ({ id, unlockedDay: now }));
+            updatedPlayer = {
+              ...updatedPlayer,
+              achievements: [...(updatedPlayer.achievements ?? []), ...newUnlocks],
+            };
+            // Queue toasts
+            for (const id of newIds) {
+              const def = ACHIEVEMENTS.find((a) => a.id === id);
+              if (def) ui.pushAchievementToast(def);
+            }
+          }
+        }
+
+        // 4b. Update all game state
         gs.setPlayer(updatedPlayer);
         gs.setWorldSeed(updatedSeed);
         gs.setNarrative(cleanNarrative);

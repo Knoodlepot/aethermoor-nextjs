@@ -949,6 +949,7 @@ export function INIT_PLAYER(name: string, cls: string, location: string, worldDa
     skillPoints: 0,
     unlockedSkills: [],
     bestiaryEntries: [],
+    achievements: [],
     mount: null,
   };
 }

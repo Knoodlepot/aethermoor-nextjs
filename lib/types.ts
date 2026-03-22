@@ -59,6 +59,12 @@ export interface Player {
   namedPlaces?: Array<{ name: string; type: string; settlement: string }>;
   narrativeSummary?: string;
   narrativeNudges?: boolean;
+  achievements?: AchievementUnlock[];
+}
+
+export interface AchievementUnlock {
+  id: string;
+  unlockedDay: number;
 }
 
 export interface CombatState {

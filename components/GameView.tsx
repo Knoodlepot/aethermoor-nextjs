@@ -43,6 +43,7 @@ import { PatchNotesScreen } from '@/components/screens/PatchNotesScreen';
 import { OutOfTokensScreen } from '@/components/screens/OutOfTokensScreen';
 import { DeathScreen } from '@/components/screens/DeathScreen';
 import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
+import AchievementScreen from '@/components/screens/AchievementScreen';
 
 // Modals
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
@@ -1049,6 +1050,26 @@ function GameContent() {
                 {playerIdCopied ? '✓ ID Copied' : '🪪 Player ID'}
               </button>
             )}
+            {player && (
+              <button
+                onClick={() => ui.openModal('achievements')}
+                title="View achievements"
+                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, position: 'relative' }}
+              >
+                🏅 Achievements
+                {(player.achievements?.length ?? 0) > 0 && (
+                  <span style={{
+                    position: 'absolute', top: -4, right: -4,
+                    background: T.gold, color: T.bg,
+                    borderRadius: '50%', width: 14, height: 14,
+                    fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 700,
+                  }}>
+                    {player.achievements!.length}
+                  </span>
+                )}
+              </button>
+            )}
             <button
               onClick={() => setShowFeedback(true)}
               title="Send feedback or report a bug"
@@ -1676,6 +1697,26 @@ function GameContent() {
         />
       )}
 
+      {ui.showAchievements && player && (
+        <AchievementScreen
+          player={player}
+          onClose={() => ui.closeModal('achievements')}
+        />
+      )}
+
+      {/* Achievement toast — bottom-right pop-up */}
+      {ui.achievementToasts.length > 0 && (() => {
+        const toast = ui.achievementToasts[0];
+        return (
+          <AchievementToast
+            key={toast.id}
+            icon={toast.icon}
+            title={toast.title}
+            onDone={() => ui.shiftAchievementToast()}
+          />
+        );
+      })()}
+
       {ui.showUserProfile && auth.email && (
         <UserProfileModal
           email={auth.email}
@@ -1785,6 +1826,33 @@ function GameContent() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Achievement Toast ────────────────────────────────────────────────────────
+
+function AchievementToast({ icon, title, onDone }: { icon: string; title: string; onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 3500);
+    return () => clearTimeout(t);
+  }, [onDone]);
+
+  return (
+    <div style={{
+      position: 'fixed', bottom: 80, right: 16, zIndex: 9000,
+      background: '#1a1a2e', border: '1px solid #c9a84c',
+      borderRadius: 8, padding: '10px 16px',
+      display: 'flex', alignItems: 'center', gap: 10,
+      boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
+      animation: 'slideInRight 0.3s ease',
+      maxWidth: 280,
+    }}>
+      <span style={{ fontSize: '1.6rem' }}>{icon}</span>
+      <div>
+        <div style={{ fontSize: '0.65rem', color: '#c9a84c', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>Achievement Unlocked</div>
+        <div style={{ fontSize: '0.85rem', color: '#e8d8b0', fontWeight: 600 }}>{title}</div>
+      </div>
     </div>
   );
 }
