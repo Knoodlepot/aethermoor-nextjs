@@ -628,6 +628,11 @@ function buildNarratorSystem(p: any, w: any): string {
   const bestiaryCount = Array.isArray(p.bestiary) ? p.bestiary.reduce((s: number, b: any) => s + (b.timesKilled || 0), 0) : 0;
   const bestiaryTypes = Array.isArray(p.bestiary) ? p.bestiary.length : 0;
 
+  const legacyTitle = sanitiseStr(p.legacyTitle, 60);
+  const legacyPerks = Array.isArray(p.legacyPerks) && p.legacyPerks.length > 0
+    ? p.legacyPerks.map((pk: any) => sanitiseStr(pk, 50)).join(', ')
+    : null;
+
   const companion = p.companion ?? null;
   const companionStr = companion
     ? `${companion.name} the ${companion.role} (${companion.icon}) — ${companion.relationship} | HP ${companion.hp}/${companion.maxHp} | STR ${companion.str} AGI ${companion.agi} WIL ${companion.wil}\nABILITY: ${companion.ability}${companion.notes ? `\nNOTES: ${companion.notes}` : ''}${companion.statusEffects?.length ? `\nSTATUS: ${companion.statusEffects.join(', ')}` : ''}`
@@ -815,6 +820,8 @@ ${knownPlaces ? `KNOWN PLACES: ${knownPlaces}` : ''}
 CURRENT TIME: ${timeStr}
 ${scheduledEvents ? `UPCOMING EVENTS: ${scheduledEvents}` : ''}
 ${bestiaryCount > 0 ? `KILLS: ${bestiaryCount} total across ${bestiaryTypes} enemy types slain` : ''}
+${legacyTitle ? `LEGACY TITLE: ${legacyTitle} (earned in a previous run — the world has heard of them)` : ''}
+${legacyPerks ? `LEGACY HONOURS: ${legacyPerks}` : ''}
 ${companionStr ? `COMPANION: ${companionStr}` : 'COMPANION: None — player may recruit one companion through roleplay.'}
 ${unlockedSkillDescs.length > 0 ? `UNLOCKED SKILLS: ${unlockedSkillDescs.join('; ')}` : ''}
 ${travelMatrixStr ? travelMatrixStr : ''}

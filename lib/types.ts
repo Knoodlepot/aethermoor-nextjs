@@ -47,6 +47,7 @@ export interface Player {
   wantedLevel: number; // 0-3
   professions: Record<string, ProfessionState>;
   ngPlusCount: number;
+  legacyTitle?: string;
   legacyPerks: string[];
   legacyItems: string[];
   bestiary: BestiaryEntry[];

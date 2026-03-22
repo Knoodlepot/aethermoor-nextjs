@@ -9,8 +9,6 @@ Cross-referenced against changelog and memory. Last updated: 2026-03-20.
 | # | Title | What's done | What's missing |
 |---|-------|-------------|----------------|
 | #4 | 1.3 Dungeon System | Entry, floor descent, cooldown, dungeon button | Biome variety (#14), leaderboard exists in DB but no UI |
-| #5 | 1.4 Combat System | Skill trees, class abilities, status effects via narrator | No mechanical resolution — all combat is pure prose |
-| #7 | 1.6 Quest System | Quest log tabs, faction quests, quest complete tag, pacing gates | Issue note says "Change it a little" — undefined |
 | #8 | 1.7 Inventory & Economy | Shop, buy/sell, crafting, gold, herbs | Issue body says crafting not built — now outdated; worth closing or updating |
 | #9 | 1.8 Accessibility & Presentation | 5 themes (updated from 4), mobile rebuilt, OpenDyslexic redesigned | Issue body describes old state — needs review/update |
 | #23 | Phase 1 — Launch Ready | Map done, safety done, monetisation done | Dungeon biomes, playtesting feedback loop |

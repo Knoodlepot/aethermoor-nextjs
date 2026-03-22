@@ -45,6 +45,7 @@ import { DeathScreen } from '@/components/screens/DeathScreen';
 import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 import AchievementScreen from '@/components/screens/AchievementScreen';
 import CompanionScreen from '@/components/screens/CompanionScreen';
+import EndingScreen from '@/components/screens/EndingScreen';
 
 // Modals
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
@@ -1683,6 +1684,16 @@ function GameContent() {
           player={player}
           onCraft={(recipeId: string) => handleCommand('craft:' + recipeId)}
           onClose={() => ui.closeModal('crafting')}
+        />
+      )}
+
+      {ui.showEnding && player && (
+        <EndingScreen
+          player={player}
+          worldSeed={gameState.worldSeed}
+          onClose={() => ui.closeModal('ending')}
+          onNewGame={() => { ui.closeModal('ending'); ui.openModal('ngPlus'); }}
+          onLogout={() => auth.logout()}
         />
       )}
 

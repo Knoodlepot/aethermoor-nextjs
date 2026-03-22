@@ -25,6 +25,7 @@ export interface UIContext {
   showUserProfile: boolean;
   showFactionOffer: boolean;
   showNGPlusScreen: boolean;
+  showEnding: boolean;
   showDungeonWarning: boolean;
   showTokenShop: boolean;
   showAchievements: boolean;
@@ -128,6 +129,7 @@ export function useUI(): UIContext {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showFactionOffer, setShowFactionOffer] = useState(false);
   const [showNGPlusScreen, setShowNGPlusScreen] = useState(false);
+  const [showEnding, setShowEnding] = useState(false);
   const [showDungeonWarning, setShowDungeonWarning] = useState(false);
   const [showTokenShop, setShowTokenShop] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
@@ -224,6 +226,7 @@ export function useUI(): UIContext {
       userProfile: setShowUserProfile,
       factionOffer: setShowFactionOffer,
       ngPlus: setShowNGPlusScreen,
+      ending: setShowEnding,
       dungeonWarning: setShowDungeonWarning,
       tokenShop: setShowTokenShop,
       achievements: setShowAchievements,
@@ -253,6 +256,7 @@ export function useUI(): UIContext {
       userProfile: setShowUserProfile,
       factionOffer: setShowFactionOffer,
       ngPlus: setShowNGPlusScreen,
+      ending: setShowEnding,
       dungeonWarning: setShowDungeonWarning,
       tokenShop: setShowTokenShop,
       achievements: setShowAchievements,
@@ -282,6 +286,7 @@ export function useUI(): UIContext {
       userProfile: [showUserProfile, setShowUserProfile],
       factionOffer: [showFactionOffer, setShowFactionOffer],
       ngPlus: [showNGPlusScreen, setShowNGPlusScreen],
+      ending: [showEnding, setShowEnding],
       dungeonWarning: [showDungeonWarning, setShowDungeonWarning],
       tokenShop: [showTokenShop, setShowTokenShop],
       achievements: [showAchievements, setShowAchievements],
@@ -306,6 +311,7 @@ export function useUI(): UIContext {
     showUserProfile,
     showFactionOffer,
     showNGPlusScreen,
+    showEnding,
     showDungeonWarning,
     mapOpen,
     showTokenShop,
@@ -362,6 +368,7 @@ export function useUI(): UIContext {
     showUserProfile,
     showFactionOffer,
     showNGPlusScreen,
+    showEnding,
     showDungeonWarning,
     showTokenShop,
     showAchievements,

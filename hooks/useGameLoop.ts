@@ -9,6 +9,7 @@ import { FACTION_JOIN_OFFERS, PROTECTED_ITEMS, RECIPES, CONSUMABLE_EFFECTS } fro
 import { getItemSlotEx, formatGameTime, advanceGameTime, xpToLevel, HP_PER_LEVEL, LEVEL_CAP } from '../lib/helpers';
 import { extractBestiaryTag } from '../lib/tagParsers';
 import { checkAchievements, NON_HIDDEN_ACHIEVEMENT_IDS, ACHIEVEMENTS } from '../lib/achievements';
+import { INIT_PLAYER, generateWorldSeed } from '../lib/worldgen';
 
 export interface GameLoopContext {
   executeCommand: (
@@ -446,6 +447,52 @@ export function useGameLoop(
           return { success: true };
         }
 
+        // ── ng_plus:<json opts> — called by NGPlusScreen onConfirm ──
+        if (command.startsWith('ng_plus:')) {
+          const opts = JSON.parse(command.slice('ng_plus:'.length));
+          const newSeedObj = generateWorldSeed();
+          const startLocation = newSeedObj.startLocation || 'Aethermoor Capital';
+          const worldData     = newSeedObj.worldData     || [];
+
+          // Build legacy title from finalTone
+          const villainName = (updatedSeed as any).villainName || 'the Villain';
+          const finalTone   = (updatedSeed as any).finalTone   || 'triumphant';
+          const TONE_TITLES: Record<string, string> = {
+            triumphant:  `Slayer of ${villainName}`,
+            pyrrhic:     'The Hollow Victor',
+            bittersweet: 'Who Paid the Price',
+            ambiguous:   'Who Walked Away',
+            hollow:      'The Last Standing',
+          };
+          const legacyTitle = TONE_TITLES[finalTone] ?? `Slayer of ${villainName}`;
+          const keepsake    = `${villainName}'s Signet`;
+
+          const freshPlayer = INIT_PLAYER(updatedPlayer.name, updatedPlayer.class, startLocation, worldData);
+          const ngPlayer = {
+            ...freshPlayer,
+            gold:             (freshPlayer.gold ?? 0) + (opts.gold ?? 0),
+            reputation:       opts.reputation ?? 0,
+            inventory:        [...(freshPlayer.inventory ?? []), keepsake],
+            achievements:     updatedPlayer.achievements ?? [],
+            ngPlusCount:      (opts.count ?? 1),
+            legacyTitle,
+            legacyPerks:      opts.perks ?? [],
+            legacyItems:      [...(opts.items ?? []), { name: keepsake, desc: `A keepsake from the fallen ${villainName}.` }],
+            factionStandings: opts.factionStandings ?? freshPlayer.factionStandings,
+            modelTier:        (updatedPlayer as any).modelTier ?? 'haiku',
+            language:         (updatedPlayer as any).language  ?? 'English',
+          };
+
+          gs.setPlayer(ngPlayer);
+          gs.setWorldSeed(newSeedObj);
+          gs.setNarrative('');
+          gs.setMessages([]);
+          ui.closeModal('ending');
+          ui.closeModal('ngPlus');
+          await storage.saveGame(ngPlayer, newSeedObj, [], 'A new legend begins. The world is reborn.', []);
+          return { success: true };
+        }
+
         // ── dismiss_companion ──
         if (command === 'dismiss_companion') {
           const comp = (updatedPlayer as any).companion;
@@ -651,7 +698,12 @@ export function useGameLoop(
           }
         }
 
-        // 4b. Update all game state
+        // 4b. Detect main quest completion — open ending screen once
+        if ((updatedSeed as any).mainQuestComplete && !(gs.worldSeed as any)?.mainQuestComplete) {
+          ui.openModal('ending');
+        }
+
+        // 4c. Update all game state
         gs.setPlayer(updatedPlayer);
         gs.setWorldSeed(updatedSeed);
         gs.setNarrative(cleanNarrative);
