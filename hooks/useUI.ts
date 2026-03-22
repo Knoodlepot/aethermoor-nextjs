@@ -28,6 +28,7 @@ export interface UIContext {
   showDungeonWarning: boolean;
   showTokenShop: boolean;
   showAchievements: boolean;
+  showCompanion: boolean;
 
   // Achievement toasts
   achievementToasts: AchievementDef[];
@@ -130,6 +131,7 @@ export function useUI(): UIContext {
   const [showDungeonWarning, setShowDungeonWarning] = useState(false);
   const [showTokenShop, setShowTokenShop] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [showCompanion, setShowCompanion] = useState(false);
 
   // Achievement toasts
   const [achievementToasts, setAchievementToasts] = useState<AchievementDef[]>([]);
@@ -225,6 +227,7 @@ export function useUI(): UIContext {
       dungeonWarning: setShowDungeonWarning,
       tokenShop: setShowTokenShop,
       achievements: setShowAchievements,
+      companion: setShowCompanion,
       map: setMapOpen,
     };
 
@@ -253,6 +256,7 @@ export function useUI(): UIContext {
       dungeonWarning: setShowDungeonWarning,
       tokenShop: setShowTokenShop,
       achievements: setShowAchievements,
+      companion: setShowCompanion,
       map: setMapOpen,
     };
 
@@ -281,6 +285,7 @@ export function useUI(): UIContext {
       dungeonWarning: [showDungeonWarning, setShowDungeonWarning],
       tokenShop: [showTokenShop, setShowTokenShop],
       achievements: [showAchievements, setShowAchievements],
+      companion: [showCompanion, setShowCompanion],
       map: [mapOpen, setMapOpen],
     };
 
@@ -305,6 +310,7 @@ export function useUI(): UIContext {
     mapOpen,
     showTokenShop,
     showAchievements,
+    showCompanion,
   ]);
 
   /**
@@ -359,6 +365,7 @@ export function useUI(): UIContext {
     showDungeonWarning,
     showTokenShop,
     showAchievements,
+    showCompanion,
     achievementToasts,
     pushAchievementToast,
     shiftAchievementToast,

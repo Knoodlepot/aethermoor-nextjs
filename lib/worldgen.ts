@@ -950,6 +950,7 @@ export function INIT_PLAYER(name: string, cls: string, location: string, worldDa
     unlockedSkills: [],
     bestiaryEntries: [],
     achievements: [],
+    companion: null,
     mount: null,
   };
 }

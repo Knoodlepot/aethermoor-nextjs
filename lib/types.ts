@@ -60,11 +60,28 @@ export interface Player {
   narrativeSummary?: string;
   narrativeNudges?: boolean;
   achievements?: AchievementUnlock[];
+  companion?: Companion | null;
 }
 
 export interface AchievementUnlock {
   id: string;
   unlockedDay: number;
+}
+
+export interface Companion {
+  name: string;
+  role: string;
+  icon: string;
+  relationship: 'neutral' | 'friendly' | 'loyal';
+  hp: number;
+  maxHp: number;
+  str: number;
+  agi: number;
+  wil: number;
+  ability: string;
+  recruitedDay: number;
+  notes: string;
+  statusEffects?: string[];
 }
 
 export interface CombatState {

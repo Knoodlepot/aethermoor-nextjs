@@ -45,6 +45,9 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"hpChange"\s*:\s*-?\d+\}/g, '');
   t = t.replace(/\{"xpGain"\s*:[^}]*\}/g, '');
   t = t.replace(/\{"bestiary"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"recruitCompanion"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"companionUpdate"\s*:\s*\{[\s\S]+?\}\}/g, '');
+  t = t.replace(/\{"companionDismissed"\s*:\s*"[^"]*"\}/g, '');
   t = t.replace(/\{"travelTo"\s*:\s*"[^"]+"\}/g, '');
   t = t.replace(/\[FORAGE_FOUND:[^\]]+\]/g, '');
   t = t.replace(/```[a-z]*\s*\{"context"\s*:\s*"\w+"\}\s*```/g, '');
@@ -356,6 +359,32 @@ export function extractRevealLocationsTag(text: string): string[] | null {
 }
 
 /**
+ * Extract recruitCompanion tag: {"recruitCompanion":{name, role, icon, str, agi, wil, hp, ability, notes}}
+ */
+export function extractRecruitCompanionTag(text: string): any {
+  const m = text.match(/\{"recruitCompanion"\s*:\s*(\{[\s\S]+?\})\}/);
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch { return null; }
+}
+
+/**
+ * Extract companionUpdate tag: {"companionUpdate":{relationship?, hp?, notes?, statusEffects?}}
+ */
+export function extractCompanionUpdateTag(text: string): any {
+  const m = text.match(/\{"companionUpdate"\s*:\s*(\{[\s\S]+?\})\}/);
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch { return null; }
+}
+
+/**
+ * Extract companionDismissed tag: {"companionDismissed":"reason"}
+ */
+export function extractCompanionDismissedTag(text: string): string | null {
+  const m = text.match(/\{"companionDismissed"\s*:\s*"([^"]*)"\}/);
+  return m ? m[1] : null;
+}
+
+/**
  * Extract disguised item reveal tag: {"disguisedReveal":["MundaneItem",...]}
  */
 export function extractDisguisedRevealTag(text: string): string[] | null {
@@ -485,6 +514,9 @@ export interface ParsedTags {
   travelTo: string | null;
   place: any;
   revealLocations: string[] | null;
+  recruitCompanion: any;
+  companionUpdate: any;
+  companionDismissed: string | null;
 }
 
 /**
@@ -524,6 +556,9 @@ export function parseAllTags(narrative: string): ParsedTags {
     travelTo: extractTravelToTag(narrative),
     place: extractPlaceTag(narrative),
     revealLocations: extractRevealLocationsTag(narrative),
+    recruitCompanion: extractRecruitCompanionTag(narrative),
+    companionUpdate: extractCompanionUpdateTag(narrative),
+    companionDismissed: extractCompanionDismissedTag(narrative),
   };
 }
 
@@ -952,6 +987,50 @@ export function processParsedTags(
       newBestiary = [...existing, newEntry];
     }
     updatedPlayer = { ...updatedPlayer, bestiary: newBestiary } as any;
+  }
+
+  // Recruit companion — replaces any existing companion
+  if (tags.recruitCompanion && tags.recruitCompanion.name) {
+    const c = tags.recruitCompanion;
+    const maxHp = c.hp ?? 30;
+    const newCompanion = {
+      name: c.name,
+      role: c.role || 'Companion',
+      icon: c.icon || '🧑',
+      relationship: (c.relationship as any) || 'neutral',
+      hp: maxHp,
+      maxHp,
+      str: c.str ?? 5,
+      agi: c.agi ?? 5,
+      wil: c.wil ?? 5,
+      ability: c.ability || 'Assists in combat',
+      recruitedDay: (updatedPlayer as any).gameDay || 1,
+      notes: c.notes || '',
+      statusEffects: [],
+    };
+    updatedPlayer = { ...updatedPlayer, companion: newCompanion } as any;
+    stateChanges.companion = newCompanion;
+  }
+
+  // Companion update — merge fields into existing companion
+  if (tags.companionUpdate && (updatedPlayer as any).companion) {
+    const existing = (updatedPlayer as any).companion;
+    const upd = tags.companionUpdate;
+    const merged = {
+      ...existing,
+      ...(upd.relationship !== undefined && { relationship: upd.relationship }),
+      ...(upd.hp !== undefined && { hp: Math.max(0, Math.min(existing.maxHp, upd.hp)) }),
+      ...(upd.notes !== undefined && { notes: upd.notes }),
+      ...(upd.statusEffects !== undefined && { statusEffects: upd.statusEffects }),
+    };
+    updatedPlayer = { ...updatedPlayer, companion: merged } as any;
+    stateChanges.companion = merged;
+  }
+
+  // Companion dismissed — clear from player state
+  if (tags.companionDismissed !== null) {
+    updatedPlayer = { ...updatedPlayer, companion: null } as any;
+    stateChanges.companion = null;
   }
 
   if (eventLogEntries.length > 0) {

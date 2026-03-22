@@ -619,6 +619,11 @@ function buildNarratorSystem(p: any, w: any): string {
   const bestiaryCount = Array.isArray(p.bestiary) ? p.bestiary.reduce((s: number, b: any) => s + (b.timesKilled || 0), 0) : 0;
   const bestiaryTypes = Array.isArray(p.bestiary) ? p.bestiary.length : 0;
 
+  const companion = p.companion ?? null;
+  const companionStr = companion
+    ? `${companion.name} the ${companion.role} (${companion.icon}) — ${companion.relationship} | HP ${companion.hp}/${companion.maxHp} | STR ${companion.str} AGI ${companion.agi} WIL ${companion.wil}\nABILITY: ${companion.ability}${companion.notes ? `\nNOTES: ${companion.notes}` : ''}${companion.statusEffects?.length ? `\nSTATUS: ${companion.statusEffects.join(', ')}` : ''}`
+    : null;
+
   // All skill tree descriptions — sent to narrator so it knows what the player can do
   const ALL_SKILL_DESCRIPTIONS: Record<string, string> = {
     // Warrior
@@ -801,6 +806,7 @@ ${knownPlaces ? `KNOWN PLACES: ${knownPlaces}` : ''}
 CURRENT TIME: ${timeStr}
 ${scheduledEvents ? `UPCOMING EVENTS: ${scheduledEvents}` : ''}
 ${bestiaryCount > 0 ? `KILLS: ${bestiaryCount} total across ${bestiaryTypes} enemy types slain` : ''}
+${companionStr ? `COMPANION: ${companionStr}` : 'COMPANION: None — player may recruit one companion through roleplay.'}
 ${unlockedSkillDescs.length > 0 ? `UNLOCKED SKILLS: ${unlockedSkillDescs.join('; ')}` : ''}
 ${travelMatrixStr ? travelMatrixStr : ''}
 ${worldEventsStr ? `WORLD EVENTS: ${worldEventsStr}\n` : ''}
@@ -956,6 +962,10 @@ ${villainName.startsWith('Xfu') ? `- XFU RULE: Xfu cannot help himself — whene
   - To create or update an event, emit on its own line: {"worldEvent":{"location":"Name","type":"siege","severity":"moderate","desc":"Brief description","endsDay":N}}
   - To clear a resolved event, emit on its own line: {"worldEvent":{"location":"Name","type":"siege","clear":true}}
   - VILLAIN SOURCE: Corruption, blight, or curse events near the villain's lair or along their campaign path may be attributed to the villain's influence. Weave this in without stating it directly.
+- COMPANION RULE: The COMPANION field above shows the player's current travelling companion (if any).
+  - If COMPANION is "None": the player has no companion. You MAY introduce a recruitable NPC through natural roleplay — a sellsword at a tavern, a stranded traveller, a survivor rescued from danger. When the player explicitly agrees to take them on, emit on its own line: {"recruitCompanion":{"name":"Name","role":"Role","icon":"emoji","str":N,"agi":N,"wil":N,"hp":N,"ability":"Short passive ability description","notes":"One sentence about them"}} — do not recruit without clear player consent. Max 1 companion at a time.
+  - If COMPANION is present: they travel with the player unless killed or dismissed. Reference them naturally — they react to events, comment on danger, assist in combat. Their passive ABILITY applies automatically; describe its effect without needing a tag. When their HP, mood, or notes change meaningfully, emit on its own line: {"companionUpdate":{"hp":N,"relationship":"neutral|friendly|loyal","notes":"Updated notes"}}. If they die or are explicitly dismissed by the player, emit on its own line: {"companionDismissed":"reason"} and narrate the departure with weight.
+  - Never recruit a second companion while one is active — if the player tries, have the current companion react (jealousy, warning, humour) and make clear only one can travel with them at a time.
 ${npcGiftRoll && npcGiftItem ? `
 GIFT OPPORTUNITY: You may have the NPC offer the player "${sanitiseStr(npcGiftItem, 40)}" as a small gift — or refuse. Base the decision on their personality, relationship with the player, and current mood. Be natural:
 - If giving: narrate the offer warmly or casually with flavour, then emit on its own line: {"npcGift":{"item":"${sanitiseStr(npcGiftItem, 40)}"}}

@@ -44,6 +44,7 @@ import { OutOfTokensScreen } from '@/components/screens/OutOfTokensScreen';
 import { DeathScreen } from '@/components/screens/DeathScreen';
 import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 import AchievementScreen from '@/components/screens/AchievementScreen';
+import CompanionScreen from '@/components/screens/CompanionScreen';
 
 // Modals
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
@@ -1052,6 +1053,22 @@ function GameContent() {
             )}
             {player && (
               <button
+                onClick={() => ui.openModal('companion')}
+                title={player.companion ? `Companion: ${(player.companion as any).name}` : 'No companion'}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${player.companion ? T.gold : T.border}`,
+                  color: player.companion ? T.gold : T.textMuted,
+                  padding: '4px 10px', fontSize: 11, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1,
+                  position: 'relative',
+                }}
+              >
+                {player.companion ? `${(player.companion as any).icon} ${(player.companion as any).name}` : '🧭 Companion'}
+              </button>
+            )}
+            {player && (
+              <button
                 onClick={() => ui.openModal('achievements')}
                 title="View achievements"
                 style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, position: 'relative' }}
@@ -1701,6 +1718,17 @@ function GameContent() {
         <AchievementScreen
           player={player}
           onClose={() => ui.closeModal('achievements')}
+        />
+      )}
+
+      {ui.showCompanion && player && (
+        <CompanionScreen
+          player={player}
+          onDismiss={() => {
+            handleCommand('dismiss_companion');
+            ui.closeModal('companion');
+          }}
+          onClose={() => ui.closeModal('companion')}
         />
       )}
 

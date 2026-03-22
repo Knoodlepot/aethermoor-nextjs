@@ -446,6 +446,20 @@ export function useGameLoop(
           return { success: true };
         }
 
+        // ── dismiss_companion ──
+        if (command === 'dismiss_companion') {
+          const comp = (updatedPlayer as any).companion;
+          if (comp) {
+            updatedPlayer = { ...updatedPlayer, companion: null } as any;
+            gs.setPlayer(updatedPlayer);
+            const msg = `${comp.name} parts ways with you. The road ahead is yours alone.`;
+            gs.setNarrative(msg);
+            gs.addLogEntry('action', 'dismiss_companion');
+            await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, msg, gs.log);
+          }
+          return { success: true };
+        }
+
         // 1. Add user message to conversation history
         const userMessages = [...gs.messages.slice(-39), { role: 'user', content: command }];
         gs.setMessages(userMessages);
