@@ -50,6 +50,8 @@ interface LeaderboardEntry {
   hero_level: number;
   deepest_floor: number;
   ng_plus: number;
+  world_seed: string | null;
+  world_name: string | null;
   updated_at: string;
 }
 
@@ -116,6 +118,7 @@ export function QuestLogScreen({
   const [confirmAbandonId, setConfirmAbandonId] = React.useState<string | null>(null);
   const [leaderboard, setLeaderboard] = React.useState<LeaderboardEntry[]>([]);
   const [lbLoading, setLbLoading] = React.useState(false);
+  const [selectedWorld, setSelectedWorld] = React.useState<string>('all');
   const expandedRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -477,51 +480,116 @@ export function QuestLogScreen({
                   </div>
                 </div>
               </div>
-              <div style={{ ...tf, color: T.accent, fontSize: 10, letterSpacing: 2, marginBottom: 10 }}>GLOBAL LEADERBOARD</div>
+              <div style={{ ...tf, color: T.accent, fontSize: 10, letterSpacing: 2, marginBottom: 8 }}>LEADERBOARD</div>
               {lbLoading ? (
                 <div style={{ color: T.textFaint, fontSize: 12, fontStyle: 'italic' }}>Loading...</div>
               ) : leaderboard.length === 0 ? (
                 <div style={{ color: T.textFaint, fontSize: 12, fontStyle: 'italic' }}>No records yet — be the first to descend.</div>
-              ) : (
-                leaderboard.map((entry, i) => {
-                  const isMe = entry.hero_name === player.name && entry.hero_class === player.class;
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '10px 12px',
-                        borderBottom: `1px solid ${T.border}`,
-                        background: isMe ? T.selectedBg : i === 0 ? T.panelAlt : 'transparent',
-                        borderLeft: isMe ? `3px solid ${T.accent}` : '3px solid transparent',
-                      }}
-                    >
-                      <span style={{ ...tf, fontSize: i < 3 ? 18 : 13, width: 32, textAlign: 'center', color: T.textFaint }}>
-                        {i < 3 ? RANK_MEDAL[i] : `${i + 1}.`}
-                      </span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: 13, color: isMe ? T.gold : T.text, ...tf }}>{entry.hero_name}</span>
-                          <span style={{ fontSize: 10, color: T.textFaint }}>{entry.hero_class} Lv.{entry.hero_level}</span>
-                          {entry.ng_plus > 0 && (
-                            <span style={{ fontSize: 9, color: T.accent, border: `1px solid ${T.accent}44`, padding: '1px 4px', ...tf, letterSpacing: 1 }}>
-                              NG+{entry.ng_plus}
-                            </span>
-                          )}
-                          {isMe && (
-                            <span style={{ fontSize: 9, color: T.gold, border: `1px solid ${T.gold}44`, padding: '1px 4px', ...tf, letterSpacing: 1 }}>YOU</span>
-                          )}
+              ) : (() => {
+                // Build unique world list from entries that have a world_seed
+                const worldMap = new Map<string, string>();
+                leaderboard.forEach(e => {
+                  if (e.world_seed && e.world_name && !worldMap.has(e.world_seed)) {
+                    worldMap.set(e.world_seed, e.world_name);
+                  }
+                });
+                const worlds = Array.from(worldMap.entries()); // [seed, name][]
+
+                const filtered = selectedWorld === 'all'
+                  ? leaderboard
+                  : leaderboard.filter(e => e.world_seed === selectedWorld);
+
+                // Re-rank within the filtered set
+                return (
+                  <>
+                    {/* World tabs — only show if more than one world has records */}
+                    {worlds.length > 0 && (
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                        <button
+                          onClick={() => setSelectedWorld('all')}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: 10,
+                            ...tf,
+                            letterSpacing: 1,
+                            cursor: 'pointer',
+                            background: selectedWorld === 'all' ? T.accent + '33' : 'transparent',
+                            border: `1px solid ${selectedWorld === 'all' ? T.accent : T.border}`,
+                            color: selectedWorld === 'all' ? T.accent : T.textMuted,
+                          }}
+                        >
+                          ALL WORLDS
+                        </button>
+                        {worlds.map(([seed, name]) => (
+                          <button
+                            key={seed}
+                            onClick={() => setSelectedWorld(seed)}
+                            style={{
+                              padding: '4px 10px',
+                              fontSize: 10,
+                              ...tf,
+                              letterSpacing: 1,
+                              cursor: 'pointer',
+                              background: selectedWorld === seed ? T.accent + '33' : 'transparent',
+                              border: `1px solid ${selectedWorld === seed ? T.accent : T.border}`,
+                              color: selectedWorld === seed ? T.accent : T.textMuted,
+                            }}
+                          >
+                            {name.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Entries */}
+                    {filtered.length === 0 ? (
+                      <div style={{ color: T.textFaint, fontSize: 12, fontStyle: 'italic' }}>No records for this world yet.</div>
+                    ) : filtered.map((entry, i) => {
+                      const isMe = entry.hero_name === player.name && entry.hero_class === player.class;
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '10px 12px',
+                            borderBottom: `1px solid ${T.border}`,
+                            background: isMe ? T.selectedBg : i === 0 ? T.panelAlt : 'transparent',
+                            borderLeft: isMe ? `3px solid ${T.accent}` : '3px solid transparent',
+                          }}
+                        >
+                          <span style={{ ...tf, fontSize: i < 3 ? 18 : 13, width: 32, textAlign: 'center', color: T.textFaint }}>
+                            {i < 3 ? RANK_MEDAL[i] : `${i + 1}.`}
+                          </span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: 13, color: isMe ? T.gold : T.text, ...tf }}>{entry.hero_name}</span>
+                              <span style={{ fontSize: 10, color: T.textFaint }}>{entry.hero_class} Lv.{entry.hero_level}</span>
+                              {entry.ng_plus > 0 && (
+                                <span style={{ fontSize: 9, color: T.accent, border: `1px solid ${T.accent}44`, padding: '1px 4px', ...tf, letterSpacing: 1 }}>
+                                  NG+{entry.ng_plus}
+                                </span>
+                              )}
+                              {isMe && (
+                                <span style={{ fontSize: 9, color: T.gold, border: `1px solid ${T.gold}44`, padding: '1px 4px', ...tf, letterSpacing: 1 }}>YOU</span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 10, color: T.textFaint, marginTop: 2 }}>
+                              {floorBiome(entry.deepest_floor)}
+                              {selectedWorld === 'all' && entry.world_name && (
+                                <span style={{ marginLeft: 8, opacity: 0.6 }}>· {entry.world_name}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                            <div style={{ ...tf, color: T.gold, fontSize: 15 }}>Floor {entry.deepest_floor}</div>
+                          </div>
                         </div>
-                        <div style={{ fontSize: 10, color: T.textFaint, marginTop: 2 }}>{floorBiome(entry.deepest_floor)}</div>
-                      </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ ...tf, color: T.gold, fontSize: 15 }}>Floor {entry.deepest_floor}</div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+                      );
+                    })}
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>

@@ -54,7 +54,7 @@ import { FeedbackModal } from '@/components/modals/FeedbackModal';
 
 import { CLASSES, STATUS_EFFECTS, FACTIONS } from '@/lib/constants';
 import { countItem, XP_TABLE } from '@/lib/helpers';
-import { generateWorldSeed, INIT_PLAYER } from '@/lib/worldgen';
+import { generateWorldSeed, INIT_PLAYER, generateWorldName } from '@/lib/worldgen';
 
 // ─── Inner component (must live inside ThemeProvider) ─────────────────────────
 
@@ -312,6 +312,10 @@ function GameContent() {
           heroClass: (gameState.player as any)?.class,
           heroLevel: gameState.player?.level,
           ngPlus: (gameState.player as any)?.ngPlus ?? 0,
+          worldSeed: String(gameState.worldSeed?.seed ?? ''),
+          worldName: gameState.worldSeed?.seed
+            ? generateWorldName(String(gameState.worldSeed.seed))
+            : 'Unknown Realm',
         }),
       });
       if (res.status === 429) {

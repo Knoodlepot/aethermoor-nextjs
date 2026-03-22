@@ -952,3 +952,29 @@ export function INIT_PLAYER(name: string, cls: string, location: string, worldDa
     mount: null,
   };
 }
+
+/**
+ * Generate a deterministic 2-word continent name from a world seed string.
+ * Used on the dungeon leaderboard to label each world.
+ */
+export function generateWorldName(seed: string): string {
+  const prefixes = [
+    'Ashwood','Ironfall','Duskmere','Stormveil','Grimholt','Embervast','Coldwater',
+    'Thornfield','Blackmoor','Silverfen','Cragspire','Hollowmarch','Ravenstone',
+    'Mistdale','Sundermoor','Ironwold','Ashveil','Bloodfen','Darkholt','Stonemarsh',
+  ];
+  const suffixes = [
+    'Reach','Vale','Coast','Expanse','Highlands','Barrens','Wilds','Dominion',
+    'Territories','Marches','Lowlands','Wastes','Depths','Ranges','Shores',
+    'Peninsula','Heartland','Frontier','Remnants','Passage',
+  ];
+  // Simple deterministic hash of the seed string
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+  }
+  const h2 = Math.imul(h ^ (h >>> 16), 0x45d9f3b) | 0;
+  const pi = Math.abs(h)  % prefixes.length;
+  const si = Math.abs(h2) % suffixes.length;
+  return `${prefixes[pi]} ${suffixes[si]}`;
+}

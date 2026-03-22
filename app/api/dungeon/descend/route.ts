@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const { playerId } = authCtx;
     const body = await request.json();
-    const { floor, heroName, heroClass, heroLevel, ngPlus } = body;
+    const { floor, heroName, heroClass, heroLevel, ngPlus, worldSeed, worldName } = body;
 
     if (!floor || floor < 1) {
       return NextResponse.json({ error: 'invalid_request', message: 'floor must be >= 1' }, { status: 400 });
@@ -63,16 +63,18 @@ export async function POST(request: NextRequest) {
     // Update leaderboard if new personal record
     if (floor > prevDeepest && heroName && heroClass) {
       await query(
-        `INSERT INTO leaderboard_entries (player_id, hero_name, hero_class, hero_level, deepest_floor, ng_plus, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        `INSERT INTO leaderboard_entries (player_id, hero_name, hero_class, hero_level, deepest_floor, ng_plus, world_seed, world_name, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
          ON CONFLICT (player_id) DO UPDATE SET
            hero_name = $2,
            hero_class = $3,
            hero_level = $4,
            deepest_floor = GREATEST(leaderboard_entries.deepest_floor, $5),
            ng_plus = $6,
+           world_seed = $7,
+           world_name = $8,
            updated_at = NOW()`,
-        [playerId, heroName, heroClass, heroLevel || 1, floor, ngPlus || 0]
+        [playerId, heroName, heroClass, heroLevel || 1, floor, ngPlus || 0, worldSeed || null, worldName || null]
       );
     }
 

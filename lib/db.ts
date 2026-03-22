@@ -194,6 +194,8 @@ export async function migrateDb(): Promise<void> {
         `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS admin_notes TEXT`,
         `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ`,
         `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS reviewed_by TEXT`,
+        `ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS world_seed TEXT`,
+        `ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS world_name TEXT`,
       ];
       for (const sql of columnMigrations) {
         await client.query(sql);
