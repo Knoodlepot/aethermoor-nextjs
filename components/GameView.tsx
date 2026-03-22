@@ -8,6 +8,7 @@ import { useStorage } from '@/hooks/useStorage';
 import { useGameState } from '@/hooks/useGameState';
 import { useUI } from '@/hooks/useUI';
 import { useGameLoop } from '@/hooks/useGameLoop';
+import { useAudio } from '@/hooks/useAudio';
 import { useLayoutConfig } from '@/lib/hooks/useLayoutConfig';
 
 // Panels
@@ -82,6 +83,21 @@ function GameContent() {
   const ui = useUI();
   const gameLoop = useGameLoop(gameState, ui, storage, auth.token, (bal) => setTokenBalance(bal));
 
+  const locationGrid = (gameState.worldSeed?.travelMatrix as any)?.locationGrid;
+  const audio = useAudio({
+    player: gameState.player,
+    locationGrid,
+    isPlaying: !!gameState.player && !!gameState.worldSeed,
+  });
+
+  // Sync audio settings state from localStorage on mount
+  useEffect(() => {
+    setAudioMuted(audio.getMuted());
+    setMusicVol(audio.getMusicVolume());
+    setSfxVol(audio.getSFXVolume());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Guest-mode flag: bypass auth gate without a real JWT
   const [guestMode, setGuestMode] = useState(false);
   const [newGameLoading, setNewGameLoading] = useState(false);
@@ -111,6 +127,41 @@ function GameContent() {
   const [playerIdCopied, setPlayerIdCopied] = useState(false);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showAudioPanel, setShowAudioPanel] = useState(false);
+  const [audioMuted, setAudioMuted] = useState(false);
+  const [musicVol, setMusicVol] = useState(0.35);
+  const [sfxVol, setSfxVol] = useState(0.7);
+
+  // Close audio panel on outside click
+  useEffect(() => {
+    if (!showAudioPanel) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-audio-panel]')) setShowAudioPanel(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showAudioPanel]);
+
+  // SFX: achievement unlock
+  const prevToastCount = useRef(0);
+  useEffect(() => {
+    if (ui.achievementToasts.length > prevToastCount.current) {
+      audio.playSFX('achievement');
+    }
+    prevToastCount.current = ui.achievementToasts.length;
+  }, [ui.achievementToasts.length]);
+
+  // SFX: quest complete
+  const prevDoneQuests = useRef(0);
+  useEffect(() => {
+    const doneCount = (gameState.player?.quests ?? []).filter((q: any) => q.status === 'done').length;
+    if (doneCount > prevDoneQuests.current && prevDoneQuests.current > 0) {
+      audio.playSFX('quest_complete');
+    }
+    prevDoneQuests.current = doneCount;
+  }, [gameState.player?.quests]);
+
   const prevGoldRef = useRef<number | null>(null);
   const [goldFlash, setGoldFlash] = useState<'gain' | 'loss' | null>(null);
   const prevHpRef = useRef<number | null>(null);
@@ -1088,6 +1139,59 @@ function GameContent() {
                 )}
               </button>
             )}
+            {/* Sound button + popover */}
+            <div style={{ position: 'relative' }} data-audio-panel>
+              <button
+                onClick={() => setShowAudioPanel(p => !p)}
+                title="Sound settings"
+                style={{ background: 'transparent', border: `1px solid ${audioMuted ? T.accent : T.border}`, color: audioMuted ? T.textFaint : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+              >
+                {audioMuted ? '🔇' : '🔊'}
+              </button>
+              {showAudioPanel && (
+                <div style={{
+                  position: 'absolute', top: '110%', right: 0, zIndex: 200,
+                  background: T.panel, border: `1px solid ${T.border}`,
+                  borderRadius: 8, padding: '12px 16px', minWidth: 200,
+                  boxShadow: '0 4px 20px #0008',
+                  display: 'flex', flexDirection: 'column', gap: 10,
+                }}>
+                  <div style={{ ...tf, fontSize: 10, color: T.accent, letterSpacing: 2, marginBottom: 2 }}>SOUND</div>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.textMuted }}>
+                    Music
+                    <input type="range" min={0} max={1} step={0.05} value={musicVol}
+                      onChange={e => {
+                        const v = parseFloat(e.target.value);
+                        setMusicVol(v);
+                        audio.setMusicVolume(v);
+                      }}
+                      style={{ accentColor: T.gold }}
+                    />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.textMuted }}>
+                    Effects
+                    <input type="range" min={0} max={1} step={0.05} value={sfxVol}
+                      onChange={e => {
+                        const v = parseFloat(e.target.value);
+                        setSfxVol(v);
+                        audio.setSFXVolume(v);
+                      }}
+                      style={{ accentColor: T.gold }}
+                    />
+                  </label>
+                  <button
+                    onClick={() => {
+                      const next = !audioMuted;
+                      setAudioMuted(next);
+                      audio.setMuted(next);
+                    }}
+                    style={{ background: 'transparent', border: `1px solid ${T.border}`, color: audioMuted ? T.gold : T.textMuted, padding: '4px 8px', fontSize: 11, cursor: 'pointer', borderRadius: 4 }}
+                  >
+                    {audioMuted ? 'Unmute' : 'Mute all'}
+                  </button>
+                </div>
+              )}
+            </div>
             <button
               onClick={() => setShowFeedback(true)}
               title="Send feedback or report a bug"
