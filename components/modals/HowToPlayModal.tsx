@@ -174,12 +174,35 @@ export function HowToPlayModal({ onClose }: HowToPlayModalProps) {
             borderTop: `1px solid ${T.border}`,
             background: T.panelAlt,
             flexShrink: 0,
+            display: 'flex',
+            gap: 10,
           }}
         >
           <button
+            onClick={() => {
+              localStorage.removeItem('ae-tour-completed');
+              window.dispatchEvent(new Event('ae:start-tour'));
+              onClose();
+            }}
+            style={{
+              flex: '0 0 auto',
+              background: 'transparent',
+              border: `1px solid ${T.border}`,
+              color: T.textMuted,
+              padding: '11px 16px',
+              fontSize: 12,
+              ...tf,
+              letterSpacing: '0.08em',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap' as const,
+            }}
+          >
+            Replay Tour
+          </button>
+          <button
             onClick={onClose}
             style={{
-              width: '100%',
+              flex: 1,
               background: T.accent + '22',
               border: `1px solid ${T.accent}`,
               color: T.gold,

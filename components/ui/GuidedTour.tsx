@@ -57,6 +57,17 @@ export function GuidedTour() {
     return () => clearTimeout(t);
   }, []);
 
+  // Listen for manual replay trigger (fired by HowToPlayModal)
+  useEffect(() => {
+    const handler = () => {
+      setStep(0);
+      setRect(null);
+      setVisible(true);
+    };
+    window.addEventListener('ae:start-tour', handler);
+    return () => window.removeEventListener('ae:start-tour', handler);
+  }, []);
+
   const measureTarget = useCallback((target: string | null) => {
     if (!target) { setRect(null); return; }
     const el = document.querySelector(`[data-tour="${target}"]`);
