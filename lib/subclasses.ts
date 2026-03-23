@@ -10,6 +10,8 @@ export interface SubclassDef {
   flavour: string;
   desc: string;
   skills: string[];
+  /** Narrative abilities granted to player.abilities on subclass selection */
+  abilities: string[];
 }
 
 export const CLASS_BASELINE_SKILLS: Record<string, string[]> = {
@@ -28,18 +30,21 @@ export const SUBCLASSES: Record<string, Record<string, SubclassDef>> = {
       flavour: 'Rage is your armour.',
       desc: 'You fight hardest when the blood is flowing. Punishment fuels your fury rather than slowing it.',
       skills: ['berserker_rage', 'blood_frenzy', 'frenzied_strikes', 'war_shout', 'death_defiant'],
+      abilities: ['Bloodlust', 'Iron Will', 'The Last to Fall'],
     },
     Knight: {
       icon: '🛡️',
       flavour: 'You are the wall between the weak and the abyss.',
       desc: 'Honour, discipline, and a shield held high. You endure what others cannot and inspire those at your side.',
       skills: ['shield_mastery', 'rally', 'mounted_charge', 'warlords_presence', 'honourable_duel'],
+      abilities: ['Oath of Protection', 'Shield of the Realm', 'Chivalric Code'],
     },
     Monk: {
       icon: '👊',
       flavour: 'Your body is the instrument of discipline perfected.',
       desc: 'You need no weapon. Through years of training your hands, mind, and breath have become something lethal.',
       skills: ['iron_fists', 'deflect', 'stunning_blow', 'chi_focus', 'unbreakable'],
+      abilities: ['Empty Hand', 'Breath of Stillness', 'One With the Strike'],
     },
   },
 
@@ -50,18 +55,21 @@ export const SUBCLASSES: Record<string, Record<string, SubclassDef>> = {
       flavour: 'One strike. One death.',
       desc: 'You do not fight — you end. Precision, poison, and patience are your only tools.',
       skills: ['venom_coat', 'blade_dance', 'ghost_walk', 'assassinate', 'smoke_bomb'],
+      abilities: ['Mark of Death', "Phantom's Patience", "Poisoner's Eye"],
     },
     Thief: {
       icon: '💰',
       flavour: 'The world owes you. You\'re just collecting.',
       desc: 'Gold, locks, and loose lips — the world is full of things people don\'t deserve to keep.',
       skills: ['master_thief', 'lockmaster', 'silver_tongue', 'fortune_finder', 'crowd_vanish'],
+      abilities: ['Light Fingers', 'Street Wisdom', "Fence's Tongue"],
     },
     Ranger: {
       icon: '🏹',
       flavour: 'The wilderness is your ally.',
       desc: 'You read the land like others read words. Distance is your friend and nothing catches you off guard.',
       skills: ['keen_eye', 'hunter_mark', 'wilderness_born', 'rapid_shot', 'predator'],
+      abilities: ["Hunter's Patience", 'Wilderness Sight', 'First Blood'],
     },
   },
 
@@ -72,18 +80,21 @@ export const SUBCLASSES: Record<string, Record<string, SubclassDef>> = {
       flavour: 'Death is a resource.',
       desc: 'You have stared into the void and found it cooperative. The fallen serve you now.',
       skills: ['raise_dead', 'life_drain', 'bone_shield', 'death_pact', 'death_aura'],
+      abilities: ['Death Sense', 'Undead Command', 'Veil Walker'],
     },
     Elementalist: {
       icon: '⚡',
       flavour: 'Fire. Ice. Lightning. The elements do not discriminate.',
       desc: 'You have mastered the raw forces of the world and bend them to your will with terrifying efficiency.',
       skills: ['chain_lightning', 'overcharge', 'elemental_mastery', 'arcane_nova', 'archmages_will'],
+      abilities: ['Storm Caller', 'Force of Nature', 'Arcane Resonance'],
     },
     Illusionist: {
       icon: '🌀',
       flavour: 'They see what you want them to see.',
       desc: 'Reality is a negotiation. You are a very persuasive negotiator.',
       skills: ['phantom_double', 'charm', 'vanish', 'mind_shatter', 'time_stop'],
+      abilities: ['Master of Faces', 'Fractured Reality', 'The Unseen Hand'],
     },
   },
 
@@ -94,18 +105,21 @@ export const SUBCLASSES: Record<string, Record<string, SubclassDef>> = {
       flavour: 'Faith is your shield. Righteousness is your blade.',
       desc: 'You carry divine fire into battle. Evil recoils from your presence and your allies stand taller beside you.',
       skills: ['divine_strike', 'divine_aegis', 'lay_on_hands', 'sacred_charge', 'holy_wrath'],
+      abilities: ['Holy Aura', 'Divine Mandate', 'Blessed Blade'],
     },
     Priest: {
       icon: '✨',
       flavour: 'The wounded come to you. You do not turn them away.',
       desc: 'Healing is your calling. Where others fall you mend, restore, and keep the fight alive.',
       skills: ['greater_mend', 'group_heal', 'divine_shield', 'resurrection_light', 'purify'],
+      abilities: ["Healer's Touch", 'Voice of Comfort', 'Sacred Trust'],
     },
     Inquisitor: {
       icon: '🔥',
       flavour: 'Evil does not hide from the Light. You make sure of it.',
       desc: 'You hunt what others fear to name. Lies cannot survive your gaze and corruption cannot survive your judgement.',
       skills: ['holy_interrogation', 'exorcise', 'divine_judgement', 'inquisitor_mark', 'holy_storm'],
+      abilities: ['Truth Seeker', 'Divine Authority', 'Mark of the Hunted'],
     },
   },
 };

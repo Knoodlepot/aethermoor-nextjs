@@ -178,6 +178,205 @@ export const ABILITY_INFO = {
     type: "Passive",
     desc: "Sanam's gift opens your inner eye to what lingers between worlds. Spirits and shades may now choose to speak with you. Against undead and spectral enemies, your WIL is treated as 4 points higher. Some truths only the dead know.",
   },
+
+  // ── Berserker ──
+  Bloodlust: {
+    icon: "🩸",
+    type: "Passive",
+    desc: "The sight of blood sharpens your senses rather than unsettling them. Each kill you witness in combat sends a pulse of savage focus through you — you move faster, hit harder, and feel no pain.",
+  },
+  "Iron Will": {
+    icon: "💢",
+    type: "Passive",
+    desc: "Fear is not something you experience. Intimidation, terror, mind-altering effects — none of them find purchase. Your rage is a wall that nothing psychological can breach.",
+  },
+  "The Last to Fall": {
+    icon: "🔱",
+    type: "Passive",
+    desc: "You have looked death in the eye too many times to flinch. When your allies falter around you, something primal takes over. You cannot be brought down while others still need you standing.",
+  },
+
+  // ── Knight ──
+  "Oath of Protection": {
+    icon: "🛡️",
+    type: "Passive",
+    desc: "You have sworn to stand between the helpless and harm. This oath is not merely words — it shapes how you move, how you position, and how you endure. Those behind you take the blows meant for them through you.",
+  },
+  "Shield of the Realm": {
+    icon: "⚔️",
+    type: "Passive",
+    desc: "Your purpose extends beyond yourself. Whether you serve a crown, a god, or a cause, you carry that weight in every stance. Enemies recognise something formidable about you before you even strike.",
+  },
+  "Chivalric Code": {
+    icon: "📜",
+    type: "Passive",
+    desc: "Honour governs your every action, and others sense it. People speak more openly with you. Merchants deal more fairly. Even enemies grant you grudging respect. You cannot deceive — but you rarely need to.",
+  },
+
+  // ── Monk ──
+  "Empty Hand": {
+    icon: "🤲",
+    type: "Passive",
+    desc: "A weapon is a tool. Your body is a weapon. Through years of conditioning, your hands and feet have become something most foes cannot match even with steel in their grip.",
+  },
+  "Breath of Stillness": {
+    icon: "🌬️",
+    type: "Passive",
+    desc: "In the space between heartbeats, you find clarity. Pain becomes information. Panic becomes focus. No amount of chaos around you can shake what you have cultivated within.",
+  },
+  "One With the Strike": {
+    icon: "👊",
+    type: "Passive",
+    desc: "You do not hit with your fists — you hit with your entire self. Every strike is a complete commitment of body, breath, and intent. This totality is what makes your hits land the way they do.",
+  },
+
+  // ── Assassin ──
+  "Mark of Death": {
+    icon: "☠️",
+    type: "Passive",
+    desc: "Once you decide something must die, a quiet certainty settles over you. You stop seeing obstacles — only angles. Your target's breath, heartbeat, and habits all become readable vulnerabilities.",
+  },
+  "Phantom's Patience": {
+    icon: "🕐",
+    type: "Passive",
+    desc: "Waiting is not suffering for you — it is preparation. You can remain still, silent, and focused for longer than anyone expects. The right moment always comes. You are always there when it does.",
+  },
+  "Poisoner's Eye": {
+    icon: "🧪",
+    type: "Passive",
+    desc: "You read living things the way others read text. You can see the veins, the pulse points, the thin places where something introduced into the bloodstream would travel fastest.",
+  },
+
+  // ── Thief ──
+  "Light Fingers": {
+    icon: "🤌",
+    type: "Passive",
+    desc: "Your hands move with a kind of absent-minded grace that nobody notices until something is already gone. Even in plain sight, you take what you want before anyone has processed what they saw.",
+  },
+  "Street Wisdom": {
+    icon: "🧠",
+    type: "Passive",
+    desc: "You grew up reading people rather than books. You know when a deal is rotten before the other party opens their mouth, and you know exactly which pressure to apply to make it better.",
+  },
+  "Fence's Tongue": {
+    icon: "💬",
+    type: "Passive",
+    desc: "You speak the language of commerce, barter, and grey markets fluently. No merchant can overcharge you. No dealer can hide what something is really worth. You always know the price of things.",
+  },
+
+  // ── Ranger ──
+  "Hunter's Patience": {
+    icon: "🎯",
+    type: "Passive",
+    desc: "You understand that rushing is how prey becomes predator. The wilderness has taught you to read stillness, to track movement, and to strike at exactly the right moment rather than the first one.",
+  },
+  "Wilderness Sight": {
+    icon: "🌲",
+    type: "Passive",
+    desc: "The land speaks to you in a language others have forgotten. Weather, terrain, animal behaviour — all of it feeds you information that lets you move through the wild as though it belongs to you.",
+  },
+  "First Blood": {
+    icon: "🏹",
+    type: "Passive",
+    desc: "You are never caught unprepared. The opening of any engagement is yours to define — whether that means striking before they know you are there, or reading their intent the moment before they act.",
+  },
+
+  // ── Necromancer ──
+  "Death Sense": {
+    icon: "💀",
+    type: "Passive",
+    desc: "You perceive the boundary between living and dead as naturally as others see light and shadow. The recently deceased linger in your awareness. You always know when something is dying — and when it shouldn't be.",
+  },
+  "Undead Command": {
+    icon: "🦴",
+    type: "Passive",
+    desc: "The undead do not merely obey you — they recognise you. Your presence asserts a kind of dominance over them that feels natural, even ancient, as though death itself has given you a title.",
+  },
+  "Veil Walker": {
+    icon: "🌫️",
+    type: "Passive",
+    desc: "You exist slightly between states — present enough to act in the living world, but touched enough by the other side that certain things cannot fully reach you. Fear, life drain, and some curses slide off.",
+  },
+
+  // ── Elementalist ──
+  "Storm Caller": {
+    icon: "⛈️",
+    type: "Passive",
+    desc: "Weather bends toward your mood. In the field, you feel atmospheric pressure, charge, and temperature as extensions of yourself. Extreme environments cost you nothing.",
+  },
+  "Force of Nature": {
+    icon: "🌊",
+    type: "Passive",
+    desc: "When you release power, it does not trickle — it floods. Your magic carries the indifference of a natural disaster. Shields, wards, and resistances take more punishment from you than from anyone else.",
+  },
+  "Arcane Resonance": {
+    icon: "🔮",
+    type: "Passive",
+    desc: "Your spellwork hums at a frequency that makes other magic react. Enchanted objects respond to you more readily. Wards flicker in your presence. You sense active spells before you see their effects.",
+  },
+
+  // ── Illusionist ──
+  "Master of Faces": {
+    icon: "🎭",
+    type: "Passive",
+    desc: "You do not merely wear disguises — you inhabit them. Your bearing, voice, and mannerisms shift without effort. Even people who know you well can be uncertain whether they are speaking to you at all.",
+  },
+  "Fractured Reality": {
+    icon: "🌀",
+    type: "Passive",
+    desc: "The line between what is real and what you have made real has blurred so thoroughly that even you sometimes aren't certain. Your illusions carry a weight that outlasts the moment they were cast.",
+  },
+  "The Unseen Hand": {
+    icon: "🖐️",
+    type: "Passive",
+    desc: "You have learned to shape what people notice, what they ignore, and what they misremember. Consequences that should follow you simply fail to materialise. You are never quite where blame lands.",
+  },
+
+  // ── Paladin ──
+  "Divine Mandate": {
+    icon: "📿",
+    type: "Passive",
+    desc: "Your faith is not a private comfort — it is a declaration. Whatever divine force you serve has marked you as its instrument. Even nonbelievers sense something behind your eyes that is not entirely yours.",
+  },
+  "Blessed Blade": {
+    icon: "🌟",
+    type: "Passive",
+    desc: "Every weapon you wield carries a trace of consecration. Against creatures of darkness and corruption, this trace becomes something terrible. Your strikes land like judgement.",
+  },
+
+  // ── Priest ──
+  "Healer's Touch": {
+    icon: "🤲",
+    type: "Passive",
+    desc: "Wounds close faster in your hands than they have any right to. Your touch carries something that accelerates recovery — not magic exactly, more like a certainty that the body can mend if given direction.",
+  },
+  "Voice of Comfort": {
+    icon: "🕊️",
+    type: "Passive",
+    desc: "People tell you things they do not tell others. Fear eases in your company. The panicked steady themselves. Even strangers trust you without knowing why — and that trust is never misplaced.",
+  },
+  "Sacred Trust": {
+    icon: "⚖️",
+    type: "Passive",
+    desc: "You have been entrusted with the care of others, and you take that seriously in a way that has become bone-deep. You do not abandon people. You do not leave wounds unattended. This reputation precedes you everywhere.",
+  },
+
+  // ── Inquisitor ──
+  "Truth Seeker": {
+    icon: "🔍",
+    type: "Passive",
+    desc: "Deception does not work on you the way it works on others. You notice the small things — the hesitation, the misplaced word, the expression that arrived a half-second too late. You rarely ask a question you don't already know the answer to.",
+  },
+  "Divine Authority": {
+    icon: "⚡",
+    type: "Passive",
+    desc: "When you speak with the weight of your conviction behind it, things happen. Guards defer. Crowds part. Criminals confess. You carry not just your own authority but something older, borrowed from whatever power ordained you.",
+  },
+  "Mark of the Hunted": {
+    icon: "🎯",
+    type: "Passive",
+    desc: "Once you have set your attention on something, it cannot hide. You track purpose, not just footprints. The guilty, the corrupt, and the hidden all feel the same thing when you begin looking: the sense that the distance between you is closing.",
+  },
 } as const;
 
 // ============================================

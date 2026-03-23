@@ -10,6 +10,7 @@ import { getItemSlotEx, formatGameTime, advanceGameTime, xpToLevel, HP_PER_LEVEL
 import { extractBestiaryTag } from '../lib/tagParsers';
 import { checkAchievements, NON_HIDDEN_ACHIEVEMENT_IDS, ACHIEVEMENTS } from '../lib/achievements';
 import { INIT_PLAYER, generateWorldSeed } from '../lib/worldgen';
+import { SUBCLASSES } from '../lib/subclasses';
 
 export interface GameLoopContext {
   executeCommand: (
@@ -496,7 +497,10 @@ export function useGameLoop(
         // ── choose_subclass ──
         if (command.startsWith('choose_subclass:')) {
           const subclassName = command.replace('choose_subclass:', '').trim();
-          updatedPlayer = { ...updatedPlayer, subclass: subclassName } as any;
+          const subclassDef = SUBCLASSES[(updatedPlayer as any).class]?.[subclassName];
+          const existingAbilities: string[] = (updatedPlayer as any).abilities ?? [];
+          const newAbilities = [...existingAbilities, ...(subclassDef?.abilities ?? [])];
+          updatedPlayer = { ...updatedPlayer, subclass: subclassName, abilities: newAbilities } as any;
           gs.setPlayer(updatedPlayer);
           ui.closeModal('subclass');
           gs.appendNarrative(`\n\n*The path of the ${subclassName} opens before you.*`);
