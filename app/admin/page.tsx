@@ -474,10 +474,7 @@ export default function AdminPage() {
   // ── Discord ────────────────────────────────────────────────────────────────
   async function loadChangelog() {
     setDiscordMsg('Loading...');
-    const url = new URL('/api/admin/changelog', window.location.origin);
-    url.searchParams.set('secret', secret);
-    const res = await fetch(url.toString());
-    const data = await res.json();
+    const data = await adminGet('/api/admin/changelog');
     if (data.error) { setDiscordMsg(`Error: ${data.error}`); return; }
     setPatchText(parseUnreleased(data.content));
     setDiscordMsg('');
