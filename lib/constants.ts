@@ -387,6 +387,7 @@ export const ITEM_INFO = {
   "war plate":           { icon: "🛡️",  type: "Armour",     desc: "Battle-hardened plate armour. The heaviest protection available." },
   "padded jacket":       { icon: "🥋",  type: "Armour",     desc: "A quilted jacket stuffed with wool and leather. Basic protection for travellers." },
   // ── New weapons ──
+  "mace":                { icon: "🔨",  type: "Weapon",     desc: "A heavy-headed bludgeoning weapon favoured by clerics. Deals STR-based blunt damage." },
   "war axe":             { icon: "🪓",  type: "Weapon",     desc: "A single-headed war axe. Brutal and effective against armoured targets." },
   "silver sword":        { icon: "⚔️",  type: "Weapon",     desc: "A silver-alloyed sword. Particularly effective against undead and lycanthropes." },
   "iron dagger":         { icon: "🗡️",  type: "Weapon",     desc: "A plain iron dagger. Reliable if unexceptional." },

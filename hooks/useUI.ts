@@ -30,6 +30,7 @@ export interface UIContext {
   showTokenShop: boolean;
   showAchievements: boolean;
   showCompanion: boolean;
+  showSubclass: boolean;
 
   // Achievement toasts
   achievementToasts: AchievementDef[];
@@ -134,6 +135,7 @@ export function useUI(): UIContext {
   const [showTokenShop, setShowTokenShop] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showCompanion, setShowCompanion] = useState(false);
+  const [showSubclass, setShowSubclass] = useState(false);
 
   // Achievement toasts
   const [achievementToasts, setAchievementToasts] = useState<AchievementDef[]>([]);
@@ -291,6 +293,7 @@ export function useUI(): UIContext {
       tokenShop: [showTokenShop, setShowTokenShop],
       achievements: [showAchievements, setShowAchievements],
       companion: [showCompanion, setShowCompanion],
+      subclass: [showSubclass, setShowSubclass],
       map: [mapOpen, setMapOpen],
     };
 
@@ -317,6 +320,7 @@ export function useUI(): UIContext {
     showTokenShop,
     showAchievements,
     showCompanion,
+    showSubclass,
   ]);
 
   /**
@@ -373,6 +377,7 @@ export function useUI(): UIContext {
     showTokenShop,
     showAchievements,
     showCompanion,
+    showSubclass,
     achievementToasts,
     pushAchievementToast,
     shiftAchievementToast,

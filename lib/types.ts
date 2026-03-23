@@ -62,6 +62,7 @@ export interface Player {
   narrativeNudges?: boolean;
   achievements?: AchievementUnlock[];
   companion?: Companion | null;
+  subclass?: string | null;
 }
 
 export interface AchievementUnlock {

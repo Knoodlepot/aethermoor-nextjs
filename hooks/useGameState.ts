@@ -33,12 +33,16 @@ export function useGameState(storage: UseStorageReturn): GameStateContext {
   const [isLoaded, setIsLoaded] = useState(false);
 
   /**
-   * Load initial game state from storage on mount
+   * Load initial game state from storage on mount.
+   * Depend on loadGame (stable useCallback) not the whole storage object —
+   * storage re-creates its identity on every cloud-save (isSyncingCloud toggle),
+   * which would re-trigger this effect and overwrite in-progress new-game state.
    */
+  const { loadGame, saveGame } = storage;
   useEffect(() => {
     const initializeGameState = async () => {
       try {
-        const savedGame = await storage.loadGame();
+        const savedGame = await loadGame();
 
         if (savedGame) {
           const migrated = migrateWorldSeed(savedGame.worldSeed) as WorldSeed;
@@ -49,7 +53,7 @@ export function useGameState(storage: UseStorageReturn): GameStateContext {
           setLog(savedGame.log);
           // Re-save if the worldSeed was upgraded so future loads are instant
           if (migrated !== savedGame.worldSeed && savedGame.player) {
-            storage.saveGame(savedGame.player, migrated, savedGame.messages, savedGame.narrative, savedGame.log);
+            saveGame(savedGame.player, migrated, savedGame.messages, savedGame.narrative, savedGame.log);
           }
         }
 
@@ -61,7 +65,8 @@ export function useGameState(storage: UseStorageReturn): GameStateContext {
     };
 
     initializeGameState();
-  }, [storage]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadGame]);
 
   /**
    * Add message to conversation history (max 40 recent messages).

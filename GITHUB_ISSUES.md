@@ -8,12 +8,12 @@ Cross-referenced against changelog and memory. Last updated: 2026-03-20.
 
 | # | Title | What's done | What's missing |
 |---|-------|-------------|----------------|
-| #4 | 1.3 Dungeon System | Entry, floor descent, cooldown, dungeon button | Biome variety (#14), leaderboard exists in DB but no UI |
-| #8 | 1.7 Inventory & Economy | Shop, buy/sell, crafting, gold, herbs | Issue body says crafting not built — now outdated; worth closing or updating |
-| #9 | 1.8 Accessibility & Presentation | 5 themes (updated from 4), mobile rebuilt, OpenDyslexic redesigned | Issue body describes old state — needs review/update |
-| #23 | Phase 1 — Launch Ready | Map done, safety done, monetisation done | Dungeon biomes, playtesting feedback loop |
+| #4 | 1.3 Dungeon System | Entry, floor descent, cooldown, biomes, 35 exclusive enemies, leaderboard with country flags | Fully done — close |
+| #8 | 1.7 Inventory & Economy | Shop, buy/sell, crafting (18+ recipes), DEF stat, all gear equippable | Closed — fully done |
+| #9 | 1.8 Accessibility & Presentation | 5 themes, mobile rebuilt, OpenDyslexic | Closed — fully done |
+| #23 | Phase 1 — Launch Ready | Map, safety, monetisation, pricing page, feedback modal, OG/sitemap | Playtesting feedback loop |
 | #25 | Phase 3 — Stability & Scale | Server-side saves (Railway PostgreSQL), sessions, rate limiting | Cost monitoring dashboard, caching layer, CDN |
-| #37 | 6. The Main Quest | Acts 1–6 with pacing gates implemented in code | Story lore behind each act never written (betrayal, endings, etc.) |
+| #37 | 6. The Main Quest | Acts 1–6 pacing gates, ending screen, NG+, legacy titles | Fully done — close |
 
 ---
 
@@ -22,10 +22,7 @@ Cross-referenced against changelog and memory. Last updated: 2026-03-20.
 ### Feature gaps
 | # | Title | Notes |
 |---|-------|-------|
-| #14 | Dungeon biome variety | Every floor still "ancient and unmapped" — no biome injected into narrator |
-| #16 | Companion system | No tracking, recruitment, or companion stats |
 | #19 | Sound design | No audio at all |
-| #21 | Achievements | Nothing implemented |
 | #3 | Change (organic world) | Procedural gen partially addresses this but issue is vague |
 | #42 | Sign in with Apple | Needs iOS Capacitor app first (Phase 4) |
 

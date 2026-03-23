@@ -5,145 +5,117 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 import type { Player } from '@/lib/types';
 import { ABILITY_INFO } from '@/lib/constants';
 import { getProfessionLevel, getProfessionXp } from '@/lib/helpers';
+import { CLASS_BASELINE_SKILLS, SUBCLASSES } from '@/lib/subclasses';
 
-// ── Local SKILL_TREES definition (not yet in constants.ts) ──
-interface SkillDef {
-  id: string;
-  name: string;
-  icon: string;
-  desc: string;
-  cost: number;
-}
+// ── Skill display metadata (name + icon + short desc for UI cards) ──
+const SKILL_META: Record<string, { name: string; icon: string; desc: string }> = {
+  // Warrior baseline
+  iron_skin:    { name: 'Iron Skin',    icon: '🛡️', desc: 'Permanently reduce all incoming damage by 1.' },
+  power_strike: { name: 'Power Strike', icon: '⚔️', desc: 'Chance to deal double damage on a heavy swing.' },
+  toughness:    { name: 'Toughness',    icon: '🪨', desc: 'Increase max HP by 20 permanently.' },
+  battle_rush:  { name: 'Battle Rush',  icon: '⚡', desc: 'First attack each combat deals +50% damage.' },
 
-interface SkillTierDef {
-  id: number;
-  label: string;
-  threshold: number;
-  skills: SkillDef[];
-}
+  // Rogue baseline
+  shadowstep:  { name: 'Shadowstep',  icon: '👤', desc: 'Vanish and reappear; next attack auto-crits.' },
+  pick_pocket: { name: 'Pick Pocket', icon: '👜', desc: 'Steal gold from targets without combat.' },
+  knife_throw: { name: 'Knife Throw', icon: '🗡️', desc: 'Open combat at range with an AGI-based throw.' },
+  evasion:     { name: 'Evasion',     icon: '🌬️', desc: '+20% chance to dodge incoming attacks.' },
 
-interface ClassSkillTree {
-  primaryStat: string;
-  tiers: SkillTierDef[];
-}
+  // Mage baseline
+  arcane_surge: { name: 'Arcane Surge', icon: '🔮', desc: 'Cast one spell for free per combat.' },
+  mana_shield:  { name: 'Mana Shield',  icon: '💧', desc: 'Absorb 15 damage before HP is affected.' },
+  spell_pierce: { name: 'Spell Pierce', icon: '✨', desc: 'Spells ignore half of enemy resistance.' },
+  arcane_mind:  { name: 'Arcane Mind',  icon: '🧠', desc: 'Permanently add INT to WIL for spell resistance.' },
 
-const SKILL_TREES: Record<string, ClassSkillTree> = {
-  Warrior: {
-    primaryStat: 'str',
-    tiers: [
-      {
-        id: 1, label: 'Tier I', threshold: 8,
-        skills: [
-          { id: 'iron_skin', name: 'Iron Skin', icon: '🛡️', desc: 'Permanently reduce all incoming damage by 1.', cost: 1 },
-          { id: 'power_strike', name: 'Power Strike', icon: '⚔️', desc: 'Chance to deal double damage on a heavy swing.', cost: 1 },
-          { id: 'war_shout', name: 'War Shout', icon: '📣', desc: 'Boost STR for 3 turns when combat begins.', cost: 1 },
-        ],
-      },
-      {
-        id: 2, label: 'Tier II', threshold: 14,
-        skills: [
-          { id: 'crushing_blow', name: 'Crushing Blow', icon: '💥', desc: 'Stagger the enemy, skipping their next attack.', cost: 1 },
-          { id: 'toughness', name: 'Toughness', icon: '🪨', desc: 'Increase max HP by 20 permanently.', cost: 1 },
-          { id: 'battle_rush', name: 'Battle Rush', icon: '⚡', desc: 'First attack each combat deals +50% damage.', cost: 1 },
-        ],
-      },
-      {
-        id: 3, label: 'Tier III', threshold: 20,
-        skills: [
-          { id: 'berserker_rage', name: 'Berserker Rage', icon: '🔥', desc: 'Below 30% HP, deal triple damage. The narrator notices.', cost: 1 },
-          { id: 'unbreakable', name: 'Unbreakable', icon: '🏔️', desc: 'Survive one killing blow per dungeon with 1 HP. The narrator notices.', cost: 1 },
-          { id: 'warlords_presence', name: "Warlord's Presence", icon: '👑', desc: 'Weaker enemies may flee before combat begins. The narrator notices.', cost: 1 },
-        ],
-      },
-    ],
-  },
-  Rogue: {
-    primaryStat: 'agi',
-    tiers: [
-      {
-        id: 1, label: 'Tier I', threshold: 8,
-        skills: [
-          { id: 'shadowstep', name: 'Shadowstep', icon: '👤', desc: 'Vanish and reappear, guaranteeing your next attack crits.', cost: 1 },
-          { id: 'pick_pocket', name: 'Pick Pocket', icon: '👜', desc: 'Steal gold from targets without entering combat.', cost: 1 },
-          { id: 'knife_throw', name: 'Knife Throw', icon: '🗡️', desc: 'Open combat at range with an AGI-based throw.', cost: 1 },
-        ],
-      },
-      {
-        id: 2, label: 'Tier II', threshold: 14,
-        skills: [
-          { id: 'blade_dance', name: 'Blade Dance', icon: '💃', desc: 'Strike twice per attack turn against single targets.', cost: 1 },
-          { id: 'evasion', name: 'Evasion', icon: '🌬️', desc: '+20% chance to dodge incoming attacks.', cost: 1 },
-          { id: 'smoke_bomb', name: 'Smoke Bomb', icon: '💨', desc: 'Guaranteed escape from any combat encounter.', cost: 1 },
-        ],
-      },
-      {
-        id: 3, label: 'Tier III', threshold: 20,
-        skills: [
-          { id: 'master_thief', name: 'Master Thief', icon: '🏴', desc: 'Doubles all gold earned from combat and theft. The narrator notices.', cost: 1 },
-          { id: 'assassinate', name: 'Assassinate', icon: '☠️', desc: 'One-hit-kill chance on weakened targets.', cost: 1 },
-          { id: 'ghost_walk', name: 'Ghost Walk', icon: '👻', desc: '25% chance to negate an incoming attack completely. The narrator notices.', cost: 1 },
-        ],
-      },
-    ],
-  },
-  Mage: {
-    primaryStat: 'int',
-    tiers: [
-      {
-        id: 1, label: 'Tier I', threshold: 8,
-        skills: [
-          { id: 'arcane_surge', name: 'Arcane Surge', icon: '🔮', desc: 'Cast one spell for free per combat.', cost: 1 },
-          { id: 'mana_shield', name: 'Mana Shield', icon: '💧', desc: 'Absorb up to 15 damage before HP is affected.', cost: 1 },
-          { id: 'spell_pierce', name: 'Spell Pierce', icon: '⚡', desc: 'Your spells ignore half of enemy defence.', cost: 1 },
-        ],
-      },
-      {
-        id: 2, label: 'Tier II', threshold: 14,
-        skills: [
-          { id: 'chain_lightning', name: 'Chain Lightning', icon: '🌩️', desc: 'Lightning bounces between up to 3 targets.', cost: 1 },
-          { id: 'arcane_mind', name: 'Arcane Mind', icon: '🧠', desc: 'Permanently add INT to your WIL for spell resistance.', cost: 1 },
-          { id: 'overcharge', name: 'Overcharge', icon: '💥', desc: 'Sacrifice 10 HP to boost spell damage by 50%.', cost: 1 },
-        ],
-      },
-      {
-        id: 3, label: 'Tier III', threshold: 20,
-        skills: [
-          { id: 'archmages_will', name: "Archmage's Will", icon: '✨', desc: 'All your spells automatically critically hit. The narrator notices.', cost: 1 },
-          { id: 'time_stop', name: 'Time Stop', icon: '⏳', desc: "Skip the enemy's next three turns. Once per dungeon.", cost: 1 },
-          { id: 'lich_form', name: 'Lich Form', icon: '💀', desc: 'Death heals you instead of killing you, once per run.', cost: 1 },
-        ],
-      },
-    ],
-  },
-  Cleric: {
-    primaryStat: 'wil',
-    tiers: [
-      {
-        id: 1, label: 'Tier I', threshold: 8,
-        skills: [
-          { id: 'healing_light', name: 'Healing Light', icon: '💛', desc: 'Restore 25 HP as a combat action.', cost: 1 },
-          { id: 'bless', name: 'Bless', icon: '✝️', desc: "Boost your next attack's damage by WIL×2.", cost: 1 },
-          { id: 'ward_undead', name: 'Ward Undead', icon: '🌟', desc: 'Undead enemies deal 30% less damage to you.', cost: 1 },
-        ],
-      },
-      {
-        id: 2, label: 'Tier II', threshold: 14,
-        skills: [
-          { id: 'smite_evil', name: 'Smite Evil', icon: '⚡', desc: 'Deal double damage against undead and demons.', cost: 1 },
-          { id: 'group_heal', name: 'Group Heal', icon: '💚', desc: 'Restore HP equal to WIL×3 at start of each floor.', cost: 1 },
-          { id: 'divine_aegis', name: 'Divine Aegis', icon: '🛡️', desc: 'Absorb the first attack each combat completely.', cost: 1 },
-        ],
-      },
-      {
-        id: 3, label: 'Tier III', threshold: 20,
-        skills: [
-          { id: 'resurrection_light', name: 'Resurrection Light', icon: '💫', desc: 'Survive death once per dungeon with 50% HP. The narrator notices.', cost: 1 },
-          { id: 'holy_storm', name: 'Holy Storm', icon: '⛈️', desc: 'Massive WIL-based holy damage hits all enemies present.', cost: 1 },
-          { id: 'avatar_divine', name: 'Avatar of Light', icon: '☀️', desc: 'For 3 turns, all attacks heal you for 50% of damage dealt. The narrator notices.', cost: 1 },
-        ],
-      },
-    ],
-  },
+  // Cleric baseline
+  healing_light: { name: 'Healing Light', icon: '💛', desc: 'Restore 25 HP as a combat action.' },
+  bless:         { name: 'Bless',         icon: '✝️', desc: 'Boost next attack damage by WIL×2.' },
+  ward_undead:   { name: 'Ward Undead',   icon: '🌟', desc: 'Undead deal 30% less damage to you.' },
+  smite_evil:    { name: 'Smite Evil',    icon: '⚡', desc: 'Deal double damage against undead and demons.' },
+
+  // Berserker
+  berserker_rage:   { name: 'Berserker Rage',   icon: '🔥', desc: 'Below 30% HP, deal triple damage.' },
+  blood_frenzy:     { name: 'Blood Frenzy',     icon: '🩸', desc: 'Each kill in combat heals 15 HP.' },
+  frenzied_strikes: { name: 'Frenzied Strikes', icon: '💢', desc: 'Consecutive attacks on same enemy deal +15% more damage, stacking.' },
+  war_shout:        { name: 'War Shout',        icon: '📣', desc: 'Stagger all enemies at combat start; they deal 20% less for 2 turns.' },
+  death_defiant:    { name: 'Death Defiant',    icon: '💀', desc: 'Once per dungeon, survive a killing blow and counterattack immediately.' },
+
+  // Knight
+  shield_mastery:    { name: 'Shield Mastery',   icon: '🛡️', desc: 'Shields grant +2 extra DEF; chance to block incoming hits.' },
+  rally:             { name: 'Rally',             icon: '💚', desc: 'Restore 20 HP at the start of each combat.' },
+  mounted_charge:    { name: 'Mounted Charge',   icon: '🐴', desc: 'First attack each combat deals double damage.' },
+  warlords_presence: { name: "Warlord's Presence", icon: '👑', desc: "Weaker enemies may flee; NPCs visibly respect your authority." },
+  honourable_duel:   { name: 'Honourable Duel',  icon: '⚔️', desc: 'Enemies focus you — companions take 50% less damage.' },
+
+  // Monk
+  iron_fists:    { name: 'Iron Fists',    icon: '👊', desc: 'Unarmed attacks deal STR×2 damage.' },
+  deflect:       { name: 'Deflect',       icon: '🌀', desc: '30% chance per turn to deflect a melee attack.' },
+  stunning_blow: { name: 'Stunning Blow', icon: '⚡', desc: 'Each attack may stun the enemy, skipping their next action.' },
+  chi_focus:     { name: 'Chi Focus',     icon: '🌊', desc: 'Spend 10 HP; next attack deals +80% damage.' },
+  unbreakable:   { name: 'Unbreakable',   icon: '🏔️', desc: 'Once per dungeon, survive a killing blow at 1 HP.' },
+
+  // Assassin
+  venom_coat:  { name: 'Venom Coat',  icon: '☠️', desc: 'Attacks inflict poison; enemies lose HP each turn.' },
+  blade_dance: { name: 'Blade Dance', icon: '💃', desc: 'Strike twice per turn against a single target.' },
+  ghost_walk:  { name: 'Ghost Walk',  icon: '👻', desc: '25% chance to negate any incoming attack.' },
+  assassinate: { name: 'Assassinate', icon: '🎯', desc: 'One-hit-kill chance on weakened targets from concealment.' },
+  smoke_bomb:  { name: 'Smoke Bomb',  icon: '💨', desc: 'Guaranteed escape from any combat — no retribution.' },
+
+  // Thief
+  master_thief:   { name: 'Master Thief',   icon: '🏴', desc: 'Double all gold from combat and theft.' },
+  lockmaster:     { name: 'Lockmaster',     icon: '🔑', desc: 'Open locked doors and containers without keys.' },
+  silver_tongue:  { name: 'Silver Tongue',  icon: '🗣️', desc: 'Better prices; talk your way out of some combats.' },
+  fortune_finder: { name: 'Fortune Finder', icon: '💰', desc: 'Chance to discover bonus gold in any environment.' },
+  crowd_vanish:   { name: 'Crowd Vanish',   icon: '🫥', desc: 'Slip away from any non-combat situation cleanly.' },
+
+  // Ranger
+  keen_eye:       { name: 'Keen Eye',       icon: '👁️', desc: 'Never surprised; always act first in combat.' },
+  hunter_mark:    { name: 'Hunter Mark',    icon: '🎯', desc: 'Marked target takes +30% damage from all your attacks.' },
+  wilderness_born:{ name: 'Wilderness Born',icon: '🌲', desc: 'No penalties in the wild; food, water, shelter always findable.' },
+  rapid_shot:     { name: 'Rapid Shot',     icon: '🏹', desc: 'Three quick ranged strikes per turn at reduced damage.' },
+  predator:       { name: 'Predator',       icon: '🐺', desc: 'Always know enemy HP; enemies cannot flee or call for aid.' },
+
+  // Necromancer
+  raise_dead:  { name: 'Raise Dead',  icon: '💀', desc: 'After any kill, summon the fallen as an undead minion.' },
+  life_drain:  { name: 'Life Drain',  icon: '🩸', desc: 'Siphon 15 HP from your target each turn.' },
+  bone_shield: { name: 'Bone Shield', icon: '🦴', desc: 'Your minion absorbs one hit per combat completely.' },
+  death_pact:  { name: 'Death Pact',  icon: '🔮', desc: 'If you fall, your minion sacrifices itself to revive you at 30% HP.' },
+  death_aura:  { name: 'Death Aura',  icon: '🌑', desc: 'Undead are unnerved; they deal 30% less damage and may hesitate.' },
+
+  // Elementalist
+  chain_lightning:   { name: 'Chain Lightning',   icon: '🌩️', desc: 'Lightning leaps between up to three targets.' },
+  overcharge:        { name: 'Overcharge',         icon: '💥', desc: 'Sacrifice 10 HP for +60% damage on next spell.' },
+  elemental_mastery: { name: 'Elemental Mastery',  icon: '🌪️', desc: 'Spells exploit enemy weaknesses automatically.' },
+  arcane_nova:       { name: 'Arcane Nova',        icon: '✨', desc: 'Release a burst of arcane energy hitting all enemies.' },
+  archmages_will:    { name: "Archmage's Will",    icon: '🌟', desc: 'All spells auto-crit on every cast.' },
+
+  // Illusionist
+  phantom_double: { name: 'Phantom Double', icon: '🪞', desc: '50% chance the enemy attacks your decoy instead.' },
+  charm:          { name: 'Charm',          icon: '💜', desc: 'Bend one enemy to your will — they fight for you this combat.' },
+  vanish:         { name: 'Vanish',         icon: '🫧', desc: 'Become imperceptible; end any combat without harm.' },
+  mind_shatter:   { name: 'Mind Shatter',   icon: '🔮', desc: "Fracture enemy focus — their next 3 attacks deal half damage." },
+  time_stop:      { name: 'Time Stop',      icon: '⏳', desc: 'Freeze the world — enemies cannot act for 3 turns. Once per dungeon.' },
+
+  // Paladin
+  divine_strike: { name: 'Divine Strike', icon: '⚔️', desc: 'Weapon strikes carry holy fire — bonus damage against evil.' },
+  divine_aegis:  { name: 'Divine Aegis',  icon: '🛡️', desc: 'The first strike against you each combat is absorbed by faith.' },
+  lay_on_hands:  { name: 'Lay on Hands',  icon: '🤲', desc: 'Fully restore HP once per dungeon — self or ally.' },
+  sacred_charge: { name: 'Sacred Charge', icon: '⚡', desc: 'Open each combat with a holy strike dealing WIL×3 damage.' },
+  holy_wrath:    { name: 'Holy Wrath',    icon: '🔥', desc: 'Below 40% HP, divine fury surges — WIL×2 bonus damage.' },
+
+  // Priest
+  greater_mend:       { name: 'Greater Mend',       icon: '💚', desc: 'Restore 45 HP mid-combat.' },
+  group_heal:         { name: 'Group Heal',          icon: '💛', desc: 'At each floor start, restore WIL×3 HP to yourself and companions.' },
+  divine_shield:      { name: 'Divine Shield',       icon: '💙', desc: 'A ward absorbs 25 damage each combat before HP is touched.' },
+  resurrection_light: { name: 'Resurrection Light',  icon: '💫', desc: 'Divine mercy returns you at 50% HP if you fall. Once per dungeon.' },
+  purify:             { name: 'Purify',              icon: '✨', desc: 'Instantly cleanse all status effects with a spoken word.' },
+
+  // Inquisitor
+  holy_interrogation: { name: 'Holy Interrogation', icon: '🔍', desc: 'NPCs cannot deceive you; hidden truths surface.' },
+  exorcise:           { name: 'Exorcise',           icon: '🕊️', desc: 'Instantly destroy undead below 30% HP with divine authority.' },
+  divine_judgement:   { name: 'Divine Judgement',   icon: '⚖️', desc: 'First strike against evil-aligned enemies deals triple damage.' },
+  inquisitor_mark:    { name: "Inquisitor's Mark",  icon: '🔥', desc: 'Mark a target — all your attacks deal +40% damage against them.' },
+  holy_storm:         { name: 'Holy Storm',         icon: '⛈️', desc: 'Unleash WIL-based holy devastation on all enemies simultaneously.' },
 };
 
 const PROFESSION_KEYS = ['survival', 'social', 'farming', 'gathering', 'crafting'] as const;
@@ -161,15 +133,76 @@ interface SkillTreeScreenProps {
   onClose: () => void;
 }
 
+function SkillCard({
+  skillId,
+  unlocked,
+  canUnlock,
+  onUnlock,
+  T,
+  tf,
+}: {
+  skillId: string;
+  unlocked: boolean;
+  canUnlock: boolean;
+  onUnlock: () => void;
+  T: any;
+  tf: any;
+}) {
+  const meta = SKILL_META[skillId];
+  if (!meta) return null;
+  return (
+    <div
+      style={{
+        background: unlocked ? '#1a2a1a' : T.panelAlt,
+        border: `1px solid ${unlocked ? '#60a060' : T.border}`,
+        padding: 10,
+      }}
+    >
+      <div style={{ fontSize: 22, marginBottom: 4 }}>{meta.icon}</div>
+      <div style={{ ...tf, fontSize: 11, color: unlocked ? '#60a060' : T.text, marginBottom: 4 }}>
+        {meta.name}
+      </div>
+      <div style={{ fontSize: 10, color: T.textMuted, lineHeight: 1.4, marginBottom: 8 }}>
+        {meta.desc}
+      </div>
+      {unlocked ? (
+        <div style={{ fontSize: 10, color: '#60a060', ...tf, letterSpacing: 1 }}>UNLOCKED</div>
+      ) : (
+        <button
+          onClick={() => { if (canUnlock) onUnlock(); }}
+          disabled={!canUnlock}
+          style={{
+            width: '100%',
+            padding: '4px 0',
+            background: canUnlock ? T.accent : 'transparent',
+            border: `1px solid ${canUnlock ? T.accent : T.border}`,
+            color: canUnlock ? '#fff' : T.textFaint,
+            cursor: canUnlock ? 'pointer' : 'default',
+            fontSize: 10,
+            ...tf,
+            letterSpacing: 1,
+          }}
+        >
+          1 pt
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function SkillTreeScreen({ player, onUnlock, onClose }: SkillTreeScreenProps) {
   const { T, tf, bf } = useTheme();
   const [tab, setTab] = React.useState<'skills' | 'abilities' | 'professions'>('skills');
 
-  const classTree = SKILL_TREES[player.class];
   const unlocked: string[] = (player as any).unlockedSkills || [];
   const skillPoints: number = (player as any).skillPoints || 0;
-  const primaryStat = classTree?.primaryStat || 'str';
-  const statValue: number = (player as any)[primaryStat] || 0;
+  const playerClass: string = player.class;
+  const subclass: string | null = (player as any).subclass ?? null;
+  const level: number = player.level || 1;
+
+  const baselineSkills = CLASS_BASELINE_SKILLS[playerClass] || [];
+  const subclassDef = subclass && SUBCLASSES[playerClass]?.[subclass];
+  const subclassSkills = subclassDef ? subclassDef.skills : [];
 
   const TABS = [
     { id: 'skills' as const, label: 'Skill Tree' },
@@ -221,7 +254,7 @@ export function SkillTreeScreen({ player, onUnlock, onClose }: SkillTreeScreenPr
               ✨ SKILLS
             </div>
             <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
-              {player.class} · {skillPoints} skill point{skillPoints !== 1 ? 's' : ''} available
+              {playerClass}{subclass ? ` · ${subclass}` : ''} · {skillPoints} skill point{skillPoints !== 1 ? 's' : ''} available
             </div>
           </div>
           <button
@@ -270,86 +303,115 @@ export function SkillTreeScreen({ player, onUnlock, onClose }: SkillTreeScreenPr
           {/* ── SKILL TREE TAB ── */}
           {tab === 'skills' && (
             <div style={{ padding: 16 }}>
-              {!classTree ? (
-                <div style={{ padding: 40, textAlign: 'center', color: T.textFaint, fontStyle: 'italic' }}>
-                  No skill tree defined for {player.class}.
+
+              {/* Section 1: Class baseline skills */}
+              <div style={{ marginBottom: 28 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 10,
+                    paddingBottom: 6,
+                    borderBottom: `1px solid ${T.border}`,
+                  }}
+                >
+                  <span style={{ ...tf, color: T.accent, fontSize: 11, letterSpacing: 2 }}>
+                    CLASS SKILLS
+                  </span>
+                  <span style={{ fontSize: 10, color: T.textMuted }}>— always available</span>
                 </div>
-              ) : (
-                classTree.tiers.map((tier, ti) => {
-                  const prevTierHasUnlock = ti === 0 || classTree.tiers[ti - 1].skills.some((s) => unlocked.includes(s.id));
-                  const tierAccessible = statValue >= tier.threshold && prevTierHasUnlock;
-                  return (
-                    <div key={tier.id} style={{ marginBottom: 24 }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8,
-                          marginBottom: 10,
-                          paddingBottom: 6,
-                          borderBottom: `1px solid ${T.border}`,
-                        }}
-                      >
-                        <span style={{ ...tf, color: tierAccessible ? T.accent : T.textFaint, fontSize: 11, letterSpacing: 2 }}>
-                          {tier.label.toUpperCase()}
-                        </span>
-                        {!tierAccessible && (
-                          <span style={{ fontSize: 10, color: T.textFaint }}>
-                            — requires {primaryStat.toUpperCase()} {tier.threshold}
-                            {ti > 0 ? ' + unlock from previous tier' : ''}
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                        {tier.skills.map((skill) => {
-                          const isUnlocked = unlocked.includes(skill.id);
-                          const canUnlock = tierAccessible && skillPoints >= skill.cost && !isUnlocked;
-                          return (
-                            <div
-                              key={skill.id}
-                              style={{
-                                background: isUnlocked ? '#1a2a1a' : T.panelAlt,
-                                border: `1px solid ${isUnlocked ? '#60a060' : tierAccessible ? T.border : T.border + '55'}`,
-                                padding: 10,
-                                opacity: tierAccessible ? 1 : 0.5,
-                              }}
-                            >
-                              <div style={{ fontSize: 22, marginBottom: 4 }}>{skill.icon}</div>
-                              <div style={{ ...tf, fontSize: 11, color: isUnlocked ? '#60a060' : T.text, marginBottom: 4 }}>
-                                {skill.name}
-                              </div>
-                              <div style={{ fontSize: 10, color: T.textMuted, lineHeight: 1.4, marginBottom: 8 }}>
-                                {skill.desc}
-                              </div>
-                              {isUnlocked ? (
-                                <div style={{ fontSize: 10, color: '#60a060', ...tf, letterSpacing: 1 }}>UNLOCKED</div>
-                              ) : (
-                                <button
-                                  onClick={() => { if (canUnlock) onUnlock(skill.id); }}
-                                  disabled={!canUnlock}
-                                  style={{
-                                    width: '100%',
-                                    padding: '4px 0',
-                                    background: canUnlock ? T.accent : 'transparent',
-                                    border: `1px solid ${canUnlock ? T.accent : T.border}`,
-                                    color: canUnlock ? '#fff' : T.textFaint,
-                                    cursor: canUnlock ? 'pointer' : 'default',
-                                    fontSize: 10,
-                                    ...tf,
-                                    letterSpacing: 1,
-                                  }}
-                                >
-                                  {skill.cost} pt
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                  {baselineSkills.map((skillId) => (
+                    <SkillCard
+                      key={skillId}
+                      skillId={skillId}
+                      unlocked={unlocked.includes(skillId)}
+                      canUnlock={skillPoints >= 1 && !unlocked.includes(skillId)}
+                      onUnlock={() => onUnlock(skillId)}
+                      T={T}
+                      tf={tf}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Section 2: Subclass skills */}
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 10,
+                    paddingBottom: 6,
+                    borderBottom: `1px solid ${T.border}`,
+                  }}
+                >
+                  <span style={{ ...tf, color: subclass ? T.gold : T.textFaint, fontSize: 11, letterSpacing: 2 }}>
+                    {subclass ? subclass.toUpperCase() : 'SUBCLASS'}
+                  </span>
+                  {!subclass && (
+                    <span style={{ fontSize: 10, color: T.textFaint }}>
+                      {level < 10 ? `— unlocks at level 10 (Lv.${level} now)` : '— choose your path'}
+                    </span>
+                  )}
+                </div>
+
+                {!subclass && level < 10 && (
+                  <div
+                    style={{
+                      padding: 24,
+                      textAlign: 'center',
+                      color: T.textFaint,
+                      fontSize: 12,
+                      fontStyle: 'italic',
+                      border: `1px dashed ${T.border}`,
+                    }}
+                  >
+                    Your path diverges at level 10.<br />
+                    <span style={{ fontSize: 10, marginTop: 6, display: 'block' }}>
+                      {10 - level} level{10 - level !== 1 ? 's' : ''} to go.
+                    </span>
+                  </div>
+                )}
+
+                {!subclass && level >= 10 && (
+                  <div
+                    style={{
+                      padding: 16,
+                      textAlign: 'center',
+                      background: '#2a1e00',
+                      border: `1px solid ${T.gold}55`,
+                      color: T.gold,
+                      fontSize: 12,
+                    }}
+                  >
+                    Your subclass awaits. The choice will come when you rest.
+                  </div>
+                )}
+
+                {subclass && subclassDef && (
+                  <>
+                    <div style={{ fontSize: 11, color: T.textMuted, fontStyle: 'italic', marginBottom: 12 }}>
+                      {subclassDef.flavour}
                     </div>
-                  );
-                })
-              )}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                      {subclassSkills.map((skillId) => (
+                        <SkillCard
+                          key={skillId}
+                          skillId={skillId}
+                          unlocked={unlocked.includes(skillId)}
+                          canUnlock={skillPoints >= 1 && !unlocked.includes(skillId)}
+                          onUnlock={() => onUnlock(skillId)}
+                          T={T}
+                          tf={tf}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           )}
 

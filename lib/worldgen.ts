@@ -885,10 +885,12 @@ export function initLocationStandings(worldData: any[]): Record<string, number> 
 
 export function INIT_PLAYER(name: string, cls: string, location: string, worldData: any[]): any {
   const classData = (CLASSES as any)[cls];
-  const startingWeapon = cls === 'Warrior' || cls === 'Cleric' ? 'Iron Sword'
+  const startingWeapon = cls === 'Warrior' ? 'Iron Sword'
+    : cls === 'Cleric' ? 'Mace'
     : cls === 'Rogue' ? 'Dagger'
     : cls === 'Mage' ? 'Arcane Wand'
     : null;
+  const startingOffhand = cls === 'Cleric' ? 'Iron Shield' : null;
   return {
     name,
     class: cls,
@@ -912,7 +914,7 @@ export function INIT_PLAYER(name: string, cls: string, location: string, worldDa
     quests: [],
     equipped: {
       weapon: startingWeapon,
-      offhand: null,
+      offhand: startingOffhand,
       head: null,
       body: null,
       feet: null,
@@ -948,6 +950,7 @@ export function INIT_PLAYER(name: string, cls: string, location: string, worldDa
     professions: {},
     skillPoints: 0,
     unlockedSkills: [],
+    subclass: null,
     bestiaryEntries: [],
     achievements: [],
     companion: null,

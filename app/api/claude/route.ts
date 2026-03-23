@@ -8,6 +8,7 @@ import { applyNarrationState } from '@/lib/server/narrationState';
 import { generateNamePool } from '@/lib/nameGenerator';
 import { isAccountOnModerationHold } from '@/lib/moderation';
 import { DUNGEON_EXCLUSIVE_ENEMIES, ITEM_DEF_VALUES } from '@/lib/constants';
+import { ALL_SUBCLASS_SKILL_DESCRIPTIONS } from '@/lib/subclasses';
 
 // Strip control characters and truncate
 function sanitiseStr(val: unknown, maxLen: number): string {
@@ -638,52 +639,10 @@ function buildNarratorSystem(p: any, w: any): string {
     ? `${companion.name} the ${companion.role} (${companion.icon}) — ${companion.relationship} | HP ${companion.hp}/${companion.maxHp} | STR ${companion.str} AGI ${companion.agi} WIL ${companion.wil}\nABILITY: ${companion.ability}${companion.notes ? `\nNOTES: ${companion.notes}` : ''}${companion.statusEffects?.length ? `\nSTATUS: ${companion.statusEffects.join(', ')}` : ''}`
     : null;
 
-  // All skill tree descriptions — sent to narrator so it knows what the player can do
-  const ALL_SKILL_DESCRIPTIONS: Record<string, string> = {
-    // Warrior
-    iron_skin: 'Iron Skin (reduce all incoming damage by 1 permanently)',
-    power_strike: 'Power Strike (chance to deal double damage on a heavy swing)',
-    war_shout: 'War Shout (boost STR for 3 turns when combat begins)',
-    crushing_blow: 'Crushing Blow (stagger the enemy, skipping their next attack)',
-    toughness: 'Toughness (max HP +20 permanently)',
-    battle_rush: 'Battle Rush (first attack each combat deals +50% damage)',
-    berserker_rage: 'Berserker Rage (below 30% HP, deal triple damage)',
-    unbreakable: 'Unbreakable (survive one killing blow per dungeon at 1 HP — bears visible battle scars; soldiers recognise a true warrior)',
-    warlords_presence: "Warlord's Presence (weaker enemies may flee before combat; commands battlefield authority — NPCs and enemies sense the dominance)",
-    // Rogue
-    shadowstep: 'Shadowstep (vanish and reappear behind the target; next attack automatically crits)',
-    pick_pocket: 'Pick Pocket (steal gold from targets without entering combat)',
-    knife_throw: 'Knife Throw (open combat at range with an AGI-based thrown dagger)',
-    blade_dance: 'Blade Dance (strike twice per attack turn against a single target)',
-    evasion: 'Evasion (+20% chance to dodge incoming attacks)',
-    smoke_bomb: 'Smoke Bomb (guaranteed escape from any combat encounter)',
-    master_thief: 'Master Thief (doubles all gold from combat and theft — merchants are wary, criminals respect you)',
-    assassinate: 'Assassinate (one-hit-kill chance on weakened targets)',
-    ghost_walk: 'Ghost Walk (25% chance to negate an incoming attack completely; moves with uncanny silence — people sometimes do not notice until they speak)',
-    // Mage
-    arcane_surge: 'Arcane Surge (cast one spell for free per combat)',
-    mana_shield: 'Mana Shield (absorb up to 15 damage before HP is affected)',
-    spell_pierce: 'Spell Pierce (spells ignore half of enemy defence)',
-    chain_lightning: 'Chain Lightning (lightning bounces between up to 3 targets)',
-    arcane_mind: 'Arcane Mind (add INT to WIL for spell resistance permanently)',
-    overcharge: 'Overcharge (sacrifice 10 HP to boost next spell damage by 50%)',
-    archmages_will: "Archmage's Will (all spells automatically critically hit — radiates arcane mastery; lesser scholars defer, the fearful flinch)",
-    time_stop: "Time Stop (skip the enemy's next 3 turns; once per dungeon)",
-    lich_form: 'Lich Form (death heals instead of killing, once per run)',
-    // Cleric
-    healing_light: 'Healing Light (restore 25 HP as a combat action)',
-    bless: 'Bless (boost next attack by WIL×2 damage)',
-    ward_undead: 'Ward Undead (undead deal 30% less damage)',
-    smite_evil: 'Smite Evil (deal double damage against undead and demons)',
-    group_heal: 'Group Heal (restore WIL×3 HP at start of each floor)',
-    divine_aegis: 'Divine Aegis (absorb the first attack each combat completely)',
-    resurrection_light: 'Resurrection Light (survive death once per dungeon at 50% HP — carries an unmistakable air of divine protection; the devout sense it)',
-    holy_storm: 'Holy Storm (massive WIL-based holy damage hits all enemies present)',
-    avatar_divine: 'Avatar of the Divine (for 3 turns all attacks heal 50% of damage dealt — a visible divine aura in moments of extremity; the faithful take notice)',
-  };
+  // Skill descriptions from the subclass system
   const sk = Array.isArray(p.unlockedSkills) ? p.unlockedSkills : [];
   const unlockedSkillDescs = sk
-    .map((id: string) => ALL_SKILL_DESCRIPTIONS[id])
+    .map((id: string) => ALL_SUBCLASS_SKILL_DESCRIPTIONS[id])
     .filter(Boolean) as string[];
 
   // Travel matrix
@@ -820,6 +779,7 @@ ${knownPlaces ? `KNOWN PLACES: ${knownPlaces}` : ''}
 CURRENT TIME: ${timeStr}
 ${scheduledEvents ? `UPCOMING EVENTS: ${scheduledEvents}` : ''}
 ${bestiaryCount > 0 ? `KILLS: ${bestiaryCount} total across ${bestiaryTypes} enemy types slain` : ''}
+SUBCLASS: ${(p as any).subclass ?? 'None — player will choose at level 10'}
 ${legacyTitle ? `LEGACY TITLE: ${legacyTitle} (earned in a previous run — the world has heard of them)` : ''}
 ${legacyPerks ? `LEGACY HONOURS: ${legacyPerks}` : ''}
 ${companionStr ? `COMPANION: ${companionStr}` : 'COMPANION: None — player may recruit one companion through roleplay.'}
@@ -978,6 +938,7 @@ ${villainName.startsWith('Xfu') ? `- XFU RULE: Xfu cannot help himself — whene
   - To create or update an event, emit on its own line: {"worldEvent":{"location":"Name","type":"siege","severity":"moderate","desc":"Brief description","endsDay":N}}
   - To clear a resolved event, emit on its own line: {"worldEvent":{"location":"Name","type":"siege","clear":true}}
   - VILLAIN SOURCE: Corruption, blight, or curse events near the villain's lair or along their campaign path may be attributed to the villain's influence. Weave this in without stating it directly.
+- SUBCLASS RULE: The SUBCLASS field shows the player's chosen specialisation path, selected at level 10. If it reads "None", they have not yet chosen — do not reference a subclass identity. Once a subclass is chosen, weave its flavour subtly into narration: a Necromancer senses the dead differently to a Paladin; a Ranger reads the wilderness intuitively; a Thief notices things others miss. The subclass shapes personality and perception, not just combat. Their UNLOCKED SKILLS reflect specific abilities from their subclass tree.
 - COMPANION RULE: The COMPANION field above shows the player's current travelling companion (if any).
   - If COMPANION is "None": the player has no companion. You MAY introduce a recruitable NPC through natural roleplay — a sellsword at a tavern, a stranded traveller, a survivor rescued from danger. When the player explicitly agrees to take them on, emit on its own line: {"recruitCompanion":{"name":"Name","role":"Role","icon":"emoji","str":N,"agi":N,"wil":N,"hp":N,"ability":"Short passive ability description","notes":"One sentence about them"}} — do not recruit without clear player consent. Max 1 companion at a time.
   - If COMPANION is present: they travel with the player unless killed or dismissed. Reference them naturally — they react to events, comment on danger, assist in combat. Their passive ABILITY applies automatically; describe its effect without needing a tag. When their HP, mood, or notes change meaningfully, emit on its own line: {"companionUpdate":{"hp":N,"relationship":"neutral|friendly|loyal","notes":"Updated notes"}}. If they die or are explicitly dismissed by the player, emit on its own line: {"companionDismissed":"reason"} and narrate the departure with weight.

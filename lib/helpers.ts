@@ -1,8 +1,19 @@
-// XP thresholds for levels 1–20 (cumulative total XP required)
-export const XP_TABLE = [0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700, 3250, 3850, 4500, 5200, 5950, 6750, 7600, 8500, 9450, 10500] as const;
-export const LEVEL_CAP = 20;
+// XP thresholds for levels 1–45 (cumulative total XP required)
+// Levels 1–10: fast (100–500 XP each)   — subclass chosen at level 10
+// Levels 11–20: moderate (600–1500 XP)
+// Levels 21–35: solid grind (1600–4400 XP)
+// Levels 36–45: steep wall (6800–21000 XP)
+export const XP_TABLE = [
+  0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700,          // 1–10
+  3300, 4000, 4800, 5700, 6700, 7800, 9000, 10300, 11700, 13200, // 11–20
+  14800, 16600, 18600, 20800, 23200, 25800, 28600, 31600, 34800, 38200, // 21–30
+  41800, 45600, 49600, 53800, 58200,                              // 31–35
+  65000, 73000, 82000, 92000, 103000,                             // 36–40
+  116000, 131000, 148000, 167000, 188000,                         // 41–45
+] as const;
+export const LEVEL_CAP = 45;
 
-/** Return level (1–20) for a given cumulative XP total. */
+/** Return level (1–45) for a given cumulative XP total. */
 export function xpToLevel(xp: number): number {
   for (let i = XP_TABLE.length - 1; i >= 0; i--) {
     if (xp >= XP_TABLE[i]) return i + 1;
@@ -371,6 +382,7 @@ const ITEM_SLOT_MAP: Record<string, string> = {
   'staff of ages': 'weapon', 'war hammer': 'weapon', 'hunting bow': 'weapon',
   'enchanted blade': 'weapon', 'battle axe': 'weapon', 'masterwork sword': 'weapon',
   'archmage staff': 'weapon', 'ember staff': 'weapon', 'holy mace': 'weapon',
+  mace: 'weapon',
   'crown sword': 'weapon', 'rebel blade': 'weapon', "archon's staff": 'weapon',
   "corsair's cutlass": 'weapon',
   // Offhand / Shields

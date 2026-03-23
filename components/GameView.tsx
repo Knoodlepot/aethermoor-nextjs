@@ -47,6 +47,7 @@ import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 import AchievementScreen from '@/components/screens/AchievementScreen';
 import CompanionScreen from '@/components/screens/CompanionScreen';
 import EndingScreen from '@/components/screens/EndingScreen';
+import { SubclassScreen } from '@/components/screens/SubclassScreen';
 
 // Modals
 import { HowToPlayModal } from '@/components/modals/HowToPlayModal';
@@ -1844,6 +1845,13 @@ function GameContent() {
             ui.closeModal('companion');
           }}
           onClose={() => ui.closeModal('companion')}
+        />
+      )}
+
+      {ui.showSubclass && player && (
+        <SubclassScreen
+          player={player}
+          onChoose={(name) => handleCommand('choose_subclass:' + name)}
         />
       )}
 

@@ -493,6 +493,17 @@ export function useGameLoop(
           return { success: true };
         }
 
+        // ── choose_subclass ──
+        if (command.startsWith('choose_subclass:')) {
+          const subclassName = command.replace('choose_subclass:', '').trim();
+          updatedPlayer = { ...updatedPlayer, subclass: subclassName } as any;
+          gs.setPlayer(updatedPlayer);
+          ui.closeModal('subclass');
+          gs.appendNarrative(`\n\n*The path of the ${subclassName} opens before you.*`);
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative, gs.log);
+          return { success: true };
+        }
+
         // ── dismiss_companion ──
         if (command === 'dismiss_companion') {
           const comp = (updatedPlayer as any).companion;
@@ -636,6 +647,11 @@ export function useGameLoop(
         // 3b. Show level-up notification if the player leveled up
         if (updatedPlayer.level > preNarratorLevel) {
           ui.setLevelUpMsg(`LEVEL UP! You are now level ${updatedPlayer.level}! +3 Stat Points, +1 Skill Point!`);
+        }
+
+        // 3b-ii. Prompt subclass selection at level 10 if not yet chosen
+        if (updatedPlayer.level >= 10 && !(updatedPlayer as any).subclass) {
+          ui.openModal('subclass');
         }
 
         // 3c. Dispatch event log entries (XP, gold, rep changes with reasons)

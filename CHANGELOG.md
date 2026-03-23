@@ -1,6 +1,13 @@
 ## [Unreleased]
 
 ### Added
+- **Ambient music and sound effects**: The game now has a full audio system. Background music plays and crossfades based on where you are — a brooding medieval track in towns, a tense mysterious theme in dungeons, an orchestral combat loop when fighting, a peaceful piano piece while resting at inns, and an atmospheric forest theme while exploring. Sound effects play on level-up, quest completion, achievement unlock, and gold gained. A 🔊 button in the toolbar lets you adjust music and effects volume independently, or mute everything. Settings persist between sessions.
+
+### Added
+- **Ending screen when the main quest is complete**: Defeating the villain now triggers a dedicated ending screen. It shows a tone-appropriate heading (Victory, A Costly Victory, The Price of Dawn, etc.), your run stats, the villain's final description, and a full Hall of Legends tab with every enemy you killed sorted by count. From here you can: continue exploring the world, begin a New Game+ run, copy a shareable run summary to your clipboard, or return to the main menu.
+- **New Game+ (NG+)**: Starting a NG+ run carries forward your achievements, a legacy title earned from how you won (e.g. "Slayer of [Villain]" for a clean victory, "The Hollow Victor" for a pyrrhic one), a keepsake item named after the fallen villain, a gold bonus, and a legacy perk of your choice. The new world generates fresh with harder enemies. The narrator knows you are a returning hero and will reference your legacy title.
+
+### Added
 - **Armour now reduces damage (DEF stat)**: Equipped armour, helms, boots, and shields now grant a DEF value that subtracts from every incoming physical hit. A basic padded jacket gives DEF 1; plate armour gives DEF 7; a tower shield adds DEF 5. Your current DEF is shown in the Attributes tab of the Character screen. The narrator applies this automatically — heavier armour means fewer hit points lost.
 - **Expanded crafting recipes**: Smithing, alchemy, cooking, and enchanting now have a much larger recipe pool. Forge iron and plate helms, greaves, a steel shield, war axe, and silver sword at a smithy. Brew status cures (eyewash, purification charm, warming draught, courage draught) at an alchemist's bench. Cook hearty stew and spiced provisions at a campfire. Enchant an arcane staff or a ring of warding at an enchanter's table.
 - **More equippable gear**: Iron helms, leather hoods, plate helms, iron greaves, leather boots, plate greaves, steel shields, enchanted chainmail, war plate, padded jackets, war axes, silver swords, iron daggers, staves of arcane power, enchanted daggers, and rings of warding can all be equipped to their appropriate slots. Previously some of these items existed but couldn't be equipped.
