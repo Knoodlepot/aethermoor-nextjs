@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     siteName: 'Aethermoor',
     images: [
       {
-        url: '/og-image.png',
+        url: '/api/og',
         width: 1200,
         height: 630,
         alt: 'Aethermoor — AI-Powered Browser RPG',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     title: 'Aethermoor — AI-Powered Browser RPG',
     description:
       'A dark fantasy RPG narrated in real time by AI. Free to start — 50 tokens included.',
-    images: ['/og-image.png'],
+    images: ['/api/og'],
   },
   icons: {
     icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⚔️</text></svg>',
