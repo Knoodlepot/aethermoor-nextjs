@@ -545,26 +545,6 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
             </div>
           )}
 
-          {/* Play as guest (login only) */}
-          {mode === 'login' && (
-            <div style={{ marginTop: 12, textAlign: 'center' }}>
-              <button
-                onClick={() => onAuth({ guest: true })}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: S.faint,
-                  cursor: 'pointer',
-                  fontSize: 11,
-                  fontFamily: 'inherit',
-                  padding: 0,
-                  letterSpacing: 0.5,
-                }}
-              >
-                Play as guest (no cloud save)
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

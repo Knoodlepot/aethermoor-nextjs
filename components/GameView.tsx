@@ -100,8 +100,6 @@ function GameContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Guest-mode flag: bypass auth gate without a real JWT
-  const [guestMode, setGuestMode] = useState(false);
   const [newGameLoading, setNewGameLoading] = useState(false);
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
   const [showSaveSlot, setShowSaveSlot] = useState(false);
@@ -483,15 +481,13 @@ function GameContent() {
     );
   }
 
-  if (auth.authStatus === 'unauthed' && !guestMode) {
+  if (auth.authStatus === 'unauthed') {
     return (
       <AuthScreen
         onAuth={(data: any) => {
           if (data.token) {
             // AuthScreen has already persisted the token; reload so useAuth picks it up
             window.location.reload();
-          } else if (data.guest) {
-            setGuestMode(true);
           }
         }}
         resetToken={null}

@@ -534,8 +534,6 @@ export function useGameLoop(
         if (!narratorResponse.success || !narratorResponse.narrative) {
           if (narratorResponse.error === 'no_tokens') {
             ui.setScreen('out_of_tokens');
-          } else if ((narratorResponse as any).status === 401 || narratorResponse.error === 'Unauthorized') {
-            gs.setNarrative('*The narrator requires a free account. Create one from the title screen — it only takes a moment.*');
           }
           return { success: false, error: narratorResponse.error || 'AI call failed' };
         }
