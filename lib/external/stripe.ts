@@ -20,37 +20,37 @@ export const TOKEN_PACKAGES: Record<string, TokenPackage> = {
     tokens: 100,
     pence: 100,
     label: '100 Tokens',
-    priceId: 'price_1T8kmJKvhVLecCSvf593COyi',
+    priceId: process.env.STRIPE_PRICE_STARTER || 'price_1TEAHAKcMGb8j2qo06DshCgu',
   },
   adventurer: {
     tokens: 290,
     pence: 250,
     label: '290 Tokens',
-    priceId: 'price_1T8kmlKvhVLecCSvV6GQdjMh',
+    priceId: process.env.STRIPE_PRICE_ADVENTURER || 'price_1TEAIhKcMGb8j2qoFuEUPF69',
   },
   hero: {
     tokens: 650,
     pence: 500,
     label: '650 Tokens',
-    priceId: 'price_1T8kn5KvhVLecCSvmCtEMlx3',
+    priceId: process.env.STRIPE_PRICE_HERO || 'price_1TEAJVKcMGb8j2qoXjnsn9Sk',
   },
   legend: {
     tokens: 1500,
     pence: 999,
     label: '1,500 Tokens',
-    priceId: 'price_1T8kntKvhVLecCSv8kd4Pkzu',
+    priceId: process.env.STRIPE_PRICE_LEGEND || 'price_1TEAKVKcMGb8j2qoIHINFsf4',
   },
   champion: {
     tokens: 3500,
     pence: 1999,
     label: '3,500 Tokens',
-    priceId: 'price_1T92wKKvhVLecCSvnhNCNVHc',
+    priceId: process.env.STRIPE_PRICE_CHAMPION || 'price_1TEANWKcMGb8j2qoFLAimDrk',
   },
   immortal: {
     tokens: 8500,
     pence: 4999,
     label: '8,500 Tokens',
-    priceId: 'price_1T92yTKvhVLecCSvRqpaI9j2',
+    priceId: process.env.STRIPE_PRICE_IMMORTAL || 'price_1TEANzKcMGb8j2qo8fmo4FFo',
   },
 };
 
