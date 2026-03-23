@@ -28,6 +28,7 @@ import { MapView } from '@/components/ui/MapView';
 import { MiniMap } from '@/components/ui/MiniMap';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { AgeGate } from '@/components/ui/AgeGate';
+import { GuidedTour } from '@/components/ui/GuidedTour';
 
 // Screens
 import { CharacterCreationScreen } from '@/components/screens/CharacterCreationScreen';
@@ -859,24 +860,26 @@ function GameContent() {
   const PANEL_MAP: Record<string, React.ReactNode> = {
     playerInfo: playerInfoPanel,
     contextBar: (
-      <ContextBar
-        player={gameState.player}
-        isLoading={gameLoop.isLoading}
-        isDyslexic={isDyslexic}
-        locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
-        onShop={() => ui.toggleModal('shop')}
-        onSkills={() => ui.toggleModal('skillTree')}
-        onQuests={() => ui.toggleModal('questLog')}
-        onDungeon={() => dungeonAvailable && dungeonCooldown === 0 ? handleEnterDungeon() : !atCapital ? showDungeonHint() : undefined}
-        dungeonAvailable={dungeonAvailable && dungeonCooldown === 0}
-        dungeonCooldown={dungeonCooldown}
-        onCraft={() => ui.toggleModal('crafting')}
-        onGear={() => ui.toggleModal('inventory')}
-        onBestiary={() => ui.toggleModal('bestiary')}
-        activeQuestCount={activeQuestCount}
-        skillPts={skillPts}
-        bestiaryCount={bestiaryCount}
-      />
+      <div data-tour="contextbar">
+        <ContextBar
+          player={gameState.player}
+          isLoading={gameLoop.isLoading}
+          isDyslexic={isDyslexic}
+          locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
+          onShop={() => ui.toggleModal('shop')}
+          onSkills={() => ui.toggleModal('skillTree')}
+          onQuests={() => ui.toggleModal('questLog')}
+          onDungeon={() => dungeonAvailable && dungeonCooldown === 0 ? handleEnterDungeon() : !atCapital ? showDungeonHint() : undefined}
+          dungeonAvailable={dungeonAvailable && dungeonCooldown === 0}
+          dungeonCooldown={dungeonCooldown}
+          onCraft={() => ui.toggleModal('crafting')}
+          onGear={() => ui.toggleModal('inventory')}
+          onBestiary={() => ui.toggleModal('bestiary')}
+          activeQuestCount={activeQuestCount}
+          skillPts={skillPts}
+          bestiaryCount={bestiaryCount}
+        />
+      </div>
     ),
     contextAct: player ? (
       <ContextActionPanel
@@ -1006,6 +1009,7 @@ function GameContent() {
   // ── Legacy-style top header ────────────────────────────────────────────────
   const toolbar = (
     <div
+      data-tour="toolbar"
       style={{
         background: T.panelAlt,
         borderBottom: `1px solid ${T.border}`,
@@ -1219,10 +1223,12 @@ function GameContent() {
     <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
       {/* Left: story + suggestions + input bar (fills all space) */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <NarrativePanel
-          narrative={gameState.narrative}
-          log={gameState.log}
-        />
+        <div data-tour="narrative" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <NarrativePanel
+            narrative={gameState.narrative}
+            log={gameState.log}
+          />
+        </div>
         {/* Last player input — shown faintly below narrative */}
         {ui.lastInput && (
           <div style={{
@@ -1291,7 +1297,7 @@ function GameContent() {
         {/* Bottom row: input bar, and any bottom-row panels from layout config */}
         {layoutCfg?.bottomPanels?.length ? (
           <div style={{ display: 'flex', flexShrink: 0 }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div data-tour="input" style={{ flex: 1, minWidth: 0 }}>
               <InputBar
                 player={gameState.player}
                 onFreeText={handleFreeText}
@@ -1313,12 +1319,14 @@ function GameContent() {
             })}
           </div>
         ) : (
-          <InputBar
-            player={gameState.player}
-            onFreeText={handleFreeText}
-            isLoading={gameLoop.isLoading}
-            fillInput={ui.fillInput || null}
-          />
+          <div data-tour="input">
+            <InputBar
+              player={gameState.player}
+              onFreeText={handleFreeText}
+              isLoading={gameLoop.isLoading}
+              fillInput={ui.fillInput || null}
+            />
+          </div>
         )}
       </div>
 
@@ -1387,7 +1395,7 @@ function GameContent() {
       )}
 
       {/* Narrative (scrollable, fills remaining space) */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <div data-tour="narrative" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <NarrativePanel
           narrative={gameState.narrative}
           log={gameState.log}
@@ -1435,12 +1443,14 @@ function GameContent() {
       )}
 
       {/* Input bar */}
-      <InputBar
-        player={gameState.player}
-        onFreeText={handleFreeText}
-        isLoading={gameLoop.isLoading}
-        fillInput={ui.fillInput || null}
-      />
+      <div data-tour="input">
+        <InputBar
+          player={gameState.player}
+          onFreeText={handleFreeText}
+          isLoading={gameLoop.isLoading}
+          fillInput={ui.fillInput || null}
+        />
+      </div>
 
       {/* Suggestion chips */}
       {ui.suggestions.length > 0 && !gameLoop.isLoading && (
@@ -1530,24 +1540,26 @@ function GameContent() {
           <button onClick={() => setShowMobilePanel(false)} style={{ background: 'none', border: 'none', color: T.textMuted, fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>✕</button>
         </div>
         {playerInfoPanel}
-        <ContextBar
-          player={gameState.player}
-          isLoading={gameLoop.isLoading}
-          isDyslexic={isDyslexic}
-          locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
-          onShop={() => ui.toggleModal('shop')}
-          onSkills={() => ui.toggleModal('skillTree')}
-          onQuests={() => ui.toggleModal('questLog')}
-          onDungeon={() => dungeonAvailable && dungeonCooldown === 0 ? handleEnterDungeon() : !atCapital ? showDungeonHint() : undefined}
-          dungeonAvailable={dungeonAvailable && dungeonCooldown === 0}
-          dungeonCooldown={dungeonCooldown}
-          onCraft={() => ui.toggleModal('crafting')}
-          onGear={() => { ui.toggleModal('inventory'); setShowMobilePanel(false); }}
-          onBestiary={() => { ui.toggleModal('bestiary'); setShowMobilePanel(false); }}
-                    activeQuestCount={activeQuestCount}
-          skillPts={skillPts}
-          bestiaryCount={bestiaryCount}
-        />
+        <div data-tour="contextbar-mobile">
+          <ContextBar
+            player={gameState.player}
+            isLoading={gameLoop.isLoading}
+            isDyslexic={isDyslexic}
+            locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
+            onShop={() => ui.toggleModal('shop')}
+            onSkills={() => ui.toggleModal('skillTree')}
+            onQuests={() => ui.toggleModal('questLog')}
+            onDungeon={() => dungeonAvailable && dungeonCooldown === 0 ? handleEnterDungeon() : !atCapital ? showDungeonHint() : undefined}
+            dungeonAvailable={dungeonAvailable && dungeonCooldown === 0}
+            dungeonCooldown={dungeonCooldown}
+            onCraft={() => ui.toggleModal('crafting')}
+            onGear={() => { ui.toggleModal('inventory'); setShowMobilePanel(false); }}
+            onBestiary={() => { ui.toggleModal('bestiary'); setShowMobilePanel(false); }}
+            activeQuestCount={activeQuestCount}
+            skillPts={skillPts}
+            bestiaryCount={bestiaryCount}
+          />
+        </div>
         {ui.currentEnemy && (
           <CombatPanel
             enemy={ui.currentEnemy}
@@ -1711,6 +1723,9 @@ function GameContent() {
       {mapOverlay}
 
       {mobilePanelOverlay}
+
+      {/* Guided tour — shown once to new players */}
+      <GuidedTour />
 
       {/* ─── Screens & Modals ─── */}
 
