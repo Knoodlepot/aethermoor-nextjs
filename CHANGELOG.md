@@ -1,6 +1,14 @@
 ## [Unreleased]
 
 ### Added
+- **Subclass system**: At level 10, each class branches into three distinct specialisations. Warriors choose between Berserker (pure rage, deals triple damage below 30% HP), Knight (defensive, shields grant extra DEF, weaker enemies may flee), or Monk (unarmed discipline, deflect strikes, stun enemies). Rogues choose Assassin (poison, double strikes, one-hit-kill chance), Thief (double gold, pick locks, talk out of situations), or Ranger (never surprised, mark targets for +30% damage, read the wilderness). Mages choose Necromancer (raise fallen enemies as minions, drain life, death pact revival), Elementalist (chain lightning across three targets, elemental weaknesses, all spells auto-crit), or Illusionist (decoys, mind control, vanish from any combat). Clerics choose Paladin (holy charge, divine aegis, lay on hands), Priest (group heals, resurrection, cleanse all status effects), or Inquisitor (detect lies, exorcise undead, triple damage on first strike against evil). The choice is permanent and the narrator weaves your path into the story — a Necromancer senses the dead differently to a Paladin.
+- **Level cap raised to 45**: The game now goes up to level 45. Levels 1–10 progress quickly, 11–35 are a solid grind, and levels 36–45 are a steep wall requiring thousands of XP each. Reaching 45 is a genuine long-term goal.
+- **Cleric now starts with a Mace and Iron Shield**: Clerics begin with a mace in hand and an iron shield on their arm, giving them 2 DEF from the very start and a more authentic holy warrior opening.
+
+### Fixed
+- **Starting a new game no longer loads the old save**: A timing bug caused the game to reload your previous character mid-creation, overwriting the new one. This is fixed — new game creation now reliably produces the character you built.
+
+### Added
 - **Ambient music and sound effects**: The game now has a full audio system. Background music plays and crossfades based on where you are — a brooding medieval track in towns, a tense mysterious theme in dungeons, an orchestral combat loop when fighting, a peaceful piano piece while resting at inns, and an atmospheric forest theme while exploring. Sound effects play on level-up, quest completion, achievement unlock, and gold gained. A 🔊 button in the toolbar lets you adjust music and effects volume independently, or mute everything. Settings persist between sessions.
 
 ### Added
