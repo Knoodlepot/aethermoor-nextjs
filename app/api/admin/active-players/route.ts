@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { cacheGetJson, cacheSetJson } from '@/lib/redis';
 
 function checkAdminAuth(request: NextRequest): boolean {
   const headerSecret = request.headers.get('x-admin-secret');
@@ -19,6 +20,10 @@ export async function GET(request: NextRequest) {
     const minutes = parseInt(url.searchParams.get('minutes') || '60', 10);
     const clampedMinutes = Math.min(Math.max(minutes, 1), 1440); // 1 min to 24 hours
 
+    const cacheKey = `admin:active:${clampedMinutes}`;
+    const cached = await cacheGetJson(cacheKey);
+    if (cached) return NextResponse.json(cached);
+
     const result = await query(
       `SELECT gs.player_id, a.email,
               MAX(gs.updated_at) AS last_active,
@@ -32,11 +37,13 @@ export async function GET(request: NextRequest) {
       [clampedMinutes]
     );
 
-    return NextResponse.json({
+    const payload = {
       players: result.rows,
       windowMinutes: clampedMinutes,
       count: result.rows.length,
-    });
+    };
+    await cacheSetJson(cacheKey, payload, 180); // 3-min cache
+    return NextResponse.json(payload);
   } catch (error) {
     console.error('[ADMIN ACTIVE PLAYERS]', error);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });

@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Check token balance and spend token
-    const spend = await spendTokenSafely(authCtx.playerId, tierCost);
+    const spend = await spendTokenSafely(authCtx.playerId, tierCost, utilityCall ? undefined : tier);
     if (!spend.success) {
       return NextResponse.json(
         { error: 'no_tokens', message: 'No tokens remaining. Buy more to keep adventuring!', remaining: spend.remaining },
@@ -379,14 +379,15 @@ async function persistCanonicalNarrationState(
  */
 async function spendTokenSafely(
   playerId: string,
-  cost: number = 1
+  cost: number = 1,
+  modelTier?: string
 ): Promise<{ success: boolean; remaining: number }> {
   const balance = await tokens.getBalance(playerId);
   if (balance < cost) {
     return { success: false, remaining: balance };
   }
 
-  const success = await tokens.spendToken(playerId, cost);
+  const success = await tokens.spendToken(playerId, cost, modelTier);
   const remaining = await tokens.getBalance(playerId);
 
   return { success, remaining };

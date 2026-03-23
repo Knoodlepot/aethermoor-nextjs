@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { cacheGetJson, cacheSetJson } from '@/lib/redis';
 
 function checkAdminAuth(request: NextRequest): boolean {
   const headerSecret = request.headers.get('x-admin-secret');
@@ -14,6 +15,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  const cacheKey = 'admin:stats';
+  const cached = await cacheGetJson(cacheKey);
+  if (cached) return NextResponse.json(cached);
+
   try {
     const [accounts, players, incidents, purchases] = await Promise.all([
       query('SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE verified) AS verified FROM accounts', []),
@@ -22,12 +27,14 @@ export async function GET(request: NextRequest) {
       query('SELECT COUNT(*) AS total, SUM(amount_pence) AS total_pence FROM purchases', []),
     ]);
 
-    return NextResponse.json({
+    const payload = {
       accounts: accounts.rows[0],
       players: players.rows[0],
       incidents: incidents.rows[0],
       purchases: purchases.rows[0],
-    });
+    };
+    await cacheSetJson(cacheKey, payload, 300); // 5-min cache
+    return NextResponse.json(payload);
   } catch (error) {
     console.error('[ADMIN STATS]', error);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });

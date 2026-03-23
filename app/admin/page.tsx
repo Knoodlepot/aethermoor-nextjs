@@ -208,7 +208,7 @@ const PACKAGES = [
   { id: 'immortal',   name: 'Immortal',   tokens: 7300, price: 49.99 },
 ];
 
-const TABS = ['PLAYERS', 'GIFT LOG', 'CALCULATOR', 'SUPPORT', 'SETTINGS', 'DISCORD'];
+const TABS = ['PLAYERS', 'GIFT LOG', 'CALCULATOR', 'SUPPORT', 'SETTINGS', 'DISCORD', 'COSTS'];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -306,6 +306,13 @@ export default function AdminPage() {
   const [patchText, setPatchText] = React.useState('');
   const [discordMsg, setDiscordMsg] = React.useState('');
   const [discordLoaded, setDiscordLoaded] = React.useState(false);
+
+  // Costs
+  type CostDay = { day: string; haiku: number; sonnet: number; opus: number; totalCalls: number; costUsd: number; costGbp: number; revenueGbp: number };
+  type CostSummary = { calls: number; costUsd: number; costGbp: number; revenueGbp: number; margin: number | null };
+  const [costsData, setCostsData] = React.useState<{ daily: CostDay[]; summary7d: CostSummary; summary30d: CostSummary } | null>(null);
+  const [costsMsg, setCostsMsg] = React.useState('');
+  const [costsLoaded, setCostsLoaded] = React.useState(false);
 
   // ── Mount ──────────────────────────────────────────────────────────────────
   React.useEffect(() => {
@@ -493,10 +500,20 @@ export default function AdminPage() {
     } catch { setDiscordMsg('Failed to post to Discord.'); }
   }
 
+  async function fetchCosts() {
+    setCostsMsg('Loading...');
+    const data = await adminGet('/api/admin/costs');
+    if (data.error) { setCostsMsg(`Error: ${data.error}`); return; }
+    setCostsData(data);
+    setCostsMsg('');
+    setCostsLoaded(true);
+  }
+
   // ── Tab click handler ──────────────────────────────────────────────────────
   function onTabClick(i: number) {
     setTab(i);
     if (i === 5 && !discordLoaded) loadChangelog();
+    if (i === 6 && !costsLoaded) fetchCosts();
   }
 
   // ── Lock screen ────────────────────────────────────────────────────────────
@@ -1134,6 +1151,86 @@ export default function AdminPage() {
             <div style={{ marginTop: 12 }}>
               <button style={S.btn} onClick={postToDiscord}>POST TO DISCORD</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {tab === 6 && (
+        <div style={S.scrollContent}>
+          <div style={{ ...S.card, maxWidth: 860 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #2e2515' }}>
+              <div style={{ fontFamily: "'Cinzel', serif", fontSize: 11, letterSpacing: 3, color: '#c9a84c' }}>AI COST MONITORING</div>
+              <button style={S.btnSmall} onClick={() => { setCostsLoaded(false); fetchCosts(); }}>↺ REFRESH</button>
+            </div>
+            {costsMsg && <div style={S.msg(costsMsg === 'Loading...' ? 'info' : 'err')}>{costsMsg}</div>}
+            {costsData && (() => {
+              const { summary7d: s7, summary30d: s30, daily } = costsData;
+              const fmtUsd = (n: number) => `$${n.toFixed(2)}`;
+              const fmtGbp = (n: number) => `£${n.toFixed(2)}`;
+              const fmtPct = (n: number | null) => n !== null ? `${n.toFixed(1)}%` : '—';
+              return (
+                <>
+                  {/* Summary cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 20 }}>
+                    {[
+                      { label: '7D CALLS', value: s7.calls.toLocaleString() },
+                      { label: '7D COST', value: `${fmtUsd(s7.costUsd)} / ${fmtGbp(s7.costGbp)}` },
+                      { label: '7D REVENUE', value: fmtGbp(s7.revenueGbp) },
+                      { label: '7D MARGIN', value: fmtPct(s7.margin), highlight: (s7.margin ?? 0) > 0 },
+                      { label: '30D CALLS', value: s30.calls.toLocaleString() },
+                      { label: '30D COST', value: `${fmtUsd(s30.costUsd)} / ${fmtGbp(s30.costGbp)}` },
+                      { label: '30D REVENUE', value: fmtGbp(s30.revenueGbp) },
+                      { label: '30D MARGIN', value: fmtPct(s30.margin), highlight: (s30.margin ?? 0) > 0 },
+                    ].map((c) => (
+                      <div key={c.label} style={{ background: '#0d0a06', border: '1px solid #2e2515', padding: '10px 14px' }}>
+                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 2, color: '#5a4a2a', marginBottom: 4 }}>{c.label}</div>
+                        <div style={{ fontSize: 14, color: c.highlight ? '#6fbf6f' : '#d4c5a0', fontVariantNumeric: 'tabular-nums' }}>{c.value}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Daily table */}
+                  <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 2, color: '#5a4a2a', marginBottom: 8 }}>DAILY BREAKDOWN (LAST 30 DAYS)</div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ ...S.table, minWidth: 640 }}>
+                      <thead>
+                        <tr>
+                          {['DATE', 'HAIKU', 'SONNET', 'OPUS', 'TOTAL', 'COST (USD)', 'COST (GBP)', 'REVENUE', 'MARGIN'].map((h) => (
+                            <th key={h} style={{ ...S.th, whiteSpace: 'nowrap' as const }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {daily.length === 0 && (
+                          <tr><td colSpan={9} style={{ ...S.td, color: '#5a4a2a', textAlign: 'center', padding: 16 }}>No data yet — model_tier logging starts from next narrator call</td></tr>
+                        )}
+                        {daily.map((row) => {
+                          const margin = row.revenueGbp > 0 ? ((row.revenueGbp - row.costGbp) / row.revenueGbp) * 100 : null;
+                          return (
+                            <tr key={row.day}>
+                              <td style={S.td}>{row.day}</td>
+                              <td style={{ ...S.td, color: '#8ab4d4' }}>{row.haiku || '—'}</td>
+                              <td style={{ ...S.td, color: '#c9a84c' }}>{row.sonnet || '—'}</td>
+                              <td style={{ ...S.td, color: '#d4886a' }}>{row.opus || '—'}</td>
+                              <td style={S.td}>{row.totalCalls}</td>
+                              <td style={S.td}>{fmtUsd(row.costUsd)}</td>
+                              <td style={S.td}>{fmtGbp(row.costGbp)}</td>
+                              <td style={S.td}>{fmtGbp(row.revenueGbp)}</td>
+                              <td style={{ ...S.td, color: (margin ?? 0) > 0 ? '#6fbf6f' : '#bf6f6f' }}>{fmtPct(margin)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{ marginTop: 10, fontSize: 11, color: '#5a4a2a', lineHeight: 1.5 }}>
+                    Cost estimates: Haiku $0.005/call · Sonnet $0.020/call · Opus $0.100/call<br />
+                    Revenue estimate: £0.0133/game-token spent (blended across packages)<br />
+                    Historical data (pre-deploy) will not have model_tier and won&apos;t appear here.
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}

@@ -1,21 +1,26 @@
 import { query } from './db';
 import type { Player } from './db';
+import { cacheGetJson, cacheSetJson, cacheDel } from './redis';
+
+const BAL_TTL = 30; // seconds
 
 /**
- * Get player token balance
+ * Get player token balance (cached 30s)
  */
 export async function getBalance(playerId: string): Promise<number> {
   try {
+    const key = `token:bal:${playerId}`;
+    const cached = await cacheGetJson<number>(key);
+    if (cached !== null) return cached;
+
     const result = await query<Player>(
       `SELECT tokens FROM players WHERE player_id = $1`,
       [playerId]
     );
 
-    if (result.rows.length === 0) {
-      return 0;
-    }
-
-    return result.rows[0].tokens;
+    const balance = result.rows.length === 0 ? 0 : result.rows[0].tokens;
+    await cacheSetJson(key, balance, BAL_TTL);
+    return balance;
   } catch (error) {
     console.error('Get balance error:', error);
     return 0;
@@ -42,8 +47,8 @@ export async function ensurePlayerRow(playerId: string): Promise<void> {
 
       // Log the token award
       await query(
-        `INSERT INTO token_log (player_id, change, reason, created_at)
-         VALUES ($1, $2, $3, NOW())`,
+        `INSERT INTO token_log (player_id, change, reason, model_tier, created_at)
+         VALUES ($1, $2, $3, NULL, NOW())`,
         [playerId, 50, 'New player bonus']
       );
     }
@@ -55,7 +60,7 @@ export async function ensurePlayerRow(playerId: string): Promise<void> {
 /**
  * Spend tokens per AI turn (cost varies by model tier)
  */
-export async function spendToken(playerId: string, cost: number = 1): Promise<boolean> {
+export async function spendToken(playerId: string, cost: number = 1, modelTier?: string): Promise<boolean> {
   try {
     const balance = await getBalance(playerId);
     if (balance < cost) {
@@ -71,10 +76,11 @@ export async function spendToken(playerId: string, cost: number = 1): Promise<bo
 
     if (result.rowCount! > 0) {
       await query(
-        `INSERT INTO token_log (player_id, change, reason, created_at)
-         VALUES ($1, $2, $3, NOW())`,
-        [playerId, -cost, 'AI turn']
+        `INSERT INTO token_log (player_id, change, reason, model_tier, created_at)
+         VALUES ($1, $2, $3, $4, NOW())`,
+        [playerId, -cost, 'AI turn', modelTier ?? null]
       );
+      await cacheDel(`token:bal:${playerId}`);
       return true;
     }
 
@@ -112,10 +118,11 @@ export async function addTokens(
     if (result.rowCount! > 0) {
       // Log the token addition
       await query(
-        `INSERT INTO token_log (player_id, change, reason, created_at)
-         VALUES ($1, $2, $3, NOW())`,
+        `INSERT INTO token_log (player_id, change, reason, model_tier, created_at)
+         VALUES ($1, $2, $3, NULL, NOW())`,
         [playerId, amount, reason]
       );
+      await cacheDel(`token:bal:${playerId}`);
       return true;
     }
 
