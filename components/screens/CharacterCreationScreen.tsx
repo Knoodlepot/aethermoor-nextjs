@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { ClassInfoModal } from '@/components/modals/ClassInfoModal';
 import { CLASSES } from '@/lib/constants';
+import { SUBCLASSES } from '@/lib/subclasses';
 
 
 interface Props {
@@ -258,12 +259,31 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
                     </span>
                   </div>
                   {/* Formula preview for primary stat */}
-                  <div style={{ fontSize: 10, color: T.textFaint ?? T.textMuted, marginBottom: 8, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 10, color: T.textFaint ?? T.textMuted, marginBottom: 10, lineHeight: 1.5 }}>
                     {cls === 'Warrior' && `Hits for ${5 + Math.floor(data.str / 2)} · Dodge ${Math.min(45, data.agi * 3)}%`}
                     {cls === 'Rogue'   && `Backstab ${Math.floor(data.agi * 1.5)} dmg · Dodge ${Math.min(45, data.agi * 3)}%`}
                     {cls === 'Mage'    && `Fireball ~${6 + Math.floor(data.int * 1.2)} dmg · Potions: bonus tick at INT 9`}
                     {cls === 'Cleric'  && `Divine Strike/heal ${Math.floor(data.wil * 1.5)} · Magic resist ${Math.min(30, data.wil * 2)}%`}
                   </div>
+
+                  {/* Subclass preview */}
+                  {SUBCLASSES[cls] && (
+                    <div style={{ marginBottom: 10 }}>
+                      <div style={{ fontSize: 9, color: T.textMuted, letterSpacing: 2, fontFamily: "'Cinzel','Palatino Linotype',serif", marginBottom: 6 }}>
+                        SUBCLASSES · UNLOCKS AT LEVEL 10
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {Object.entries(SUBCLASSES[cls]).map(([name, sub]) => (
+                          <div key={name} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                            <span style={{ fontSize: 12 }}>{sub.icon}</span>
+                            <span style={{ fontSize: 11, color: T.accent, fontFamily: "'Cinzel','Palatino Linotype',serif" }}>{name}</span>
+                            <span style={{ fontSize: 10, color: T.textFaint ?? T.textMuted, fontStyle: 'italic' }}>— {sub.flavour}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
