@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/external/email';
+import { getIP, isIpRateLimited } from '@/lib/ratelimit';
 
 const SUPPORT_EMAIL = 'support.aethermoor@gmail.com';
 
 export async function POST(req: NextRequest) {
+  // 5 submissions per hour per IP
+  const ip = getIP(req);
+  if (await isIpRateLimited(ip + ':feedback', 5)) {
+    return NextResponse.json({ error: 'rate_limited', message: 'Too many feedback submissions. Try again later.' }, { status: 429 });
+  }
+
   try {
     const body = await req.json();
     const { type, message, playerId, currentLocation, lastInput } = body;
