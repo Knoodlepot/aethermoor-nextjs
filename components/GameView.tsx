@@ -959,11 +959,13 @@ function GameContent() {
         if (id in PANEL_MAP) {
           const node = PANEL_MAP[id];
           if (!node) return null;
+          // Without a layout config, scroll-area panels are rendered in the scrollable section below — skip here
+          if (!layoutCfg && (id === 'combat' || id === 'mainQuest' || id === 'sideQuests' || id === 'miniMap' || id === 'eventLog')) {
+            return null;
+          }
           const style = layoutCfg && h > 0
             ? { flexBasis: h, flexShrink: 0, overflow: 'hidden' }
-            : (id === 'combat' || id === 'mainQuest' || id === 'sideQuests' || id === 'miniMap' || id === 'eventLog')
-              ? undefined  // these go in the scroll area when no config
-              : { flexShrink: 0 };
+            : { flexShrink: 0 };
           return <div key={id} style={style}>{node}</div>;
         }
         // Custom panel placeholder
