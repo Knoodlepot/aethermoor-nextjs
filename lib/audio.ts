@@ -1,14 +1,14 @@
 import { Howl, Howler } from 'howler';
 
 const AMBIENT_TRACKS: Record<string, string> = {
-  wilderness: '/audio/syouki_takahashi-midnight-forest-184304.mp3',
-  town:       '/audio/deuslower-fantasy-medieval-ambient-237371.mp3',
-  dungeon:    '/audio/deuslower-fantasy-medieval-mystery-ambient-292418.mp3',
-  tavern:     '/audio/hitslab-fantasy-fantasy-disney-music-454916.mp3',
-  combat:     '/audio/cyberwave-orchestra-dramatic-orchestral-combat-music-loop-382814.mp3',
+  wilderness: '/Audio/syouki_takahashi-midnight-forest-184304.mp3',
+  town:       '/Audio/deuslower-fantasy-medieval-ambient-237371.mp3',
+  dungeon:    '/Audio/deuslower-fantasy-medieval-mystery-ambient-292418.mp3',
+  tavern:     '/Audio/hitslab-fantasy-fantasy-disney-music-454916.mp3',
+  combat:     '/Audio/cyberwave-orchestra-dramatic-orchestral-combat-music-loop-382814.mp3',
 };
 
-const SFX_PATH = '/audio/kenney_interface-sounds/Audio/';
+const SFX_PATH = '/Audio/kenney_interface-sounds/Audio/';
 
 const SFX_TRACKS: Record<string, string> = {
   levelup:        SFX_PATH + 'confirmation_001.ogg',
