@@ -175,6 +175,7 @@ export async function POST(request: NextRequest) {
 
     (async () => {
       let fullText = '';
+      let dbSavedAt: string = new Date().toISOString();
       try {
         const reader = anthropicResp.body!.getReader();
         const decoder = new TextDecoder();
@@ -267,7 +268,7 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          await persistCanonicalNarrationState(
+          dbSavedAt = await persistCanonicalNarrationState(
             capturedAuthCtx.playerId,
             responsePlayer as any,
             applied.worldSeed,
@@ -285,7 +286,7 @@ export async function POST(request: NextRequest) {
           suggestions: responseSuggestions,
           tokenBalance: capturedSpend.remaining,
           stateChanges: responseStateChanges,
-          savedAt: new Date().toISOString(),
+          savedAt: dbSavedAt,
         })}\n\n`));
       } catch (streamErr) {
         console.error('[STREAM] Error processing Anthropic stream:', streamErr);
@@ -354,8 +355,8 @@ async function persistCanonicalNarrationState(
   worldSeed: unknown,
   messages: unknown,
   narrative: string
-): Promise<void> {
-  await db.query(
+): Promise<string> {
+  const result = await db.query(
     `INSERT INTO game_saves
      (player_id, slot, player_json, seed_json, messages_json, narrative, log_json, saved_at, updated_at)
      VALUES ($1, COALESCE((SELECT slot FROM game_saves WHERE player_id = $1 ORDER BY updated_at DESC LIMIT 1), 1), $2, $3, $4, $5, COALESCE((SELECT log_json FROM game_saves WHERE player_id = $1 ORDER BY updated_at DESC LIMIT 1), '[]'), NOW(), NOW())
@@ -364,7 +365,8 @@ async function persistCanonicalNarrationState(
        seed_json = $3,
        messages_json = $4,
        narrative = $5,
-       updated_at = NOW()`,
+       updated_at = NOW()
+     RETURNING updated_at`,
     [
       playerId,
       JSON.stringify(player || {}),
@@ -373,6 +375,7 @@ async function persistCanonicalNarrationState(
       narrative,
     ]
   );
+  return result.rows[0]?.updated_at?.toISOString() ?? new Date().toISOString();
 }
 
 /**
