@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import type { Player, Companion } from '../../lib/types';
 
@@ -26,6 +26,12 @@ export default function CompanionScreen({ player, onDismiss, onClose }: Props) {
   const { T } = useTheme();
   const [confirmDismiss, setConfirmDismiss] = useState(false);
   const companion = player.companion as Companion | null | undefined;
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
 
   return (
     <div

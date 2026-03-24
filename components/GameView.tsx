@@ -103,6 +103,7 @@ function GameContent() {
   const [newGameLoading, setNewGameLoading] = useState(false);
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
   const [showSaveSlot, setShowSaveSlot] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
 
 
   // Age gate — persisted in localStorage so it only shows once per browser
@@ -1056,16 +1057,16 @@ function GameContent() {
           <>
             <button
               onClick={() => setShowNewGameConfirm(true)}
-              style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+              style={{ background: 'transparent', border: `1px solid ${player ? T.border : T.accent}`, color: player ? T.textMuted : T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
             >
               New Game
             </button>
             {player && (
               <button
                 onClick={() => setShowSaveSlot(true)}
-                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+                style={{ background: 'transparent', border: `1px solid ${savedToast ? T.accent : T.border}`, color: savedToast ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'all 0.3s' }}
               >
-                💾 Save
+                {savedToast ? '✓ Saved' : '💾 Save'}
               </button>
             )}
             {auth.token && (
@@ -1933,6 +1934,9 @@ function GameContent() {
           onSave={(slot) => {
             storage.setCurrentSlot(slot);
             void storage.saveGame(gameState.player!, gameState.worldSeed!, gameState.messages ?? [], gameState.narrative ?? '', gameState.log ?? [], slot);
+            setShowSaveSlot(false);
+            setSavedToast(true);
+            setTimeout(() => setSavedToast(false), 2000);
           }}
           onClose={() => setShowSaveSlot(false)}
         />

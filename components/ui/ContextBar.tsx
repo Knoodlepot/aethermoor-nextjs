@@ -79,8 +79,8 @@ export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop:
               </button>
             )}
             {onGear && (
-              <button onClick={onGear} title="Character Screen — Equipped gear, inventory, skill tree, and attributes" style={{ background: 'transparent', border: `1px solid ${hasPoints ? '#f0c060' : T.accent}`, color: hasPoints ? '#f0c060' : T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const, animation: hasPoints ? 'pulse 1s infinite' : 'none', boxShadow: hasPoints ? '0 0 8px #f0c06066' : 'none' }}>
-                🎒 {t('character')}
+              <button onClick={onGear} title={hasPoints ? 'You have unspent points — open Character to spend them' : 'Character Screen — gear, inventory, skills, attributes'} style={{ background: 'transparent', border: `1px solid ${hasPoints ? '#f0c060' : T.accent}`, color: hasPoints ? '#f0c060' : T.gold, padding: '2px 6px', fontSize: 9, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 0.5, whiteSpace: 'nowrap' as const, animation: hasPoints ? 'pulse 1s infinite' : 'none', boxShadow: hasPoints ? '0 0 8px #f0c06066' : 'none' }}>
+                🎒 {hasPoints ? 'Spend Points!' : t('character')}
               </button>
             )}
             {onDungeon && (

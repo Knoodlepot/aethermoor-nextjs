@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Player } from '../../lib/types';
 import { ACHIEVEMENTS, type AchievementDef } from '../../lib/achievements';
 
@@ -22,6 +22,12 @@ const TABS: { id: Tab; label: string }[] = [
 
 export default function AchievementScreen({ player, onClose }: Props) {
   const [tab, setTab] = useState<Tab>('all');
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
 
   const unlockedIds = useMemo(
     () => new Set((player.achievements ?? []).map((a) => a.id)),
