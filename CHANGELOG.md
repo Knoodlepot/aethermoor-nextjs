@@ -1,6 +1,32 @@
 ## [Unreleased]
 
 ### Fixed
+- **New character name no longer carries over from a previous session**: Starting a new game after playing an existing one no longer showed the old character's name. The save conflict tracking is now properly reset when starting fresh.
+- **Class buttons are disabled while the world is being created**: During the "Weaving your fate…" world generation phase, clicking a class card no longer does anything — the selection is locked until generation completes.
+- **Companion panel now renders correctly in all themes**: The companion screen was invisible in most themes due to missing style definitions. It now correctly picks up your active colour theme.
+- **Escape key closes Companion and Achievements panels**: Both panels now close when you press Escape, matching the behaviour of every other screen.
+- **Boss enemies no longer counted twice in the Bestiary**: A race condition between the server and the client could cause a kill to be logged twice. The client-side fallback now only fires when the server returns no update at all.
+- **Items granted during a turn are no longer lost**: In rare cases, items the narrator gave you in one turn could vanish in the next if the server's stored state was slightly behind. Inventory is now merged additively so nothing is lost.
+- **Audio now plays correctly on first session load**: Music was silent on first visit due to browser autoplay restrictions. The audio system now queues the intended track and plays it the moment you interact with the page.
+- **Spell button no longer appears for Warriors and Rogues**: The Spell action in combat was showing for all classes. It now only appears for Mages and Clerics.
+- **Map no longer appears blurred on high-DPI screens**: The map canvas now renders at the correct pixel density on Retina and similar displays.
+- **Zoom minus button on map aligned correctly**: The − button was slightly misaligned due to a font mismatch. Fixed.
+- **Combat damage numbers removed from narrator prose**: The narrator no longer recites raw damage figures or formulas mid-description. Combat feels like fiction, not a stat readout.
+- **Discord patch note posting fixed**: Posting long patch notes to Discord failed with a 400 error due to Discord's 2000-character message limit. Notes are now split into chunks and posted sequentially.
+
+### Added
+- **When you return after time has passed, the world catches up**: If you had a scheduled meeting or event due while you were away, the narrator now briefly describes what happened in your absence — whether the NPC arrived and found no one, left word at the inn, or moved on.
+- **Attack button generates varied combat actions**: Instead of always sending "I attack!", the button now generates a narrative strike based on your equipped weapon — direction, style, and target location vary each press. A sword-wielder might slash at the flank; a mace-wielder might bring it down on the skull; a bowman looses at centre mass.
+- **Loading indicator while the narrator is writing**: Three animated dots appear above the narrative text while the AI is generating your response (desktop). On mobile, the send button pulses during generation so you always know the world is thinking.
+
+### Changed
+- **Bestiary button no longer shows a kill count badge**: The red number on the Bestiary toolbar button has been removed — it was always non-zero and felt like a permanent notification. The full kill total is still shown inside the Bestiary screen itself.
+- **New Game button is less prominent during active play**: The New Game option is now styled subtly when you already have a character, so it doesn't draw the eye away from your active session.
+- **Saving now confirms with a brief "✓ Saved" message**: After picking a save slot, the modal closes immediately and a small confirmation appears for two seconds rather than leaving you to wonder.
+- **Character button now tells you when you have points to spend**: When unspent stat or skill points are available, the Character button changes to "Spend Points!" and pulses gold, with a tooltip explaining what to do.
+- **Player ID removed from the in-game toolbar**: It was already accessible from the main menu. The duplicate button in the game header has been removed.
+
+### Fixed
 - **Token balance updates faster**: Your token count now updates instantly after each narrator call instead of requiring a round-trip to the database every time. The game caches your balance briefly and clears it the moment you spend or receive tokens.
 
 ### Added
