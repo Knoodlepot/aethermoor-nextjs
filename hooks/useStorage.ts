@@ -280,6 +280,8 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
    */
   const clearAllSaves = useCallback(() => {
     try {
+      // Reset conflict-detection timestamps so a new game never falsely conflicts
+      lastCloudSavedAt.current = {};
       // Legacy single-slot keys
       localStorage.removeItem('rpg-player');
       localStorage.removeItem('rpg-seed');
