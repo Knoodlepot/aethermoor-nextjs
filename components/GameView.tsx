@@ -978,7 +978,8 @@ function GameContent() {
           if (!layoutCfg && (id === 'combat' || id === 'mainQuest' || id === 'sideQuests' || id === 'miniMap' || id === 'eventLog')) {
             return null;
           }
-          const style = layoutCfg && h > 0
+          // playerInfo always auto-sizes — it has no scrollable content so a fixed height just clips it
+          const style = layoutCfg && h > 0 && id !== 'playerInfo'
             ? { flexBasis: h, flexShrink: 0, overflow: 'hidden' }
             : { flexShrink: 0 };
           return <div key={id} style={style}>{node}</div>;
