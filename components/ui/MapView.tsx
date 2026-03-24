@@ -107,7 +107,7 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
   }, [clampOffset]);
 
   // ── Mouse handlers ──
-  const handleWheel = React.useCallback((e: React.WheelEvent<HTMLCanvasElement>) => {
+  const handleWheel = React.useCallback((e: WheelEvent) => {
     e.preventDefault();
     const rect = canvasRef.current!.getBoundingClientRect();
     const px = (e.clientX - rect.left) * (W / rect.width);
@@ -123,6 +123,14 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
       return newZ;
     });
   }, [clampOffset]);
+
+  // Register wheel as non-passive so preventDefault() can block page scroll
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
 
   const handleMouseDown = React.useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (e.button !== 0) return;
@@ -143,14 +151,6 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
 
   // ── Draw ──
   React.useEffect(() => {
-    // Debug: log redraws and key props
-    // eslint-disable-next-line no-console
-    console.log('[MapView Redraw]', {
-      playerLoc: player?.location,
-      explored: player?.exploredLocations,
-      worldSeed: worldSeed?.seed,
-      worldSeedObj: worldSeed,
-    });
     const canvas = canvasRef.current;
     if (!canvas) return;
     const g = canvas.getContext('2d');
@@ -594,7 +594,6 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
           <canvas
             ref={canvasRef} width={W} height={H}
             style={{ display: 'block', width: W, height: H, borderRadius: 4, cursor: isDragging.current ? 'grabbing' : 'grab' }}
-            onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={stopDrag}
