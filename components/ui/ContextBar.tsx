@@ -22,7 +22,7 @@ interface ContextBarProps {
   bestiaryCount?: number;
 }
 
-export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, dungeonCooldown = 0, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount = 0 }: ContextBarProps) {
+export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop: _onShop, onSkills: _onSkills, onQuests: _onQuests, onDungeon, dungeonAvailable, dungeonCooldown = 0, onCraft: _onCraft, onGear, onBestiary, activeQuestCount: _activeQuestCount, skillPts: _skillPts, locationGrid: _locationGrid, bestiaryCount: _bestiaryCount = 0 }: ContextBarProps) {
   const { T, t } = useTheme();
   const ctx = player?.context || 'explore';
 
@@ -71,11 +71,6 @@ export function ContextBar({ player, isLoading, isDyslexic: _isDyslexic, onShop:
                 }}
               >
                 📖 {t('bestiary')}
-                {bestiaryCount > 0 && (
-                  <span style={{ position: 'absolute', top: -3, right: -3, background: '#c04040', color: '#fff', borderRadius: '50%', width: 12, height: 12, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {bestiaryCount}
-                  </span>
-                )}
               </button>
             )}
             {onGear && (
