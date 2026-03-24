@@ -760,8 +760,25 @@ function GameContent() {
         <div style={{ color: charClockColor, fontSize: 11, marginTop: 4, letterSpacing: 1 }}>{clockStr}</div>
       </div>
 
+      {/* ── Resources row ── */}
+      <div style={{ borderTop: `1px solid ${T.border}`, padding: '4px 6px', display: 'flex', justifyContent: 'space-around' }}>
+        <div style={{ textAlign: 'center' as const }}>
+          <div style={{ color: goldFlash === 'gain' ? '#60c060' : goldFlash === 'loss' ? '#c04040' : T.gold, fontSize: 17, lineHeight: '1.2', ...tf, transition: 'color 0.3s' }}>{player.gold}</div>
+          <div style={{ color: T.textMuted, fontSize: 10 }}>🪙 {t('gold')}</div>
+        </div>
+        <div style={{ textAlign: 'center' as const }}>
+          <div style={{ color: rations > 0 ? '#80a060' : '#c05050', fontSize: 17, lineHeight: '1.2', ...tf }}>{rations}</div>
+          <div style={{ color: T.textMuted, fontSize: 10 }}>🎒 {t('rations')}</div>
+        </div>
+        <button onClick={() => ui.toggleModal('standings')}
+          style={{ textAlign: 'center' as const, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <div style={{ color: T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{player.reputation ?? 0}</div>
+          <div style={{ color: T.textMuted, fontSize: 10 }}>⭐ {t('rep')}</div>
+        </button>
+      </div>
+
       {/* ── HP / XP bars ── */}
-      <div style={{ padding: '0 6px 4px' }}>
+      <div style={{ padding: '0 6px 4px', borderTop: `1px solid ${T.border}` }}>
         <StatBar label="❤️ HP" value={hp} max={maxHp} color={hpBarColor} />
         <StatBar label="✨ XP" value={xpProgress} max={xpRange} color={T.xpColor} />
         <div style={{ fontSize: 9, color: T.textFaint, textAlign: 'right' as const, marginTop: 2, marginBottom: 8 }}>
@@ -786,23 +803,6 @@ function GameContent() {
             })}
           </div>
         )}
-      </div>
-
-      {/* ── Resources row ── */}
-      <div style={{ borderTop: `1px solid ${T.border}`, padding: '4px 6px', display: 'flex', justifyContent: 'space-around' }}>
-        <div style={{ textAlign: 'center' as const }}>
-          <div style={{ color: goldFlash === 'gain' ? '#60c060' : goldFlash === 'loss' ? '#c04040' : T.gold, fontSize: 17, lineHeight: '1.2', ...tf, transition: 'color 0.3s' }}>{player.gold}</div>
-          <div style={{ color: T.textMuted, fontSize: 10 }}>🪙 {t('gold')}</div>
-        </div>
-        <div style={{ textAlign: 'center' as const }}>
-          <div style={{ color: rations > 0 ? '#80a060' : '#c05050', fontSize: 17, lineHeight: '1.2', ...tf }}>{rations}</div>
-          <div style={{ color: T.textMuted, fontSize: 10 }}>🎒 {t('rations')}</div>
-        </div>
-        <button onClick={() => ui.toggleModal('standings')}
-          style={{ textAlign: 'center' as const, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-          <div style={{ color: T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{player.reputation ?? 0}</div>
-          <div style={{ color: T.textMuted, fontSize: 10 }}>⭐ {t('rep')}</div>
-        </button>
       </div>
 
       {/* ── Faction mini-list ── */}
