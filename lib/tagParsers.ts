@@ -2,7 +2,7 @@ import type { Player } from './types';
 import { advanceGameTime, registerNpc, xpToLevel, HP_PER_LEVEL, LEVEL_CAP } from './helpers';
 
 export type EventLogEntry = {
-  type: 'xp' | 'gold' | 'rep';
+  type: 'xp' | 'gold' | 'rep' | 'combat' | 'incoming';
   value: number;
   reason?: string;
   timestamp: number;
@@ -43,6 +43,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"addTerrain"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"playerStatus"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"hpChange"\s*:\s*-?\d+\}/g, '');
+  t = t.replace(/\{"dealDamage"\s*:\s*\{[^}]+\}\}/g, '');
   t = t.replace(/\{"xpGain"\s*:[^}]*\}/g, '');
   t = t.replace(/\{"bestiary"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"recruitCompanion"\s*:\s*\{[\s\S]+?\}\}/g, '');
@@ -459,6 +460,19 @@ export function extractBestiaryTag(text: string): any {
 }
 
 /**
+ * Extract deal damage tag: {"dealDamage":{"value":12,"target":"Goblin"}}
+ */
+export function extractDealDamageTag(text: string): { value: number; target?: string } | null {
+  const m = text.match(/\{"dealDamage"\s*:\s*(\{[^}]+\})\}/);
+  if (!m) return null;
+  try {
+    return JSON.parse(m[1]);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Extract HP change tag: {"hpChange":-12} (negative = damage, positive = healing)
  */
 export function extractHpChangeTag(text: string): number | null {
@@ -508,6 +522,7 @@ export interface ParsedTags {
   addPOI: any;
   addTerrain: any;
   playerStatus: { add?: string; remove?: string } | null;
+  dealDamage: { value: number; target?: string } | null;
   hpChange: number | null;
   xpGain: { value: number; reason?: string } | null;
   bestiary: any;
@@ -550,6 +565,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     addPOI: extractAddPOITag(narrative),
     addTerrain: extractAddTerrainTag(narrative),
     playerStatus: extractPlayerStatusTag(narrative),
+    dealDamage: extractDealDamageTag(narrative),
     hpChange: extractHpChangeTag(narrative),
     xpGain: extractXpGainTag(narrative),
     bestiary: extractBestiaryTag(narrative),
@@ -918,10 +934,18 @@ export function processParsedTags(
     }
   }
 
+  // Deal damage — player hits an enemy
+  if (tags.dealDamage !== null && tags.dealDamage.value > 0) {
+    eventLogEntries.push({ type: 'combat', value: tags.dealDamage.value, reason: tags.dealDamage.target, timestamp: Date.now() });
+  }
+
   // HP change — damage (negative) or healing (positive), clamped to [0, maxHp]
   if (tags.hpChange !== null) {
     const newHp = Math.max(0, Math.min(updatedPlayer.maxHp, (updatedPlayer.hp || 0) + tags.hpChange));
     updatedPlayer = { ...updatedPlayer, hp: newHp };
+    if (tags.hpChange < 0) {
+      eventLogEntries.push({ type: 'incoming', value: tags.hpChange, timestamp: Date.now() });
+    }
   }
 
   // XP gain — grant XP, check for level-up, apply rewards per level gained
