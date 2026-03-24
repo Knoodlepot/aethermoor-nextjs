@@ -486,14 +486,31 @@ export default function AdminPage() {
     if (!webhook) { setDiscordMsg('No webhook URL set in Settings.'); return; }
     if (!patchText.trim()) { setDiscordMsg('No patch notes to post.'); return; }
     setDiscordMsg('Posting...');
+    // Discord content limit is 2000 chars — split at line boundaries
+    const LIMIT = 1900;
+    const lines = patchText.split('\n');
+    const chunks: string[] = [];
+    let current = '';
+    for (const line of lines) {
+      const candidate = current ? current + '\n' + line : line;
+      if (candidate.length > LIMIT) {
+        if (current) chunks.push(current);
+        current = line.length > LIMIT ? line.slice(0, LIMIT) : line;
+      } else {
+        current = candidate;
+      }
+    }
+    if (current) chunks.push(current);
     try {
-      const res = await fetch(webhook, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'Aethermoor Patch Bot', content: patchText }),
-      });
-      if (res.ok) setDiscordMsg('✓ Posted to Discord!');
-      else setDiscordMsg(`Discord error: ${res.status}`);
+      for (const chunk of chunks) {
+        const res = await fetch(webhook, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'Aethermoor Patch Bot', content: chunk }),
+        });
+        if (!res.ok) { setDiscordMsg(`Discord error: ${res.status}`); return; }
+      }
+      setDiscordMsg(`✓ Posted to Discord! (${chunks.length} message${chunks.length > 1 ? 's' : ''})`);
     } catch { setDiscordMsg('Failed to post to Discord.'); }
   }
 
