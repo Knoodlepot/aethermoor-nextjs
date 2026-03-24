@@ -11,9 +11,65 @@ interface ContextActionPanelProps {
   onOpenShop?: () => void;
   onOpenCraft?: () => void;
   playerClass?: string;
+  equipped?: Record<string, string>;
   inventory?: string[];
   location?: string;
   locationGrid?: Record<string, any>;
+}
+
+function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function buildAttackText(equipped: Record<string, string>): string {
+  const weapon = equipped['weapon'] || equipped['mainhand'] || '';
+  const wl = weapon.toLowerCase();
+
+  let verbs: string[];
+  let targets: string[];
+  let isRanged = false;
+
+  if (/bow|crossbow|shortbow|longbow/.test(wl)) {
+    verbs = ['loose an arrow at', 'fire at', 'aim and shoot at', 'draw and fire at'];
+    targets = ['the chest', 'the throat', 'the shoulder', 'centre mass', 'the gut', 'the leg'];
+    isRanged = true;
+  } else if (/dagger|knife|stiletto|dirk|shiv/.test(wl)) {
+    verbs = ['drive my', 'thrust my', 'stab with my', 'plunge my'];
+    targets = ['the gut', 'the throat', 'the ribs', 'the shoulder', 'the side', 'the flank'];
+  } else if (/axe|hatchet|cleaver/.test(wl)) {
+    verbs = ['cleave at', 'hack at', 'swing my', 'bring my'];
+    targets = ['the shoulder', 'the neck', 'the chest', 'the side', 'the flank'];
+  } else if (/mace|club|hammer|maul|flail|morningstar/.test(wl)) {
+    verbs = ['smash at', 'bludgeon', 'bring my', 'swing my'];
+    targets = ['the skull', 'the ribs', 'the shoulder', 'the knee', 'the chest'];
+  } else if (/spear|lance|pike|javelin/.test(wl)) {
+    verbs = ['thrust my', 'drive my', 'jab my', 'lunge with my'];
+    targets = ['the chest', 'the gut', 'the throat', 'the side', 'the shoulder'];
+  } else if (/staff|rod|wand|cane|stave/.test(wl)) {
+    verbs = ['swing my', 'crack my', 'jab with my', 'strike with my'];
+    targets = ['the head', 'the knee', 'the ribs', 'the shoulder'];
+  } else {
+    // sword / generic blade / unarmed
+    verbs = ['slash at', 'swing my', 'thrust my', 'cut at', 'lunge at'];
+    targets = ['the chest', 'the flank', 'the gut', 'the side', 'the shoulder', 'the neck'];
+  }
+
+  const target = pick(targets);
+
+  if (isRanged) {
+    const verb = pick(verbs);
+    if (weapon) return `I ${verb} ${target} with my ${weapon}.`;
+    return `I ${verb} ${target}.`;
+  }
+
+  const verb = pick(verbs);
+  // Some verbs already include "my" or are phrased as "swing my"
+  if (verb.endsWith(' my') || verb.startsWith('bring my') || verb.startsWith('lunge with my')) {
+    return weapon
+      ? `I ${verb} ${weapon} at ${target}.`
+      : `I ${verb} weapon at ${target}.`;
+  }
+  return weapon
+    ? `I ${verb} ${target} with my ${weapon}.`
+    : `I ${verb} ${target}.`;
 }
 
 interface ActionBtn {
@@ -118,7 +174,7 @@ function getTemplateFor(
   return { label: 'EXPLORING', color: '#4a8a60', actions: EXPLORE_ACTIONS };
 }
 
-export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, onOpenCraft, playerClass, inventory = [], location, locationGrid }: ContextActionPanelProps) {
+export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, onOpenCraft, playerClass, equipped = {}, inventory = [], location, locationGrid }: ContextActionPanelProps) {
   const { T, tf, t } = useTheme();
 
   const { label, color, actions: rawActions } = getTemplateFor(context, location, locationGrid);
@@ -185,6 +241,7 @@ export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, o
                 if (disabled) return;
                 if (btn.label === 'shop' && onOpenShop) { onOpenShop(); return; }
                 if (btn.label === 'craft' && onOpenCraft) { onOpenCraft(); return; }
+                if (btn.label === 'attack') { onAction(buildAttackText(equipped)); return; }
                 onAction(btn.text);
               }}
               style={{

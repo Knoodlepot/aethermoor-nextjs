@@ -901,6 +901,8 @@ function GameContent() {
         onAction={(text) => handleFreeText(text)}
         onOpenShop={() => ui.toggleModal('shop')}
         onOpenCraft={() => ui.toggleModal('crafting')}
+        playerClass={(player as any).class}
+        equipped={(player as any).equipped || {}}
         inventory={(player as any).inventory || []}
         location={(player as any).location}
         locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
@@ -1481,6 +1483,8 @@ function GameContent() {
           onAction={(text) => handleFreeText(text)}
           onOpenShop={() => ui.toggleModal('shop')}
           onOpenCraft={() => ui.toggleModal('crafting')}
+          playerClass={(player as any).class}
+          equipped={(player as any).equipped || {}}
           inventory={(player as any).inventory || []}
           location={(player as any).location}
           locationGrid={(gameState.worldSeed?.travelMatrix as any)?.locationGrid}
