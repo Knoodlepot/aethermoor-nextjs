@@ -48,6 +48,7 @@ export interface UseStorageReturn {
   clearAllSaves: () => void;
   saveConflict: boolean;
   clearSaveConflict: () => void;
+  markNarratorSaved: (slot: number, savedAt: string) => void;
 }
 
 /**
@@ -305,6 +306,11 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
 
   const clearSaveConflict = useCallback(() => setSaveConflict(false), []);
 
+  // Called after the narrator API saves so lastCloudSavedAt stays in sync
+  const markNarratorSaved = useCallback((slot: number, savedAt: string) => {
+    lastCloudSavedAt.current[slot] = savedAt;
+  }, []);
+
   return useMemo(() => ({
     currentSlot,
     setCurrentSlot,
@@ -317,5 +323,6 @@ export function useStorage(authToken?: string | null, initialSlot: number = 1): 
     clearAllSaves,
     saveConflict,
     clearSaveConflict,
-  }), [currentSlot, setCurrentSlot, loadGame, saveGame, saveToCloud, loadFromCloud, loadSlots, isSyncingCloud, clearAllSaves, saveConflict, clearSaveConflict]);
+    markNarratorSaved,
+  }), [currentSlot, setCurrentSlot, loadGame, saveGame, saveToCloud, loadFromCloud, loadSlots, isSyncingCloud, clearAllSaves, saveConflict, clearSaveConflict, markNarratorSaved]);
 }

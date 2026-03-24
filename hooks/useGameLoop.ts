@@ -562,6 +562,11 @@ export function useGameLoop(
           }
         }
 
+        // Keep lastCloudSavedAt in sync — narrator API also writes to DB
+        if ((narratorResponse as any).savedAt) {
+          storage.markNarratorSaved(storage.currentSlot, (narratorResponse as any).savedAt);
+        }
+
         // 3. Use server-applied state updates from /api/claude
         const cleanNarrative = narratorResponse.cleanNarrative || narratorResponse.narrative;
         if (narratorResponse.player && narratorResponse.worldSeed) {
@@ -858,6 +863,7 @@ export function useGameLoop(
                   suggestions: payload.suggestions as string[] | undefined,
                   tokenBalance: payload.tokenBalance as number | undefined,
                   stateChanges: (payload.stateChanges ?? {}) as Record<string, any>,
+                  savedAt: payload.savedAt as string | undefined,
                 };
               } else if (payload.type === 'error') {
                 return { success: false as const, status: 500, error: (payload.error || 'stream_error') as string };

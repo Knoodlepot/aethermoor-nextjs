@@ -285,6 +285,7 @@ export async function POST(request: NextRequest) {
           suggestions: responseSuggestions,
           tokenBalance: capturedSpend.remaining,
           stateChanges: responseStateChanges,
+          savedAt: new Date().toISOString(),
         })}\n\n`));
       } catch (streamErr) {
         console.error('[STREAM] Error processing Anthropic stream:', streamErr);
