@@ -1073,28 +1073,6 @@ function GameContent() {
         )}
         {!ui.isMobile && (
           <>
-            <button
-              onClick={() => setShowNewGameConfirm(true)}
-              style={{ background: 'transparent', border: `1px solid ${player ? T.border : T.accent}`, color: player ? T.textMuted : T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
-            >
-              New Game
-            </button>
-            {player && (
-              <button
-                onClick={() => setShowSaveSlot(true)}
-                style={{ background: 'transparent', border: `1px solid ${savedToast ? T.accent : T.border}`, color: savedToast ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'all 0.3s' }}
-              >
-                {savedToast ? '✓ Saved' : '💾 Save'}
-              </button>
-            )}
-            {auth.token && (
-              <button
-                onClick={() => router.push('/')}
-                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
-              >
-                Main Menu
-              </button>
-            )}
             {worldSeed?.seed && (
               <button
                 onClick={async () => {
@@ -1108,22 +1086,6 @@ function GameContent() {
                 style={{ background: 'transparent', border: `1px solid ${T.border}`, color: seedCopied ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'color 0.2s' }}
               >
                 {seedCopied ? '✓ Copied' : '🌱 Seed'}
-              </button>
-            )}
-            {player && (
-              <button
-                onClick={() => ui.openModal('companion')}
-                title={player.companion ? `Companion: ${(player.companion as any).name}` : 'No companion'}
-                style={{
-                  background: 'transparent',
-                  border: `1px solid ${player.companion ? T.gold : T.border}`,
-                  color: player.companion ? T.gold : T.textMuted,
-                  padding: '4px 10px', fontSize: 11, cursor: 'pointer',
-                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1,
-                  position: 'relative',
-                }}
-              >
-                {player.companion ? `${(player.companion as any).icon} ${(player.companion as any).name}` : '🧭 Companion'}
               </button>
             )}
             {player && (
@@ -1146,6 +1108,37 @@ function GameContent() {
                 )}
               </button>
             )}
+            {player && (
+              <button
+                onClick={() => ui.openModal('companion')}
+                title={player.companion ? `Companion: ${(player.companion as any).name}` : 'No companion'}
+                style={{
+                  background: 'transparent',
+                  border: `1px solid ${player.companion ? T.gold : T.border}`,
+                  color: player.companion ? T.gold : T.textMuted,
+                  padding: '4px 10px', fontSize: 11, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1,
+                  position: 'relative',
+                }}
+              >
+                {player.companion ? `${(player.companion as any).icon} ${(player.companion as any).name}` : '🧭 Companion'}
+              </button>
+            )}
+            {player && (
+              <button
+                onClick={() => setShowSaveSlot(true)}
+                style={{ background: 'transparent', border: `1px solid ${savedToast ? T.accent : T.border}`, color: savedToast ? T.gold : T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1, transition: 'all 0.3s' }}
+              >
+                {savedToast ? '✓ Saved' : '💾 Save'}
+              </button>
+            )}
+            <button
+              onClick={() => setShowFeedback(true)}
+              title="Send feedback or report a bug"
+              style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+            >
+              Feedback
+            </button>
             {/* Sound button + popover */}
             <div style={{ position: 'relative' }} data-audio-panel>
               <button
@@ -1199,13 +1192,14 @@ function GameContent() {
                 </div>
               )}
             </div>
-            <button
-              onClick={() => setShowFeedback(true)}
-              title="Send feedback or report a bug"
-              style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
-            >
-              Feedback
-            </button>
+            {auth.token && (
+              <button
+                onClick={() => router.push('/')}
+                style={{ background: 'transparent', border: `1px solid ${T.border}`, color: T.textMuted, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
+              >
+                Main Menu
+              </button>
+            )}
           </>
         )}
         {ui.isMobile && (
