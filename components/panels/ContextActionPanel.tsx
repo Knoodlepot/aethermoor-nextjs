@@ -121,8 +121,14 @@ function getTemplateFor(
 export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, onOpenCraft, inventory = [], location, locationGrid }: ContextActionPanelProps) {
   const { T, tf, t } = useTheme();
 
-  const { label, color, actions } = getTemplateFor(context, location, locationGrid);
+  const { label, color, actions: rawActions } = getTemplateFor(context, location, locationGrid);
   const locIcon = locationIcon(location, locationGrid);
+
+  // Filter spell button — only Mage and Cleric can cast spells
+  const SPELL_CLASSES = new Set(['Mage', 'Cleric']);
+  const actions = rawActions.filter((a) =>
+    a.label !== 'spell' || SPELL_CLASSES.has(playerClass || '')
+  );
 
   // Resolve per-button item requirements
   const resolvedActions = actions.map((a) => {

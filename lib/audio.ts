@@ -37,6 +37,8 @@ class AudioManager {
   private sfxVolume = 0.7;
   private muted = false;
 
+  private pendingAmbient: string | null = null;
+
   constructor() {
     if (typeof window === 'undefined') return;
     try {
@@ -49,6 +51,20 @@ class AudioManager {
         if (this.muted) Howler.mute(true);
       }
     } catch {}
+
+    // Browsers block audio until a user gesture. Resume any pending track on first interaction.
+    const unlock = () => {
+      if (this.pendingAmbient) {
+        const key = this.pendingAmbient;
+        this.pendingAmbient = null;
+        this.currentAmbient = null; // reset so playAmbient actually fires
+        this.playAmbient(key);
+      }
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
+    window.addEventListener('click', unlock);
+    window.addEventListener('keydown', unlock);
   }
 
   private saveSettings() {
@@ -74,6 +90,12 @@ class AudioManager {
 
   playAmbient(key: string) {
     if (!AMBIENT_TRACKS[key] || this.currentAmbient === key) return;
+
+    // If AudioContext is suspended (autoplay blocked), queue for unlock
+    if ((Howler as any).ctx?.state === 'suspended') {
+      this.pendingAmbient = key;
+      return;
+    }
 
     const targetVol = this.muted ? 0 : this.musicVolume;
 

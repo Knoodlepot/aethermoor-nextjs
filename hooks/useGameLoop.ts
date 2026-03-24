@@ -551,12 +551,23 @@ export function useGameLoop(
         if (narratorResponse.player && narratorResponse.worldSeed) {
           // Merge narrator updates onto current local state, never letting
           // stale canonical DB data overwrite core identity or world-structure.
+          // Merge inventory additively: keep all client items + add any server-granted items.
+          // A straight overwrite loses items added in turns where the DB canonical was stale.
+          const clientInv: string[] = (gs.player as any).inventory || [];
+          const serverInv: string[] = (narratorResponse.player as any).inventory || [];
+          const mergedInventory = [...clientInv];
+          for (const item of serverInv) {
+            if (!clientInv.includes(item)) mergedInventory.push(item);
+          }
+
           updatedPlayer = {
             ...gs.player,
             ...narratorResponse.player,
             // Lock identity fields against stale canonical DB data
             name: (gs.player as any).name,
             class: (gs.player as any).class,
+            // Additive inventory merge so grants are never lost due to stale canonical saves
+            inventory: mergedInventory,
             // Allow location/exploredLocations from server when narrator emitted travelTo tag;
             // otherwise fall back to local state so stale canonical saves don't revert position.
             location: (narratorResponse.player as any).location !== (gs.player as any).location
@@ -566,42 +577,6 @@ export function useGameLoop(
               ?? (gs.player as any).exploredLocations,
           } as typeof gs.player;
 
-          // Client-side bestiary fallback: parse raw narrative in case server missed the tag.
-          // Only applies if the server's returned bestiary doesn't already reflect this kill.
-          {
-            const rawNarrative = narratorResponse.narrative || '';
-            const bestiaryEntry = extractBestiaryTag(rawNarrative);
-            if (bestiaryEntry?.archetypeId) {
-              const priorBestiary: any[] = (gs.player as any).bestiary || [];
-              const mergedBestiary: any[] = (updatedPlayer as any).bestiary || [];
-              const priorEntry = priorBestiary.find((b: any) => b.archetypeId === bestiaryEntry.archetypeId);
-              const mergedEntry = mergedBestiary.find((b: any) => b.archetypeId === bestiaryEntry.archetypeId);
-              const serverAlreadyUpdated =
-                mergedEntry && (!priorEntry || mergedEntry.timesKilled > (priorEntry.timesKilled || 0));
-              if (!serverAlreadyUpdated) {
-                const currentDay = (updatedPlayer as any).gameDay || 1;
-                let newBestiary: any[];
-                if (mergedEntry) {
-                  newBestiary = mergedBestiary.map((b: any) =>
-                    b.archetypeId === bestiaryEntry.archetypeId
-                      ? { ...b, timesKilled: (b.timesKilled || 0) + 1, lastKilledDay: currentDay }
-                      : b
-                  );
-                } else {
-                  newBestiary = [...mergedBestiary, {
-                    archetypeId: bestiaryEntry.archetypeId,
-                    name: bestiaryEntry.name || bestiaryEntry.archetypeId,
-                    icon: bestiaryEntry.icon || '👾',
-                    tier: bestiaryEntry.tier ?? 1,
-                    timesKilled: 1,
-                    firstKilledDay: currentDay,
-                    lastKilledDay: currentDay,
-                  }];
-                }
-                updatedPlayer = { ...updatedPlayer, bestiary: newBestiary } as typeof gs.player;
-              }
-            }
-          }
 
           // Advance time automatically on every narrator turn (mirrors legacy behaviour)
           // Combat: ~5 minutes. All other actions: 30 minutes.
@@ -646,6 +621,31 @@ export function useGameLoop(
             worldSettlements: localSeed.worldSettlements,
             seed: localSeed.seed,
           } as typeof gs.worldSeed;
+        }
+
+        // Client-side bestiary fallback: only fires when server returned no player state.
+        // If the server did return player data, its bestiary is trusted to avoid double-counting.
+        if (!narratorResponse.player) {
+          const bestiaryEntry = extractBestiaryTag(narratorResponse.narrative || '');
+          if (bestiaryEntry?.archetypeId) {
+            const currentDay = (updatedPlayer as any).gameDay || 1;
+            const existing: any[] = (updatedPlayer as any).bestiary || [];
+            const idx = existing.findIndex((b: any) => b.archetypeId === bestiaryEntry.archetypeId);
+            const newBestiary = idx >= 0
+              ? existing.map((b: any, i: number) =>
+                  i === idx ? { ...b, timesKilled: (b.timesKilled || 0) + 1, lastKilledDay: currentDay } : b
+                )
+              : [...existing, {
+                  archetypeId: bestiaryEntry.archetypeId,
+                  name: bestiaryEntry.name || bestiaryEntry.archetypeId,
+                  icon: bestiaryEntry.icon || '👾',
+                  tier: bestiaryEntry.tier ?? 1,
+                  timesKilled: 1,
+                  firstKilledDay: currentDay,
+                  lastKilledDay: currentDay,
+                }];
+            updatedPlayer = { ...updatedPlayer, bestiary: newBestiary } as typeof gs.player;
+          }
         }
 
         // 3b. Show level-up notification if the player leveled up
