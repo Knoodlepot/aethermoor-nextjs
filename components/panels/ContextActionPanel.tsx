@@ -118,7 +118,7 @@ function getTemplateFor(
   return { label: 'EXPLORING', color: '#4a8a60', actions: EXPLORE_ACTIONS };
 }
 
-export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, onOpenCraft, inventory = [], location, locationGrid }: ContextActionPanelProps) {
+export function ContextActionPanel({ context, isLoading, onAction, onOpenShop, onOpenCraft, playerClass, inventory = [], location, locationGrid }: ContextActionPanelProps) {
   const { T, tf, t } = useTheme();
 
   const { label, color, actions: rawActions } = getTemplateFor(context, location, locationGrid);

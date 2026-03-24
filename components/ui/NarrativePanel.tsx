@@ -7,11 +7,13 @@ import { parseMarkdown, stripContextTag } from '@/lib/tagParsers';
 interface NarrativePanelProps {
   narrative: string;
   log?: Array<{ type: string; text: string; timestamp?: string }>;
+  isLoading?: boolean;
 }
 
 export function NarrativePanel({
   narrative,
   log = [],
+  isLoading = false,
 }: NarrativePanelProps) {
   const { T, bf, isDyslexic, narrativeFontSize } = useTheme();
   const logRef = React.useRef<HTMLDivElement>(null);
@@ -46,6 +48,24 @@ export function NarrativePanel({
         gap: 12,
       }}
     >
+      {/* Typing indicator — shown while AI is generating */}
+      {isLoading && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 2px 0' }}>
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              style={{
+                display: 'inline-block',
+                width: 6, height: 6,
+                borderRadius: '50%',
+                background: T.textFaint,
+                animation: `typingDot 1.2s ease-in-out ${i * 0.2}s infinite`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Main narrative */}
       {narrative && (
         <div

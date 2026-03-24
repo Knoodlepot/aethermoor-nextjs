@@ -83,19 +83,21 @@ export function InputBar({ player, onFreeText, isLoading, fillInput }: InputBarP
           onClick={submit}
           disabled={isLoading || !text.trim()}
           style={{
-            background: text.trim() && !isLoading ? T.accent + '22' : 'transparent',
-            border: `1px solid ${text.trim() && !isLoading ? T.accent : T.border}`,
-            color: text.trim() && !isLoading ? T.gold : T.textFaint,
+            background: isLoading ? T.accent + '11' : text.trim() ? T.accent + '22' : 'transparent',
+            border: `1px solid ${isLoading ? T.accent + '55' : text.trim() ? T.accent : T.border}`,
+            color: isLoading ? T.accent : text.trim() ? T.gold : T.textFaint,
             padding: '11px 16px',
             cursor: isLoading || !text.trim() ? 'default' : 'pointer',
-            fontSize: 16,
+            fontSize: isLoading ? 10 : 16,
             borderRadius: 4,
             transition: 'all 0.15s',
-            opacity: isLoading || !text.trim() ? 0.35 : 1,
+            opacity: !isLoading && !text.trim() ? 0.35 : 1,
             fontFamily: cin,
+            animation: isLoading ? 'pulse 1s ease-in-out infinite' : 'none',
+            minWidth: 44,
           }}
         >
-          ▶
+          {isLoading ? '●' : '▶'}
         </button>
       </div>
     </div>
