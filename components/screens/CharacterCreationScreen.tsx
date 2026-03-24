@@ -201,7 +201,7 @@ export function CharacterCreationScreen({ onStart, isLoading, gravestones = [] }
           >
             CHOOSE YOUR CLASS
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, pointerEvents: isLoading ? 'none' : 'auto', opacity: isLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
             {Object.entries(CLASSES).map(([cls, data]) => {
               const active = selClass === cls;
               return (

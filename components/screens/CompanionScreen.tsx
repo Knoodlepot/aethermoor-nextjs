@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTheme } from '@/components/providers/ThemeProvider';
 import type { Player, Companion } from '../../lib/types';
 
 interface Props {
@@ -22,6 +23,7 @@ const RELATIONSHIP_COLOR: Record<string, string> = {
 };
 
 export default function CompanionScreen({ player, onDismiss, onClose }: Props) {
+  const { T } = useTheme();
   const [confirmDismiss, setConfirmDismiss] = useState(false);
   const companion = player.companion as Companion | null | undefined;
 
@@ -36,8 +38,8 @@ export default function CompanionScreen({ player, onDismiss, onClose }: Props) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
-        background: 'var(--color-bg)',
-        border: '1px solid var(--color-border)',
+        background: T.bg,
+        border: `1px solid ${T.border}`,
         borderRadius: '8px',
         width: '100%', maxWidth: '420px',
         overflow: 'hidden',
@@ -46,16 +48,16 @@ export default function CompanionScreen({ player, onDismiss, onClose }: Props) {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '12px 16px',
-          borderBottom: '1px solid var(--color-border)',
+          borderBottom: `1px solid ${T.border}`,
         }}>
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-text)' }}>
+          <div style={{ fontWeight: 700, fontSize: '1rem', color: T.text }}>
             Companion
           </div>
           <button
             onClick={onClose}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--color-text-muted)', fontSize: '1.2rem', lineHeight: 1,
+              color: T.textMuted, fontSize: '1.2rem', lineHeight: 1,
               padding: '4px 8px',
             }}
           >
@@ -81,13 +83,14 @@ export default function CompanionScreen({ player, onDismiss, onClose }: Props) {
 }
 
 function NoCompanion() {
+  const { T } = useTheme();
   return (
     <div style={{ textAlign: 'center', padding: '24px 8px' }}>
       <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🧭</div>
-      <div style={{ fontWeight: 600, color: 'var(--color-text)', marginBottom: '6px' }}>
+      <div style={{ fontWeight: 600, color: T.text, marginBottom: '6px' }}>
         Travelling Alone
       </div>
-      <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+      <div style={{ fontSize: '0.8rem', color: T.textMuted, lineHeight: 1.5 }}>
         You have no companion. Meet someone worth trusting on your travels — a sellsword at a tavern, a scholar in need of an escort, a wanderer who owes you a debt — and they may offer to join you.
       </div>
     </div>
@@ -105,6 +108,7 @@ function CompanionDetails({
   setConfirmDismiss: (v: boolean) => void;
   onDismiss: () => void;
 }) {
+  const { T } = useTheme();
   const hpPct = Math.round((companion.hp / companion.maxHp) * 100);
   const hpColor = hpPct > 60 ? '#6dbf6d' : hpPct > 30 ? '#c9a84c' : '#c94c4c';
   const relColor = RELATIONSHIP_COLOR[companion.relationship] ?? '#9a9a9a';
@@ -116,8 +120,8 @@ function CompanionDetails({
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
         <div style={{
           fontSize: '3rem', lineHeight: 1,
-          background: 'var(--color-panel)',
-          border: '1px solid var(--color-border)',
+          background: T.panel ?? T.panelAlt,
+          border: `1px solid ${T.border}`,
           borderRadius: '8px',
           width: '60px', height: '60px',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -126,10 +130,10 @@ function CompanionDetails({
           {companion.icon}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--color-text)' }}>
+          <div style={{ fontWeight: 700, fontSize: '1.05rem', color: T.text }}>
             {companion.name}
           </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+          <div style={{ fontSize: '0.78rem', color: T.textMuted, marginTop: '2px' }}>
             {companion.role}
           </div>
           <div style={{
@@ -152,13 +156,13 @@ function CompanionDetails({
       <div style={{ marginBottom: '14px' }}>
         <div style={{
           display: 'flex', justifyContent: 'space-between',
-          fontSize: '0.72rem', color: 'var(--color-text-muted)', marginBottom: '4px',
+          fontSize: '0.72rem', color: T.textMuted, marginBottom: '4px',
         }}>
           <span>HP</span>
           <span style={{ color: hpColor }}>{companion.hp} / {companion.maxHp}</span>
         </div>
         <div style={{
-          height: '6px', background: 'var(--color-border)', borderRadius: '3px', overflow: 'hidden',
+          height: '6px', background: T.border, borderRadius: '3px', overflow: 'hidden',
         }}>
           <div style={{
             height: '100%', width: `${hpPct}%`,
@@ -175,30 +179,30 @@ function CompanionDetails({
       }}>
         {([['STR', companion.str], ['AGI', companion.agi], ['WIL', companion.wil]] as [string, number][]).map(([label, val]) => (
           <div key={label} style={{
-            background: 'var(--color-panel)',
-            border: '1px solid var(--color-border)',
+            background: T.panel ?? T.panelAlt,
+            border: `1px solid ${T.border}`,
             borderRadius: '6px',
             padding: '6px',
             textAlign: 'center',
           }}>
-            <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', letterSpacing: 1 }}>{label}</div>
-            <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-text)' }}>{val}</div>
+            <div style={{ fontSize: '0.65rem', color: T.textMuted, letterSpacing: 1 }}>{label}</div>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: T.text }}>{val}</div>
           </div>
         ))}
       </div>
 
       {/* Ability */}
       <div style={{
-        background: 'var(--color-panel)',
-        border: '1px solid var(--color-border)',
+        background: T.panel ?? T.panelAlt,
+        border: `1px solid ${T.border}`,
         borderRadius: '6px',
         padding: '10px 12px',
         marginBottom: '12px',
       }}>
-        <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', letterSpacing: 1, marginBottom: '4px' }}>
+        <div style={{ fontSize: '0.65rem', color: T.textMuted, letterSpacing: 1, marginBottom: '4px' }}>
           PASSIVE ABILITY
         </div>
-        <div style={{ fontSize: '0.82rem', color: 'var(--color-text)' }}>
+        <div style={{ fontSize: '0.82rem', color: T.text }}>
           {companion.ability}
         </div>
       </div>
@@ -206,7 +210,7 @@ function CompanionDetails({
       {/* Status effects */}
       {companion.statusEffects && companion.statusEffects.length > 0 && (
         <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', letterSpacing: 1, marginBottom: '4px' }}>STATUS</div>
+          <div style={{ fontSize: '0.65rem', color: T.textMuted, letterSpacing: 1, marginBottom: '4px' }}>STATUS</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
             {companion.statusEffects.map((e) => (
               <span key={e} style={{
@@ -222,7 +226,7 @@ function CompanionDetails({
       {/* Notes */}
       {companion.notes && (
         <div style={{
-          fontSize: '0.78rem', color: 'var(--color-text-muted)',
+          fontSize: '0.78rem', color: T.textMuted,
           fontStyle: 'italic', lineHeight: 1.5,
           marginBottom: '16px',
           padding: '0 2px',
@@ -232,7 +236,7 @@ function CompanionDetails({
       )}
 
       {/* Recruited day */}
-      <div style={{ fontSize: '0.68rem', color: 'var(--color-text-muted)', opacity: 0.6, marginBottom: '16px' }}>
+      <div style={{ fontSize: '0.68rem', color: T.textMuted, opacity: 0.6, marginBottom: '16px' }}>
         Joined on day {companion.recruitedDay}
       </div>
 
@@ -260,7 +264,7 @@ function CompanionDetails({
           borderRadius: '6px',
           padding: '12px',
         }}>
-          <div style={{ fontSize: '0.82rem', color: 'var(--color-text)', marginBottom: '10px' }}>
+          <div style={{ fontSize: '0.82rem', color: T.text, marginBottom: '10px' }}>
             Dismiss {companion.name}? This will be narrated next turn.
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -278,8 +282,8 @@ function CompanionDetails({
               onClick={() => setConfirmDismiss(false)}
               style={{
                 flex: 1, background: 'transparent',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-muted)',
+                border: `1px solid ${T.border}`,
+                color: T.textMuted,
                 borderRadius: '4px', padding: '7px',
                 fontSize: '0.8rem', cursor: 'pointer',
               }}

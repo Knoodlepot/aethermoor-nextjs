@@ -156,6 +156,12 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
     const g = canvas.getContext('2d');
     if (!g) return;
 
+    // Scale canvas for device pixel ratio to prevent blurriness on HiDPI screens
+    const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    g.scale(dpr, dpr);
+
     g.clearRect(0, 0, W, H);
 
     const lg: Record<string, any> = (worldSeed.travelMatrix as any)?.locationGrid || {};
@@ -541,9 +547,9 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
   const textCol = '#c8a870';
   const zoomBtnStyle: React.CSSProperties = {
     background: 'rgba(10,8,4,0.88)', border: `1px solid ${goldCol}88`, color: goldCol,
-    width: 28, height: 28, cursor: 'pointer', fontFamily: 'serif', fontSize: 16,
+    width: 28, height: 28, cursor: 'pointer', fontFamily: 'sans-serif', fontSize: 18,
     borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: 0, lineHeight: 1,
+    padding: 0, lineHeight: 1, userSelect: 'none',
   };
 
   return (
@@ -587,7 +593,7 @@ export function MapView({ player, worldSeed, onClose, inline = false, onCommand 
         <div style={{ position: 'relative' }}>
           <canvas
             ref={canvasRef} width={W} height={H}
-            style={{ display: 'block', borderRadius: 4, cursor: isDragging.current ? 'grabbing' : 'grab' }}
+            style={{ display: 'block', width: W, height: H, borderRadius: 4, cursor: isDragging.current ? 'grabbing' : 'grab' }}
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
