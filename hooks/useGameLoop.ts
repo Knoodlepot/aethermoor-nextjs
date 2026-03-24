@@ -522,6 +522,22 @@ export function useGameLoop(
           return { success: true };
         }
 
+        // ── __catchup__ — on-load catch-up for overdue scheduled events ──
+        if (command === '__catchup__') {
+          const events: Array<{ npcName: string; day: number; hour: number; description?: string }> =
+            (updatedPlayer as any).scheduledEvents || [];
+          const gameDay = (updatedPlayer as any).gameDay ?? 1;
+          const gameHour = (updatedPlayer as any).gameHour ?? 8;
+          const overdue = events.filter(
+            (ev) => ev.day < gameDay || (ev.day === gameDay && ev.hour <= gameHour)
+          );
+          if (overdue.length === 0) return { success: true };
+          const overdueList = overdue
+            .map((ev) => `${ev.npcName} (Day ${ev.day}${ev.description ? ': ' + ev.description : ''})`)
+            .join(', ');
+          command = `[The player has returned after time has passed. Briefly narrate (1-2 short paragraphs) what happened while they were away — did the following NPC(s) arrive and find no one, leave word, or move on? ${overdueList}]`;
+        }
+
         // 1. Add user message to conversation history
         const userMessages = [...gs.messages.slice(-39), { role: 'user', content: command }];
         gs.setMessages(userMessages);

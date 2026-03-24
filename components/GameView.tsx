@@ -167,6 +167,7 @@ function GameContent() {
   const [goldFlash, setGoldFlash] = useState<'gain' | 'loss' | null>(null);
   const prevHpRef = useRef<number | null>(null);
   const [hpFlash, setHpFlash] = useState<'heal' | 'damage' | null>(null);
+  const hasFiredCatchUp = useRef(false);
 
   // Fetch token balance on mount and after Stripe return
   useEffect(() => {
@@ -450,6 +451,22 @@ function GameContent() {
       window.gameState = gameState;
     }
   }, [gameState.isLoaded, gameState.player, gameState]);
+
+  // On-load catch-up: if overdue scheduled events exist, fire a narrator call to narrate what happened
+  useEffect(() => {
+    if (!gameState.isLoaded || !gameState.player || hasFiredCatchUp.current) return;
+    hasFiredCatchUp.current = true;
+    const p = gameState.player as any;
+    const events: Array<{ day: number; hour: number }> = p.scheduledEvents || [];
+    const gameDay = p.gameDay ?? 1;
+    const gameHour = p.gameHour ?? 8;
+    const hasOverdue = events.some(
+      (ev) => ev.day < gameDay || (ev.day === gameDay && ev.hour <= gameHour)
+    );
+    if (hasOverdue) {
+      void gameLoop.executeCommand('__catchup__', gameState);
+    }
+  }, [gameState.isLoaded, gameState.player]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auth / loading gates ────────────────────────────────────────────────────
 
