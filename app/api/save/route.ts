@@ -91,17 +91,19 @@ export async function POST(request: NextRequest) {
     const { player_json, seed_json, messages_json, narrative, log_json, slot: rawSlot, clientSavedAt } = body;
     const slot = Math.min(3, Math.max(1, parseInt(rawSlot ?? '1', 10) || 1));
 
-    // Conflict detection: if client sends clientSavedAt, check whether the DB has a newer save
+    // Conflict detection: compare saved_at (set only by explicit /api/save calls, not narrator
+    // internal saves). This avoids false positives where the narrator bumps updated_at on every
+    // turn but saved_at stays unchanged, which caused a 409 on every auto-save.
     if (clientSavedAt) {
       const existing = await db.query(
-        'SELECT updated_at FROM game_saves WHERE player_id = $1 AND slot = $2',
+        'SELECT saved_at FROM game_saves WHERE player_id = $1 AND slot = $2',
         [playerId, slot]
       );
-      if (existing.rows.length > 0 && existing.rows[0].updated_at) {
-        const dbUpdatedAt = new Date(existing.rows[0].updated_at).getTime();
+      if (existing.rows.length > 0 && existing.rows[0].saved_at) {
+        const dbSavedAt = new Date(existing.rows[0].saved_at).getTime();
         const clientTs = new Date(clientSavedAt).getTime();
         // Allow 2s buffer for clock skew / in-flight requests
-        if (dbUpdatedAt > clientTs + 2000) {
+        if (dbSavedAt > clientTs + 2000) {
           return NextResponse.json(
             { error: 'conflict', message: 'A newer save exists from another session. Reload to see the latest.' },
             { status: 409 }

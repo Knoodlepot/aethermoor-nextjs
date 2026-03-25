@@ -1514,12 +1514,6 @@ function GameContent() {
         {/* Panel header: game buttons + close */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderBottom: `1px solid ${T.border}`, flexShrink: 0, gap: 6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <button
-              onClick={() => { setShowMobilePanel(false); setShowNewGameConfirm(true); }}
-              style={{ background: 'transparent', border: `1px solid ${T.accent}`, color: T.gold, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'Cinzel','Palatino Linotype',serif", letterSpacing: 1 }}
-            >
-              New Game
-            </button>
             {player && (
               <button
                 onClick={() => { setShowMobilePanel(false); setShowSaveSlot(true); }}
