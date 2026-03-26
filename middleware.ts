@@ -29,7 +29,8 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/invite/') ||
     pathname.startsWith('/api/') ||
-    pathname.startsWith('/closed')
+    pathname.startsWith('/closed') ||
+    pathname.startsWith('/admin')
   ) {
     return NextResponse.next();
   }
