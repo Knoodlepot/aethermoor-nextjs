@@ -77,7 +77,7 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ code: googleCode, redirectUri: window.location.origin + window.location.pathname }),
+        body: JSON.stringify({ code: googleCode, redirectUri: window.location.origin + `/api/auth/oauth/${provider}` }),
       })
         .then((r) => r.json())
         .then((data) => {
@@ -95,14 +95,10 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function getRedirectUri() {
-    return window.location.origin + window.location.pathname;
-  }
-
   function handleGoogleOAuth() {
     const params = new URLSearchParams({
       client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: getRedirectUri(),
+      redirect_uri: window.location.origin + '/api/auth/oauth/google',
       response_type: 'code',
       scope: 'openid email profile',
       state: 'google_' + Math.random().toString(36).slice(2),
@@ -113,7 +109,7 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
   function handleDiscordOAuth() {
     const params = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
-      redirect_uri: getRedirectUri(),
+      redirect_uri: window.location.origin + '/api/auth/oauth/discord',
       response_type: 'code',
       scope: 'identify email',
       state: 'discord_' + Math.random().toString(36).slice(2),
