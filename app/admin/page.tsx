@@ -698,6 +698,14 @@ export default function AdminPage() {
                       <span style={{ ...S.pill, borderColor: profile.player.verified ? '#408040' : '#804040', color: profile.player.verified ? '#80c080' : '#c08080' }}>
                         {profile.player.verified ? 'VERIFIED' : 'UNVERIFIED'}
                       </span>
+                      {!profile.player.verified && (
+                        <button style={{ ...S.btnSmall, fontSize: 10, marginLeft: 6 }} onClick={async () => {
+                          const data = await adminPost('/api/admin/verify-player', { playerId: profile.player.player_id });
+                          if (data.error) { setProfileMsg(`Error: ${data.error}`); return; }
+                          setProfile((p) => p ? { ...p, player: { ...p.player, verified: true } } : p);
+                          setProfileMsg('✓ Account verified');
+                        }}>VERIFY</button>
+                      )}
                     </span>
                   </div>
                 </div>
