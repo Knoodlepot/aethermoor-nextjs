@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
+import { query } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -9,14 +10,32 @@ export async function GET(
   const secret = process.env.SESSION_SECRET;
   const betaTokensEnv = process.env.BETA_TOKENS;
 
-  if (!secret || !betaTokensEnv) {
+  if (!secret) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  const validTokens = new Set(betaTokensEnv.split(',').map((t) => t.trim()).filter(Boolean));
+  let cookieMaxAge = 30 * 24 * 60 * 60; // default 30 days
 
-  if (!validTokens.has(token)) {
-    return NextResponse.redirect(new URL('/closed?invalid=1', request.url));
+  // Check env var tokens first
+  const validEnvTokens = new Set((betaTokensEnv || '').split(',').map((t) => t.trim()).filter(Boolean));
+
+  if (!validEnvTokens.has(token)) {
+    // Check DB-generated beta keys
+    const dbKey = await query<{ token: string; expires_at: string | null; revoked: boolean }>(
+      `SELECT token, expires_at, revoked FROM beta_keys WHERE token = $1`,
+      [token]
+    );
+    if (dbKey.rows.length === 0 || dbKey.rows[0].revoked) {
+      return NextResponse.redirect(new URL('/closed?invalid=1', request.url));
+    }
+    const { expires_at } = dbKey.rows[0];
+    if (expires_at && new Date(expires_at) < new Date()) {
+      return NextResponse.redirect(new URL('/closed?expired=1', request.url));
+    }
+    // Set cookie duration to match key expiry (or default 30d if permanent)
+    if (expires_at) {
+      cookieMaxAge = Math.floor((new Date(expires_at).getTime() - Date.now()) / 1000);
+    }
   }
 
   const sig = createHmac('sha256', secret).update(token).digest('hex');
@@ -30,7 +49,7 @@ export async function GET(
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: cookieMaxAge,
   });
   return response;
 }

@@ -204,6 +204,13 @@ export async function migrateDb(): Promise<void> {
           expires_at TIMESTAMPTZ,
           account_id TEXT
         )`,
+        `CREATE TABLE IF NOT EXISTS beta_keys (
+          token TEXT PRIMARY KEY,
+          label TEXT,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          expires_at TIMESTAMPTZ,
+          revoked BOOLEAN NOT NULL DEFAULT FALSE
+        )`,
       ];
       for (const sql of columnMigrations) {
         await client.query(sql);

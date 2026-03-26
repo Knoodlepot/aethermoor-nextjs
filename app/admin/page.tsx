@@ -307,6 +307,13 @@ export default function AdminPage() {
   const [discordMsg, setDiscordMsg] = React.useState('');
   const [discordLoaded, setDiscordLoaded] = React.useState(false);
 
+  // Beta keys
+  type BetaKey = { token: string; label: string; created_at: string; expires_at: string | null; revoked: boolean };
+  const [betaKeys, setBetaKeys] = React.useState<BetaKey[]>([]);
+  const [betaKeyLabel, setBetaKeyLabel] = React.useState('');
+  const [betaKeyMsg, setBetaKeyMsg] = React.useState('');
+  const [betaKeysLoaded, setBetaKeysLoaded] = React.useState(false);
+
   // Costs
   type CostDay = { day: string; haiku: number; sonnet: number; opus: number; totalCalls: number; costUsd: number; costGbp: number; revenueGbp: number };
   type CostSummary = { calls: number; costUsd: number; costGbp: number; revenueGbp: number; margin: number | null };
@@ -514,6 +521,24 @@ export default function AdminPage() {
     } catch { setDiscordMsg('Failed to post to Discord.'); }
   }
 
+  async function fetchBetaKeys() {
+    const data = await adminGet('/api/admin/beta-keys');
+    if (data.error) { setBetaKeyMsg(`Error: ${data.error}`); return; }
+    setBetaKeys(data.keys);
+    setBetaKeysLoaded(true);
+  }
+
+  async function revokeBetaKey(token: string) {
+    const res = await fetch('/api/admin/beta-keys', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+      body: JSON.stringify({ token }),
+    });
+    const data = await res.json();
+    if (data.error) { setBetaKeyMsg(`Error: ${data.error}`); return; }
+    fetchBetaKeys();
+  }
+
   async function fetchCosts() {
     setCostsMsg('Loading...');
     const data = await adminGet('/api/admin/costs');
@@ -526,6 +551,7 @@ export default function AdminPage() {
   // ── Tab click handler ──────────────────────────────────────────────────────
   function onTabClick(i: number) {
     setTab(i);
+    if (i === 4 && !betaKeysLoaded) fetchBetaKeys();
     if (i === 5 && !discordLoaded) loadChangelog();
     if (i === 6 && !costsLoaded) fetchCosts();
   }
@@ -693,6 +719,27 @@ export default function AdminPage() {
                   <button style={S.btn} onClick={giftTokens}>GIFT</button>
                 </div>
                 {giftMsg && <div style={S.msg(giftMsg.startsWith('✓') ? 'ok' : 'err')}>{giftMsg}</div>}
+
+                {/* Beta key */}
+                <div style={S.divider} />
+                <div style={{ ...S.cardTitle, fontSize: 10, marginBottom: 10 }}>SEND BETA ACCESS LINK</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const, alignItems: 'center' }}>
+                  {[7, 14, 30, 0].map((d) => (
+                    <button key={d} style={S.btnSmall} onClick={async () => {
+                      setBetaKeyMsg('Generating...');
+                      const label = profile.player.email;
+                      const data = await adminPost('/api/admin/beta-keys', { label, days: d || null });
+                      if (data.error) { setBetaKeyMsg(`Error: ${data.error}`); return; }
+                      const url = `${window.location.origin}/invite/${data.token}`;
+                      navigator.clipboard.writeText(url);
+                      setBetaKeyMsg(`✓ ${d ? `${d}-day` : 'Permanent'} link copied for ${label}!`);
+                      fetchBetaKeys();
+                    }}>
+                      {d ? `${d} DAYS` : 'PERMANENT'}
+                    </button>
+                  ))}
+                </div>
+                {betaKeyMsg && <div style={{ ...S.msg(betaKeyMsg.startsWith('✓') ? 'ok' : betaKeyMsg.startsWith('Error') ? 'err' : 'info'), marginTop: 8 }}>{betaKeyMsg}</div>}
 
                 {/* Clear moderation */}
                 {profile.incidents.length > 0 && (
@@ -1136,6 +1183,73 @@ export default function AdminPage() {
                 {settingsSaved && <span style={{ marginLeft: 12, fontSize: 12, color: '#80c080' }}>{settingsSaved}</span>}
               </div>
             </div>
+          </div>
+          <div style={S.card}>
+            <div style={S.cardTitle}>BETA ACCESS KEYS</div>
+            <div style={{ fontSize: 12, color: '#8a7a5a', marginBottom: 14 }}>
+              Generate permanent invite links for friends. Each key sets a 30-day beta cookie. Keys can be revoked at any time.
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input style={{ ...S.input, flex: 1 }} type="text" value={betaKeyLabel}
+                onChange={(e) => setBetaKeyLabel(e.target.value)}
+                placeholder="Label (e.g. friend's name)…" />
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' as const }}>
+              {[7, 14, 30, 0].map((d) => (
+                <button key={d} style={S.btnSmall} onClick={async () => {
+                  setBetaKeyMsg('Generating...');
+                  const data = await adminPost('/api/admin/beta-keys', { label: betaKeyLabel || null, days: d || null });
+                  if (data.error) { setBetaKeyMsg(`Error: ${data.error}`); return; }
+                  const url = `${window.location.origin}/invite/${data.token}`;
+                  navigator.clipboard.writeText(url);
+                  setBetaKeyLabel('');
+                  setBetaKeyMsg(`✓ ${d ? `${d}-day` : 'Permanent'} link copied!`);
+                  fetchBetaKeys();
+                }}>
+                  {d ? `${d} DAYS` : 'PERMANENT'}
+                </button>
+              ))}
+            </div>
+            {betaKeyMsg && <div style={S.msg(betaKeyMsg.startsWith('✓') ? 'ok' : betaKeyMsg.startsWith('Error') ? 'err' : 'info')}>{betaKeyMsg}</div>}
+            {betaKeys.length > 0 && (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginTop: 12 }}>
+                <thead>
+                  <tr style={{ color: '#5a4a2a', textAlign: 'left' }}>
+                    <th style={{ padding: '4px 8px' }}>LABEL</th>
+                    <th style={{ padding: '4px 8px' }}>LINK</th>
+                    <th style={{ padding: '4px 8px' }}>EXPIRES</th>
+                    <th style={{ padding: '4px 8px' }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {betaKeys.map((k) => (
+                    <tr key={k.token} style={{ opacity: k.revoked ? 0.4 : 1, borderTop: '1px solid #2e2515' }}>
+                      <td style={{ padding: '6px 8px', color: '#c9a84c' }}>{k.label || '—'}</td>
+                      <td style={{ padding: '6px 8px' }}>
+                        {k.revoked ? <span style={{ color: '#8a7a5a' }}>REVOKED</span> : (
+                          <button style={{ ...S.btnSmall, fontSize: 10 }} onClick={() => {
+                            const url = `${window.location.origin}/invite/${k.token}`;
+                            navigator.clipboard.writeText(url);
+                            setBetaKeyMsg('✓ Link copied!');
+                          }}>COPY LINK</button>
+                        )}
+                      </td>
+                      <td style={{ padding: '6px 8px', color: k.expires_at && new Date(k.expires_at) < new Date() ? '#c08080' : '#8a7a5a' }}>
+                        {k.expires_at ? fmtDate(k.expires_at) : '∞ Permanent'}
+                      </td>
+                      <td style={{ padding: '6px 8px' }}>
+                        {!k.revoked && (
+                          <button style={{ ...S.btnSmall, fontSize: 10, color: '#c05050' }} onClick={() => revokeBetaKey(k.token)}>REVOKE</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {betaKeys.length === 0 && betaKeysLoaded && (
+              <div style={{ fontSize: 12, color: '#5a4a2a' }}>No keys yet. Generate one above.</div>
+            )}
           </div>
           <div style={S.card}>
             <div style={S.cardTitle}>ABOUT</div>
