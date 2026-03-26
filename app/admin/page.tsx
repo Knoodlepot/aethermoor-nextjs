@@ -700,7 +700,7 @@ export default function AdminPage() {
                       </span>
                       {!profile.player.verified && (
                         <button style={{ ...S.btnSmall, fontSize: 10, marginLeft: 6 }} onClick={async () => {
-                          const data = await adminPost('/api/admin/verify-player', { playerId: profile.player.player_id });
+                          const data = await adminPost('/api/admin/verify-player', { email: profile.player.email });
                           if (data.error) { setProfileMsg(`Error: ${data.error}`); return; }
                           setProfile((p) => p ? { ...p, player: { ...p.player, verified: true } } : p);
                           setProfileMsg('✓ Account verified');
