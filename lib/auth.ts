@@ -65,6 +65,20 @@ export function issueJwt(accountId: string, playerId: string, email: string): st
 }
 
 /**
+ * Issue JWT with a custom expiry (e.g. for timed preview sessions)
+ */
+export function issueJwtWithExpiry(
+  accountId: string,
+  playerId: string,
+  email: string,
+  expiresAt: Date
+): string {
+  const payload: Omit<JwtPayload, 'iat' | 'exp'> = { accountId, playerId, email };
+  const secondsUntilExpiry = Math.floor((expiresAt.getTime() - Date.now()) / 1000);
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: secondsUntilExpiry });
+}
+
+/**
  * Verify and decode JWT token
  */
 export function verifyJwt(token: string): JwtPayload | null {

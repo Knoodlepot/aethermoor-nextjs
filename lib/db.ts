@@ -198,6 +198,12 @@ export async function migrateDb(): Promise<void> {
         `ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS world_name TEXT`,
         `ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS country_code TEXT`,
         `ALTER TABLE token_log ADD COLUMN IF NOT EXISTS model_tier TEXT`,
+        `CREATE TABLE IF NOT EXISTS preview_invites (
+          token TEXT PRIMARY KEY,
+          used_at TIMESTAMPTZ,
+          expires_at TIMESTAMPTZ,
+          account_id TEXT
+        )`,
       ];
       for (const sql of columnMigrations) {
         await client.query(sql);
@@ -336,6 +342,16 @@ export async function migrateDb(): Promise<void> {
       );
       CREATE INDEX IF NOT EXISTS idx_moderation_account_id ON moderation_incidents(account_id);
       CREATE INDEX IF NOT EXISTS idx_moderation_status ON moderation_incidents(status);
+    `);
+
+    // Create preview_invites table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS preview_invites (
+        token TEXT PRIMARY KEY,
+        used_at TIMESTAMPTZ,
+        expires_at TIMESTAMPTZ,
+        account_id TEXT
+      );
     `);
 
     migrated = true;
