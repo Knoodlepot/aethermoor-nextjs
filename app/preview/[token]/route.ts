@@ -62,7 +62,7 @@ export async function GET(
   const guestEmail = `preview-${shortId}@aethermoor.preview`;
   const guestPassword = randomBytes(16).toString('hex');
 
-  const result = await auth.registerAccount(guestEmail, guestPassword);
+  const result = await auth.registerAccount(guestEmail, guestPassword, 25);
   if (!result) {
     return NextResponse.redirect(new URL('/preview/invalid', request.url));
   }

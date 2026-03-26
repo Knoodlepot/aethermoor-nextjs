@@ -95,7 +95,8 @@ export function verifyJwt(token: string): JwtPayload | null {
  */
 export async function registerAccount(
   email: string,
-  password: string
+  password: string,
+  startingTokens: number = 50
 ): Promise<{ accountId: string; playerId: string; token: string } | null> {
   try {
     // Check if account exists
@@ -119,7 +120,7 @@ export async function registerAccount(
     await query(
       `INSERT INTO players (player_id, account_id, tokens)
        VALUES ($1, $2, $3)`,
-      [playerId, accountId, 50] // Bonus tokens for new players
+      [playerId, accountId, startingTokens]
     );
 
     // Issue JWT

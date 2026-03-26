@@ -7,6 +7,13 @@ import { getIP, isIpRateLimited } from '@/lib/ratelimit';
 
 export async function POST(request: NextRequest) {
   try {
+    if (process.env.REGISTRATION_OPEN === 'false') {
+      return NextResponse.json(
+        { error: 'registration_closed', message: 'Registration is not currently open. If you have an invite link, use that to access the game.' },
+        { status: 403 }
+      );
+    }
+
     if (await isIpRateLimited(getIP(request), 5)) {
       return NextResponse.json({ error: 'rate_limited', message: 'Too many registration attempts. Please try again later.' }, { status: 429 });
     }
