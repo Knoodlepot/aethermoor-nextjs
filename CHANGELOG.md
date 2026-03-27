@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+- **Content moderation now issues warning and ban cards**: Explicit content triggers a yellow card warning message in-game. A second violation, or any severe content, issues a red card that locks the text input and action buttons until an admin reviews the incident. You'll see a clear message explaining the reason.
+- **Admin panel: Moderation tab**: All yellow and red card incidents are now visible in a dedicated Moderation tab in the admin panel. Each row shows the card type, the player's email, the reason, and the exact text that triggered the warning. Incidents can be dismissed from the panel; dismissing a red card lifts the account lock.
+
 ### Fixed
 - **New character name no longer carries over from a previous session**: Starting a new game after playing an existing one no longer showed the old character's name. The save conflict tracking is now properly reset when starting fresh.
 - **Class buttons are disabled while the world is being created**: During the "Weaving your fate…" world generation phase, clicking a class card no longer does anything — the selection is locked until generation completes.
