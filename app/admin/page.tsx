@@ -321,6 +321,16 @@ export default function AdminPage() {
   const [costsMsg, setCostsMsg] = React.useState('');
   const [costsLoaded, setCostsLoaded] = React.useState(false);
 
+  // Moderation
+  type ModerationIncident = {
+    id: number; player_id: string; account_id: string; card_type: string;
+    reason: string; trigger_text: string | null; status: string; created_at: string; email: string | null;
+  };
+  const [moderationIncidents, setModerationIncidents] = React.useState<ModerationIncident[]>([]);
+  const [moderationMsg, setModerationMsg] = React.useState('');
+  const [moderationLoaded, setModerationLoaded] = React.useState(false);
+  const [moderationPending, setModerationPending] = React.useState(0);
+
   // ── Mount ──────────────────────────────────────────────────────────────────
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -548,12 +558,30 @@ export default function AdminPage() {
     setCostsLoaded(true);
   }
 
+  async function fetchModeration() {
+    setModerationMsg('Loading...');
+    const data = await adminGet('/api/admin/moderation', { days: '30' });
+    if (data.error) { setModerationMsg(`Error: ${data.error}`); return; }
+    setModerationIncidents(data.incidents || []);
+    setModerationPending(data.pendingCount || 0);
+    setModerationMsg('');
+    setModerationLoaded(true);
+  }
+
+  async function dismissIncident(id: number) {
+    const data = await adminPost('/api/admin/moderation', { incidentId: id, action: 'dismiss' });
+    if (data.error) { setModerationMsg(`Error: ${data.error}`); return; }
+    setModerationIncidents((prev) => prev.map((inc) => inc.id === id ? { ...inc, status: 'dismissed' } : inc));
+    setModerationPending((p) => Math.max(0, p - 1));
+  }
+
   // ── Tab click handler ──────────────────────────────────────────────────────
   function onTabClick(i: number) {
     setTab(i);
     if (i === 4 && !betaKeysLoaded) fetchBetaKeys();
     if (i === 5 && !discordLoaded) loadChangelog();
     if (i === 6 && !costsLoaded) fetchCosts();
+    if (i === 7 && !moderationLoaded) fetchModeration();
   }
 
   // ── Lock screen ────────────────────────────────────────────────────────────
@@ -590,6 +618,8 @@ export default function AdminPage() {
     'SUPPORT',
     'SETTINGS',
     'DISCORD',
+    'COSTS',
+    `MODERATION${moderationPending > 0 ? ` (${moderationPending})` : ''}`,
   ];
 
   return (
@@ -1367,6 +1397,118 @@ export default function AdminPage() {
                 </>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* ── MODERATION ── */}
+      {tab === 7 && (
+        <div style={S.scrollContent}>
+          <div style={{ ...S.card, maxWidth: 960 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #2e2515' }}>
+              <div style={{ fontFamily: "'Cinzel', serif", fontSize: 11, letterSpacing: 3, color: '#c9a84c' }}>
+                CARD INCIDENTS
+                {moderationPending > 0 && (
+                  <span style={{ marginLeft: 10, background: '#c04030', color: '#fff', fontSize: 9, padding: '2px 7px', fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>
+                    {moderationPending} PENDING
+                  </span>
+                )}
+              </div>
+              <button style={S.btnSmall} onClick={() => { setModerationLoaded(false); fetchModeration(); }}>↺ REFRESH</button>
+            </div>
+            {moderationMsg && <div style={S.msg(moderationMsg === 'Loading...' ? 'info' : 'err')}>{moderationMsg}</div>}
+            {moderationIncidents.length === 0 && !moderationMsg && (
+              <div style={{ color: '#5a4a2a', fontSize: 12, padding: '16px 0', textAlign: 'center' }}>No card incidents in the last 30 days.</div>
+            )}
+            {moderationIncidents.length > 0 && (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ ...S.table, minWidth: 760 }}>
+                  <thead>
+                    <tr>
+                      <th style={S.th}>CARD</th>
+                      <th style={S.th}>PLAYER</th>
+                      <th style={S.th}>REASON</th>
+                      <th style={S.th}>TRIGGER TEXT</th>
+                      <th style={S.th}>TIME</th>
+                      <th style={S.th}>STATUS</th>
+                      <th style={S.th}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {moderationIncidents.map((inc) => (
+                      <tr key={inc.id} style={{ opacity: inc.status === 'dismissed' ? 0.45 : 1 }}>
+                        <td style={S.td}>
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '2px 8px',
+                            fontSize: 9,
+                            fontFamily: "'Cinzel', serif",
+                            letterSpacing: 1,
+                            border: '1px solid',
+                            borderColor: inc.card_type === 'red' ? '#c04030' : '#c9a84c',
+                            color: inc.card_type === 'red' ? '#c04030' : '#c9a84c',
+                          }}>
+                            {inc.card_type?.toUpperCase() ?? '—'}
+                          </span>
+                        </td>
+                        <td style={S.td}>
+                          <div style={{ fontSize: 11, color: '#c9a84c', fontFamily: 'monospace' }}>{inc.player_id?.slice(0, 14)}…</div>
+                          {inc.email && <div style={{ fontSize: 10, color: '#8a7a5a' }}>{inc.email}</div>}
+                        </td>
+                        <td style={{ ...S.td, maxWidth: 180, wordBreak: 'break-word' as const }}>
+                          <span style={{ fontSize: 11, color: '#d4c5a0' }}>{inc.reason}</span>
+                        </td>
+                        <td style={{ ...S.td, maxWidth: 240 }}>
+                          {inc.trigger_text ? (
+                            <span style={{
+                              display: 'block',
+                              fontSize: 11,
+                              color: '#c08080',
+                              fontFamily: 'monospace',
+                              background: '#1a0a0a',
+                              border: '1px solid #3a1515',
+                              padding: '3px 6px',
+                              maxHeight: 60,
+                              overflowY: 'auto' as const,
+                              wordBreak: 'break-word' as const,
+                            }}>
+                              {inc.trigger_text}
+                            </span>
+                          ) : (
+                            <span style={{ color: '#5a4a2a', fontSize: 11 }}>—</span>
+                          )}
+                        </td>
+                        <td style={{ ...S.td, whiteSpace: 'nowrap' as const, fontSize: 11, color: '#8a7a5a' }}>{fmtDate(inc.created_at)}</td>
+                        <td style={S.td}>
+                          <span style={{
+                            fontSize: 9,
+                            fontFamily: "'Cinzel', serif",
+                            letterSpacing: 1,
+                            color: inc.status === 'dismissed' ? '#5a4a2a' : inc.status === 'escalated' ? '#c04030' : '#c9a84c',
+                          }}>
+                            {inc.status?.toUpperCase()}
+                          </span>
+                        </td>
+                        <td style={S.td}>
+                          {inc.status === 'pending' && (
+                            <button
+                              style={{ ...S.btnSmall, fontSize: 9, padding: '3px 8px' }}
+                              onClick={() => dismissIncident(inc.id)}
+                            >
+                              DISMISS
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <div style={{ marginTop: 12, fontSize: 11, color: '#5a4a2a', lineHeight: 1.6 }}>
+              Yellow card = first violation warning. Red card = account locked (input + buttons disabled).<br />
+              Dismissing a red card incident lifts the lock on next page load. Shows last 30 days.
+            </div>
           </div>
         </div>
       )}
