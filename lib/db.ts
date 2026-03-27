@@ -198,6 +198,7 @@ export async function migrateDb(): Promise<void> {
         `ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS world_name TEXT`,
         `ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS country_code TEXT`,
         `ALTER TABLE token_log ADD COLUMN IF NOT EXISTS model_tier TEXT`,
+        `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS card_type TEXT CHECK (card_type IN ('yellow', 'red'))`,
         `CREATE TABLE IF NOT EXISTS preview_invites (
           token TEXT PRIMARY KEY,
           used_at TIMESTAMPTZ,

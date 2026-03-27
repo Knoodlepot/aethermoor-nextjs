@@ -26,7 +26,8 @@ export async function logModerationIncident(
   playerId: string,
   source: string,
   reason: string,
-  triggerText?: string
+  triggerText?: string,
+  cardType?: 'yellow' | 'red' | null
 ): Promise<number | null> {
   try {
     const sanitizedTrigger = triggerText ? sanitiseStr(triggerText, 500) : null;
@@ -34,10 +35,10 @@ export async function logModerationIncident(
 
     const result = await query<ModerationIncident>(
       `INSERT INTO moderation_incidents
-       (account_id, player_id, source, reason, trigger_text, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, 'pending', NOW())
+       (account_id, player_id, source, reason, trigger_text, card_type, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, 'pending', NOW())
        RETURNING id`,
-      [accountId, playerId, source, sanitizedReason, sanitizedTrigger]
+      [accountId, playerId, source, sanitizedReason, sanitizedTrigger, cardType ?? null]
     );
 
     if (result.rows.length === 0) {
@@ -215,6 +216,69 @@ export async function isAccountOnModerationHold(accountId: string): Promise<bool
   } catch (error) {
     console.error('Moderation hold check error:', error);
     return false; // fail open — don't block players if the check errors
+  }
+}
+
+/**
+ * Get yellow/red card counts for a player (non-dismissed only)
+ */
+export async function getPlayerCardCounts(playerId: string): Promise<{ yellow: number; red: number }> {
+  try {
+    const result = await query<{ card_type: string; count: string }>(
+      `SELECT card_type, COUNT(*) as count FROM moderation_incidents
+       WHERE player_id = $1 AND card_type IS NOT NULL AND status != 'dismissed'
+       GROUP BY card_type`,
+      [playerId]
+    );
+    const counts = { yellow: 0, red: 0 };
+    for (const row of result.rows) {
+      if (row.card_type === 'yellow') counts.yellow = parseInt(row.count);
+      if (row.card_type === 'red') counts.red = parseInt(row.count);
+    }
+    return counts;
+  } catch (error) {
+    console.error('Get player card counts error:', error);
+    return { yellow: 0, red: 0 };
+  }
+}
+
+/**
+ * Check if player has an active (non-dismissed) red card
+ */
+export async function isPlayerRedCarded(playerId: string): Promise<boolean> {
+  try {
+    const result = await query<{ count: string }>(
+      `SELECT COUNT(*) as count FROM moderation_incidents
+       WHERE player_id = $1 AND card_type = 'red' AND status != 'dismissed'`,
+      [playerId]
+    );
+    return parseInt(result.rows[0]?.count ?? '0') > 0;
+  } catch (error) {
+    console.error('Red card check error:', error);
+    return false;
+  }
+}
+
+/**
+ * Get recent card incidents for admin notification (last 7 days, with trigger text)
+ */
+export async function getRecentCardIncidents(limit: number = 50) {
+  try {
+    const result = await query<{
+      id: number; player_id: string; account_id: string; card_type: string;
+      reason: string; trigger_text: string; status: string; created_at: string;
+    }>(
+      `SELECT id, player_id, account_id, card_type, reason, trigger_text, status, created_at
+       FROM moderation_incidents
+       WHERE card_type IS NOT NULL AND created_at > NOW() - INTERVAL '7 days'
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit]
+    );
+    return result.rows;
+  } catch (error) {
+    console.error('Get recent card incidents error:', error);
+    return [];
   }
 }
 

@@ -6,7 +6,7 @@ import * as ratelimit from '@/lib/ratelimit';
 import * as db from '@/lib/db';
 import { applyNarrationState } from '@/lib/server/narrationState';
 import { generateNamePool } from '@/lib/nameGenerator';
-import { isAccountOnModerationHold } from '@/lib/moderation';
+import { isAccountOnModerationHold, isPlayerRedCarded, getPlayerCardCounts, logModerationIncident } from '@/lib/moderation';
 import { DUNGEON_EXCLUSIVE_ENEMIES, ITEM_DEF_VALUES } from '@/lib/constants';
 import { ALL_SUBCLASS_SKILL_DESCRIPTIONS } from '@/lib/subclasses';
 
@@ -30,7 +30,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Check moderation hold (5+ pending incidents in last 7 days)
+    // 2. Check red card (locked account)
+    if (await isPlayerRedCarded(authCtx.playerId)) {
+      return NextResponse.json(
+        { error: 'red_card', message: 'Your account has been locked due to content violations. Please contact support.' },
+        { status: 403 }
+      );
+    }
+
+    // 2b. Check moderation hold (5+ pending incidents in last 7 days)
     if (await isAccountOnModerationHold(authCtx.accountId)) {
       return NextResponse.json(
         { error: 'moderation_hold', message: 'Your account has been flagged for review. Please contact support.' },
@@ -91,11 +99,28 @@ export async function POST(request: NextRequest) {
       const gate = await anthropic.runSafetyScreen(messages);
       if (gate.blocked) {
         const bal = await tokens.getBalance(authCtx.playerId);
+        // Determine card type: severe content = red immediately; 2nd yellow = red
+        const cards = await getPlayerCardCounts(authCtx.playerId);
+        const cardType: 'yellow' | 'red' =
+          gate.severity === 'red' || cards.yellow >= 1 ? 'red' : 'yellow';
+        // Extract trigger text from last user message
+        const lastMsg = messages[messages.length - 1];
+        const triggerText = typeof lastMsg?.content === 'string'
+          ? lastMsg.content
+          : JSON.stringify(lastMsg?.content ?? '');
+        await logModerationIncident(
+          authCtx.accountId, authCtx.playerId,
+          'input_safety_screen',
+          gate.reason || 'content_violation',
+          triggerText.slice(0, 500),
+          cardType
+        );
         return NextResponse.json(
           {
-            narrative: anthropic.buildSafetyFallbackResponse(gate.reason || 'input_blocked'),
+            narrative: anthropic.buildSafetyFallbackResponse(gate.reason || 'input_blocked', cardType, cards.yellow),
             tokenBalance: bal ?? 0,
             safetyBlocked: true,
+            cardIssued: cardType,
           },
           { status: 200 }
         );
@@ -210,10 +235,18 @@ export async function POST(request: NextRequest) {
         }
 
         // Full text received — run output safety check
-        if (capturedNeedsNarrationSafety && anthropic.hasBlockedKeywords(fullText)) {
+        const outputSeverity = capturedNeedsNarrationSafety ? anthropic.getBlockedKeywordSeverity(fullText) : null;
+        if (outputSeverity) {
           await tokens.addTokens(capturedAuthCtx.playerId, capturedTierCost, 'refund_safety_block');
-          const safeNarrative = anthropic.buildSafetyFallbackResponse('output_blocked_keywords');
-          await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'done', narrative: safeNarrative, cleanNarrative: safeNarrative, tokenBalance: capturedSpend.remaining + capturedTierCost, safetyBlocked: true })}\n\n`));
+          const cards = await getPlayerCardCounts(capturedAuthCtx.playerId);
+          const cardType: 'yellow' | 'red' = outputSeverity === 'red' || cards.yellow >= 1 ? 'red' : 'yellow';
+          await logModerationIncident(
+            capturedAuthCtx.accountId, capturedAuthCtx.playerId,
+            'output_safety_screen', 'output_blocked_keywords',
+            fullText.slice(0, 500), cardType
+          );
+          const safeNarrative = anthropic.buildSafetyFallbackResponse('output_blocked_keywords', cardType, cards.yellow);
+          await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'done', narrative: safeNarrative, cleanNarrative: safeNarrative, tokenBalance: capturedSpend.remaining + capturedTierCost, safetyBlocked: true, cardIssued: cardType })}\n\n`));
           return;
         }
 

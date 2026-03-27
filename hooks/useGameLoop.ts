@@ -551,7 +551,15 @@ export function useGameLoop(
           if (narratorResponse.error === 'no_tokens') {
             ui.setScreen('out_of_tokens');
           }
+          if (narratorResponse.error === 'red_card') {
+            ui.setCardStatus('red');
+          }
           return { success: false, error: narratorResponse.error || 'AI call failed' };
+        }
+
+        // Handle card issued with response
+        if ((narratorResponse as any).cardIssued) {
+          ui.setCardStatus((narratorResponse as any).cardIssued);
         }
 
         // Update token balance display from server response

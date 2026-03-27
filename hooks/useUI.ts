@@ -108,6 +108,10 @@ export interface UIContext {
   eventLog: EventLogEntry[];
   addEventLogEntries: (entries: EventLogEntry[]) => void;
   clearEventLog: () => void;
+
+  // Card status (moderation)
+  cardStatus: 'yellow' | 'red' | null;
+  setCardStatus: (status: 'yellow' | 'red' | null) => void;
 }
 
 /**
@@ -150,6 +154,22 @@ export function useUI(): UIContext {
 
   // Token warning
   const [lowTokenWarning, setLowTokenWarning] = useState(false);
+
+  // Card status (moderation) — persisted to localStorage
+  const [cardStatus, setCardStatusState] = useState<'yellow' | 'red' | null>(() => {
+    try {
+      const stored = localStorage.getItem('ae-card-status');
+      if (stored === 'yellow' || stored === 'red') return stored;
+    } catch {}
+    return null;
+  });
+  const setCardStatus = useCallback((status: 'yellow' | 'red' | null) => {
+    setCardStatusState(status);
+    try {
+      if (status) localStorage.setItem('ae-card-status', status);
+      else localStorage.removeItem('ae-card-status');
+    } catch {}
+  }, []);
 
   // Map state
   const [mapOpen, setMapOpen] = useState(false);
@@ -427,5 +447,7 @@ export function useUI(): UIContext {
     eventLog,
     addEventLogEntries,
     clearEventLog,
+    cardStatus,
+    setCardStatus,
   };
 }

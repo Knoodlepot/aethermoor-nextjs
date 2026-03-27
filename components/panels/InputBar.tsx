@@ -8,9 +8,10 @@ interface InputBarProps {
   onFreeText: (text: string) => void;
   isLoading: boolean;
   fillInput?: string | null;
+  disabled?: boolean;
 }
 
-export function InputBar({ player, onFreeText, isLoading, fillInput }: InputBarProps) {
+export function InputBar({ player, onFreeText, isLoading, fillInput, disabled }: InputBarProps) {
   const { T, isDyslexic, t } = useTheme();
   const [text, setText] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -61,7 +62,7 @@ export function InputBar({ player, onFreeText, isLoading, fillInput }: InputBarP
             }
           }}
           placeholder={placeholders[ctx] || placeholders.explore}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           style={{
             flex: 1,
             background: T.inputBg || T.bg,
@@ -72,7 +73,7 @@ export function InputBar({ player, onFreeText, isLoading, fillInput }: InputBarP
             fontFamily: ff,
             outline: 'none',
             borderRadius: 4,
-            opacity: isLoading ? 0.5 : 1,
+            opacity: (isLoading || disabled) ? 0.4 : 1,
             letterSpacing: isDyslexic ? '0.05em' : 'normal',
             transition: 'border-color 0.15s',
           }}
@@ -81,7 +82,7 @@ export function InputBar({ player, onFreeText, isLoading, fillInput }: InputBarP
         />
         <button
           onClick={submit}
-          disabled={isLoading || !text.trim()}
+          disabled={isLoading || !text.trim() || disabled}
           style={{
             background: isLoading ? T.accent + '11' : text.trim() ? T.accent + '22' : 'transparent',
             border: `1px solid ${isLoading ? T.accent + '55' : text.trim() ? T.accent : T.border}`,

@@ -897,7 +897,7 @@ function GameContent() {
     contextAct: player ? (
       <ContextActionPanel
         context={(player as any).context || 'explore'}
-        isLoading={gameLoop.isLoading}
+        isLoading={gameLoop.isLoading || ui.cardStatus === 'red'}
         onAction={(text) => handleFreeText(text)}
         onOpenShop={() => ui.toggleModal('shop')}
         onOpenCraft={() => ui.toggleModal('crafting')}
@@ -1242,6 +1242,40 @@ function GameContent() {
             &gt; {ui.lastInput}
           </div>
         )}
+        {/* Yellow card warning banner */}
+        {ui.cardStatus === 'yellow' && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '8px 14px', flexShrink: 0,
+            background: '#7a5f00', color: '#ffd700',
+            fontSize: '0.82rem', fontFamily: "'Crimson Text',serif",
+            borderTop: '1px solid #a07a00',
+          }}>
+            <span style={{ fontSize: '1rem' }}>⚠️</span>
+            <span style={{ flex: 1 }}>
+              <strong>Yellow card:</strong> A content violation was detected. One more violation will lock your account. Romance is welcome — explicit content is not.
+            </span>
+            <button
+              onClick={() => ui.setCardStatus(null)}
+              style={{ background: 'none', border: 'none', color: '#ffd700', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, padding: 0 }}
+            >×</button>
+          </div>
+        )}
+        {/* Red card banner — input disabled */}
+        {ui.cardStatus === 'red' && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '8px 14px', flexShrink: 0,
+            background: '#5a0000', color: '#ff8080',
+            fontSize: '0.82rem', fontFamily: "'Crimson Text',serif",
+            borderTop: '1px solid #900000',
+          }}>
+            <span style={{ fontSize: '1rem' }}>🔴</span>
+            <span style={{ flex: 1 }}>
+              <strong>Account locked.</strong> Your account has been locked due to content violations. Please contact support at <strong>Knoodlepot@knoodlepotstudio.com</strong> to appeal.
+            </span>
+          </div>
+        )}
         {/* Low token warning banner */}
         {ui.lowTokenWarning && (
           <div style={{
@@ -1301,6 +1335,7 @@ function GameContent() {
                 onFreeText={handleFreeText}
                 isLoading={gameLoop.isLoading}
                 fillInput={ui.fillInput || null}
+                disabled={ui.cardStatus === 'red'}
               />
             </div>
             {layoutCfg.bottomPanels.map(({ id, label, w }) => {
