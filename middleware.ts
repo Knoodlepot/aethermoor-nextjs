@@ -37,26 +37,21 @@ export async function middleware(request: NextRequest) {
   }
 
   const secret = process.env.SESSION_SECRET;
-  const betaTokensEnv = process.env.BETA_TOKENS;
 
   // If gate isn't configured, pass through (so dev environments without the var aren't bricked)
-  if (!secret || !betaTokensEnv) {
+  if (!secret) {
     return NextResponse.next();
   }
 
-  const validTokens = new Set(betaTokensEnv.split(',').map((t) => t.trim()).filter(Boolean));
   const cookieValue = request.cookies.get(BETA_COOKIE)?.value ?? '';
   const colonIdx = cookieValue.lastIndexOf(':');
 
   if (colonIdx !== -1) {
     const token = cookieValue.slice(0, colonIdx);
     const providedHmac = cookieValue.slice(colonIdx + 1);
-
-    if (validTokens.has(token)) {
-      const expectedHmac = await hmac(secret, token);
-      if (providedHmac === expectedHmac) {
-        return NextResponse.next();
-      }
+    const expectedHmac = await hmac(secret, token);
+    if (providedHmac === expectedHmac) {
+      return NextResponse.next();
     }
   }
 
