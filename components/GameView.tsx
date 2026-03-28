@@ -106,7 +106,7 @@ function GameContent() {
   const [savedToast, setSavedToast] = useState(false);
 
 
-  // Age gate — persisted in localStorage so it only shows once per browser
+  // Age gate — fast-path via localStorage; server-side flag enforced for authenticated accounts
   const [ageVerified, setAgeVerified] = useState(false);
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -114,9 +114,26 @@ function GameContent() {
     }
   }, []);
 
+  // Once auth resolves, check server-side verified_age and override localStorage if needed
+  useEffect(() => {
+    if (auth.authStatus !== 'authed') return;
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.verified_age === false) {
+          setAgeVerified(false);
+        }
+      })
+      .catch(() => { /* non-critical — fall back to localStorage state */ });
+  }, [auth.authStatus]);
+
   const handleAgeConfirm = () => {
     localStorage.setItem('aethermoor_age_verified', '1');
     setAgeVerified(true);
+    // Persist server-side for authenticated accounts (fire-and-forget)
+    if (auth.authStatus === 'authed') {
+      fetch('/api/auth/verify-age', { method: 'POST', credentials: 'include' }).catch(() => {});
+    }
   };
 
   // Token balance

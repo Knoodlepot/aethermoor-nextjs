@@ -11,6 +11,7 @@ export interface Account {
   reset_token?: string;
   reset_expires?: Date;
   verified: boolean;
+  verified_age: boolean;
   verify_token?: string;
   created_at: Date;
   updated_at: Date;
@@ -199,6 +200,10 @@ export async function migrateDb(): Promise<void> {
         `ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS country_code TEXT`,
         `ALTER TABLE token_log ADD COLUMN IF NOT EXISTS model_tier TEXT`,
         `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS card_type TEXT CHECK (card_type IN ('yellow', 'red'))`,
+        // ICO compliance: server-side age verification flag
+        // DEFAULT TRUE so existing accounts (who already passed the client-side gate) are unaffected.
+        // New accounts are explicitly set to FALSE in registration/OAuth code.
+        `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS verified_age BOOLEAN NOT NULL DEFAULT TRUE`,
         `CREATE TABLE IF NOT EXISTS preview_invites (
           token TEXT PRIMARY KEY,
           used_at TIMESTAMPTZ,

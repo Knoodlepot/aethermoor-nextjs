@@ -42,8 +42,8 @@ export async function oauthFindOrCreate(email: string): Promise<OAuthAccount | n
     const randomHash = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('hex');
 
     await query(
-      `INSERT INTO accounts (id, email, password_hash, player_id, verified)
-       VALUES ($1, $2, $3, $4, TRUE)`,
+      `INSERT INTO accounts (id, email, password_hash, player_id, verified, verified_age)
+       VALUES ($1, $2, $3, $4, TRUE, FALSE)`,
       [accountId, emailNorm, randomHash, playerId]
     );
 

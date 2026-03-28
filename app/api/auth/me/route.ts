@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as auth from '@/lib/auth';
 import * as tokens from '@/lib/tokens';
+import { query } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +21,14 @@ export async function GET(request: NextRequest) {
     const decoded = rawToken ? auth.verifyJwt(rawToken) : null;
     const sessionExpiresAt = decoded ? decoded.exp * 1000 : null;
 
-    return NextResponse.json({ accountId, playerId, email, balance, sessionExpiresAt });
+    // Fetch verified_age from DB
+    const accRes = await query<{ verified_age: boolean }>(
+      'SELECT verified_age FROM accounts WHERE id = $1',
+      [accountId]
+    );
+    const verified_age = accRes.rows[0]?.verified_age ?? true;
+
+    return NextResponse.json({ accountId, playerId, email, balance, sessionExpiresAt, verified_age });
   } catch (error) {
     console.error('[AUTH ME]', error);
     return NextResponse.json({ error: 'server_error', message: 'Internal server error' }, { status: 500 });

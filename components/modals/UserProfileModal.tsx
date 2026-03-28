@@ -9,7 +9,7 @@ interface UserProfileModalProps {
   onPasswordChange?: () => void;
 }
 
-type Mode = 'main' | 'email' | 'pw';
+type Mode = 'main' | 'email' | 'pw' | 'delete';
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -67,6 +67,9 @@ export function UserProfileModal({
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
 
+  // Delete form state
+  const [deletePw, setDeletePw] = useState('');
+
   function resetForms() {
     setError('');
     setSuccess('');
@@ -75,6 +78,7 @@ export function UserProfileModal({
     setCurrentPw('');
     setNewPw('');
     setConfirmPw('');
+    setDeletePw('');
   }
 
   function goMode(m: Mode) {
@@ -157,6 +161,32 @@ export function UserProfileModal({
     }
   }
 
+  async function handleDeleteAccount(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/auth/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ password: deletePw }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || 'Failed to delete account.');
+      } else {
+        // Clear all local state before reload
+        try { localStorage.clear(); } catch {}
+        window.location.href = '/';
+      }
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div
       style={{
@@ -204,7 +234,9 @@ export function UserProfileModal({
               ? 'ACCOUNT'
               : mode === 'email'
               ? 'CHANGE EMAIL'
-              : 'CHANGE PASSWORD'}
+              : mode === 'pw'
+              ? 'CHANGE PASSWORD'
+              : 'DELETE ACCOUNT'}
           </div>
           <button
             onClick={onClose}
@@ -265,6 +297,23 @@ export function UserProfileModal({
               >
                 Close
               </button>
+              <div style={{ borderTop: '1px solid #2e2010', marginTop: 20, paddingTop: 16 }}>
+                <button
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#7a3030',
+                    fontSize: 12,
+                    fontFamily: 'Georgia,serif',
+                    cursor: 'pointer',
+                    padding: 0,
+                    textDecoration: 'underline',
+                  }}
+                  onClick={() => goMode('delete')}
+                >
+                  Delete account
+                </button>
+              </div>
             </div>
           )}
 
@@ -316,6 +365,69 @@ export function UserProfileModal({
                 onClick={() => goMode('main')}
               >
                 Back
+              </button>
+            </form>
+          )}
+
+          {/* ── DELETE MODE ── */}
+          {mode === 'delete' && (
+            <form onSubmit={handleDeleteAccount}>
+              <div
+                style={{
+                  background: '#1a0a0a',
+                  border: '1px solid #5a1a1a',
+                  padding: '12px 14px',
+                  borderRadius: 4,
+                  fontSize: 13,
+                  color: '#c08080',
+                  marginBottom: 16,
+                  lineHeight: 1.5,
+                }}
+              >
+                This cannot be undone. Your characters, saves, and tokens will be permanently deleted.
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={labelStyle}>CONFIRM WITH PASSWORD</label>
+                <input
+                  type="password"
+                  value={deletePw}
+                  onChange={(e) => setDeletePw(e.target.value)}
+                  style={inputStyle}
+                  placeholder="Enter your current password"
+                  autoFocus
+                />
+                <div style={{ fontSize: 11, color: '#5a4030', marginTop: 4 }}>
+                  OAuth accounts (Google / Discord) can leave this blank.
+                </div>
+              </div>
+              {error && (
+                <div style={{ color: '#c03030', fontSize: 12, marginBottom: 10 }}>
+                  {error}
+                </div>
+              )}
+              <button
+                type="submit"
+                style={{
+                  ...btnStyle,
+                  background: '#5a1a1a22',
+                  border: '1px solid #7a2020',
+                  color: '#c04040',
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Deleting...' : 'Delete my account'}
+              </button>
+              <button
+                type="button"
+                style={{
+                  ...btnStyle,
+                  background: 'transparent',
+                  border: '1px solid #2e2010',
+                  color: '#9a7a55',
+                }}
+                onClick={() => goMode('main')}
+              >
+                Cancel
               </button>
             </form>
           )}

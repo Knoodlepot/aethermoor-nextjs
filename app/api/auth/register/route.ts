@@ -58,6 +58,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // New accounts must confirm age via the in-game age gate — mark unverified.
+    await query('UPDATE accounts SET verified_age = FALSE WHERE id = $1', [result.accountId]);
+
     // Generate verify token and send email (fire-and-forget)
     const verifyToken = uuidv4();
     await query(
