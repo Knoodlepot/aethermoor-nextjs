@@ -131,13 +131,14 @@ export default function Home() {
   return (
     <div style={{
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'center',
-      minHeight: '100dvh',
+      height: '100dvh',
+      overflowY: 'auto',
       backgroundColor: '#0d0a06',
       fontFamily: 'Georgia, serif',
       color: '#d4b896',
-      padding: '1rem',
+      padding: '2rem 1rem',
     }}>
       <div style={{ maxWidth: showMarketing ? '760px' : '700px', width: '100%', textAlign: 'center' }}>
 
