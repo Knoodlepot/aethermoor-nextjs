@@ -1030,23 +1030,24 @@ function GameContent() {
             <div style={{ padding: '6px 10px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' as const }}>
                 {(['Health Potion', 'Strong Health Potion'] as const).map((name) => {
-                  const count = (player.inventory as string[]).filter((i) => i.toLowerCase() === name.toLowerCase()).length;
-                  if (count === 0) return null;
+                  const inv = player.inventory as string[];
+                  const matches = inv.filter((i) => i.toLowerCase().startsWith(name.toLowerCase()));
+                  if (matches.length === 0) return null;
                   return (
                     <button
                       key={name}
-                      onClick={() => handleCommand('use:' + name)}
+                      onClick={() => handleCommand('use:' + matches[0])}
                       style={{
                         background: 'transparent', border: `1px solid #c06030`,
                         color: '#e08040', padding: '3px 8px', fontSize: 10, cursor: 'pointer',
                         fontFamily: "'Cinzel','Palatino Linotype',serif", borderRadius: 3,
                       }}
                     >
-                      🧪 {name === 'Health Potion' ? 'HP' : 'HP+'} ×{count}
+                      🧪 {name === 'Health Potion' ? 'HP' : 'HP+'} ×{matches.length}
                     </button>
                   );
                 })}
-                {['Health Potion', 'Strong Health Potion'].every((n) => !(player.inventory as string[]).some((i) => i.toLowerCase() === n.toLowerCase())) && (
+                {['Health Potion', 'Strong Health Potion'].every((n) => !(player.inventory as string[]).some((i) => i.toLowerCase().startsWith(n.toLowerCase()))) && (
                   <span style={{ fontSize: 10, color: T.textFaint, fontStyle: 'italic', fontFamily: "'Crimson Text',serif" }}>No potions</span>
                 )}
               </div>
@@ -1659,12 +1660,14 @@ function GameContent() {
           <div style={{ padding: '6px 10px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
             <div style={{ display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' as const }}>
               {(['Health Potion', 'Strong Health Potion'] as const).map((name) => {
-                const count = (player.inventory as string[]).filter((i) => i.toLowerCase() === name.toLowerCase()).length;
+                const inv = player.inventory as string[];
+                const matches = inv.filter((i) => i.toLowerCase().startsWith(name.toLowerCase()));
+                const count = matches.length;
                 if (count === 0) return null;
                 return (
                   <button
                     key={name}
-                    onClick={() => { handleCommand('use:' + name); setShowMobilePanel(false); }}
+                    onClick={() => { handleCommand('use:' + matches[0]); setShowMobilePanel(false); }}
                     style={{
                       background: 'transparent', border: `1px solid #c06030`,
                       color: '#e08040', padding: '3px 8px', fontSize: 10, cursor: 'pointer',
@@ -1675,7 +1678,7 @@ function GameContent() {
                   </button>
                 );
               })}
-              {['Health Potion', 'Strong Health Potion'].every((n) => !(player.inventory as string[]).some((i) => i.toLowerCase() === n.toLowerCase())) && (
+              {['Health Potion', 'Strong Health Potion'].every((n) => !(player.inventory as string[]).some((i) => i.toLowerCase().startsWith(n.toLowerCase()))) && (
                 <span style={{ fontSize: 10, color: T.textFaint, fontStyle: 'italic', fontFamily: "'Crimson Text',serif" }}>No potions</span>
               )}
             </div>
