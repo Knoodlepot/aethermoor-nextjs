@@ -4,7 +4,7 @@ import * as auth from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
-  const homeUrl = new URL('/', origin);
+  const homeUrl = new URL('/auth', origin);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
