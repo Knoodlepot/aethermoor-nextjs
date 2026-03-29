@@ -1026,6 +1026,42 @@ function GameContent() {
         <div className="ae-right-col" style={{ flex: 1, overflowY: 'auto' }}>
           {ui.currentEnemy && PANEL_MAP.combat}
           {worldSeed && PANEL_MAP.mainQuest}
+          {player && (
+            <div style={{ padding: '6px 10px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' as const }}>
+                {(['Health Potion', 'Strong Health Potion'] as const).map((name) => {
+                  const count = (player.inventory as string[]).filter((i) => i === name).length;
+                  if (count === 0) return null;
+                  return (
+                    <button
+                      key={name}
+                      onClick={() => handleCommand('use:' + name)}
+                      style={{
+                        background: 'transparent', border: `1px solid #c06030`,
+                        color: '#e08040', padding: '3px 8px', fontSize: 10, cursor: 'pointer',
+                        fontFamily: "'Cinzel','Palatino Linotype',serif", borderRadius: 3,
+                      }}
+                    >
+                      🧪 {name === 'Health Potion' ? 'HP' : 'HP+'} ×{count}
+                    </button>
+                  );
+                })}
+                {['Health Potion', 'Strong Health Potion'].every((n) => !(player.inventory as string[]).includes(n)) && (
+                  <span style={{ fontSize: 10, color: T.textFaint, fontStyle: 'italic', fontFamily: "'Crimson Text',serif" }}>No potions</span>
+                )}
+              </div>
+              <button
+                onClick={() => ui.toggleModal('inventory')}
+                style={{
+                  background: 'transparent', border: `1px solid ${T.accent}`,
+                  color: T.gold, padding: '3px 10px', fontSize: 10, cursor: 'pointer',
+                  fontFamily: "'Cinzel','Palatino Linotype',serif", flexShrink: 0,
+                }}
+              >
+                🎒 Inventory
+              </button>
+            </div>
+          )}
           {PANEL_MAP.sideQuests}
           {player && worldSeed && PANEL_MAP.miniMap}
           {PANEL_MAP.eventLog}
