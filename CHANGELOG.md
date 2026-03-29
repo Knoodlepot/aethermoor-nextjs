@@ -1,6 +1,19 @@
 ## [Unreleased]
 
 ### Added
+- **HP potion quick slot**: A quick-use row now appears in both the desktop and mobile panels showing any Health Potions you're carrying — tap to drink without opening your full inventory. An Inventory button sits alongside it for direct access.
+- **Reputation in the quick-nav bar on mobile**: Your current reputation score now has its own button in the 2×2 navigation grid at the top of the mobile panel, alongside Map, Quest Log, and Skills.
+- **Early villain defeat acknowledged in the quest log**: If you defeat the main villain before the story formally reaches the final act, the Quest Log now notes this and hints that the world is shifting in response — the threat doesn't simply disappear.
+- **Scroll hint on desktop right panel**: When content in the right-side panel extends below the visible area, a subtle animated arrow appears at the bottom to let you know there's more to see below.
+
+### Changed
+- **Side quest slots reduced to 2**: The quest panel previously tracked up to 6 active side quests. It now shows the 2 most recent, keeping the panel tighter and more focused.
+- **Narrator no longer suggests the location you're already in**: Action suggestions are now contextually aware — if you're standing in the tavern, the narrator won't suggest visiting the tavern.
+- **NPC continuity tightened**: The narrator now distinguishes between new arrivals passing through a location (fine) and permanent fixtures it invented from scratch (not fine). NPCs you've already met at an inn or temple will continue to be recognised there.
+- **Mount state always reflected in travel and arrival scenes**: If you have a horse equipped, the narrator now consistently describes you riding into settlements, arriving mounted, and stabling the horse before entering buildings. The horse is no longer silently forgotten on approach.
+- **Reputation removed from the stats row**: The three-stat resource bar (previously Gold / Rations / Rep) now shows Gold and Rations only. Reputation is accessible via the new dedicated nav button.
+
+### Added
 - **You can now delete your account**: A "Delete account" option is available in the Account panel (accessible from the top-right menu). You'll be asked to confirm with your password. Deleting your account permanently removes your characters, saves, and tokens — this cannot be undone.
 - **Cookie consent banner**: A notice now appears on first visit explaining what cookies the site uses and giving you the option to accept optional analytics or limit to the session cookie only. Your choice is saved and respected.
 - **Age confirmation is now tied to your account**: Previously the 18+ age gate was only remembered in your current browser. It is now also saved to your account, so it won't reappear when you log in from a different device.
