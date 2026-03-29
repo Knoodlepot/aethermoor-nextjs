@@ -40,7 +40,9 @@ export function NarrativePanel({
       data-testid="narrative-panel"
       style={{
         flex: 1,
+        minHeight: 0,
         overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
         padding: 20,
         paddingBottom: 32,
         display: 'flex',

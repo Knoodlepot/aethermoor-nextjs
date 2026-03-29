@@ -787,11 +787,6 @@ function GameContent() {
           <div style={{ color: rations > 0 ? '#80a060' : '#c05050', fontSize: 17, lineHeight: '1.2', ...tf }}>{rations}</div>
           <div style={{ color: T.textMuted, fontSize: 10 }}>🎒 {t('rations')}</div>
         </div>
-        <button onClick={() => ui.toggleModal('standings')}
-          style={{ textAlign: 'center' as const, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-          <div style={{ color: T.gold, fontSize: 17, lineHeight: '1.2', ...tf }}>{player.reputation ?? 0}</div>
-          <div style={{ color: T.textMuted, fontSize: 10 }}>⭐ {t('rep')}</div>
-        </button>
       </div>
 
       {/* ── HP / XP bars ── */}
@@ -905,6 +900,7 @@ function GameContent() {
           onCraft={() => ui.toggleModal('crafting')}
           onGear={() => ui.toggleModal('inventory')}
           onBestiary={() => ui.toggleModal('bestiary')}
+          onStandings={() => ui.toggleModal('standings')}
           activeQuestCount={activeQuestCount}
           skillPts={skillPts}
           bestiaryCount={bestiaryCount}
@@ -1602,6 +1598,7 @@ function GameContent() {
             onCraft={() => ui.toggleModal('crafting')}
             onGear={() => { ui.toggleModal('inventory'); setShowMobilePanel(false); }}
             onBestiary={() => { ui.toggleModal('bestiary'); setShowMobilePanel(false); }}
+            onStandings={() => { ui.toggleModal('standings'); setShowMobilePanel(false); }}
             activeQuestCount={activeQuestCount}
             skillPts={skillPts}
             bestiaryCount={bestiaryCount}
@@ -1620,6 +1617,43 @@ function GameContent() {
             worldSeed={gameState.worldSeed}
             onOpen={() => { ui.toggleModal('questLog'); setShowMobilePanel(false); }}
           />
+        )}
+        {/* HP Potion Quick Slot */}
+        {player && (
+          <div style={{ padding: '6px 10px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' as const }}>
+              {(['Health Potion', 'Strong Health Potion'] as const).map((name) => {
+                const count = (player.inventory as string[]).filter((i) => i === name).length;
+                if (count === 0) return null;
+                return (
+                  <button
+                    key={name}
+                    onClick={() => { handleCommand('use:' + name); setShowMobilePanel(false); }}
+                    style={{
+                      background: 'transparent', border: `1px solid #c06030`,
+                      color: '#e08040', padding: '3px 8px', fontSize: 10, cursor: 'pointer',
+                      fontFamily: "'Cinzel','Palatino Linotype',serif", borderRadius: 3,
+                    }}
+                  >
+                    🧪 {name === 'Health Potion' ? 'HP' : 'HP+'} ×{count}
+                  </button>
+                );
+              })}
+              {['Health Potion', 'Strong Health Potion'].every((n) => !(player.inventory as string[]).includes(n)) && (
+                <span style={{ fontSize: 10, color: T.textFaint, fontStyle: 'italic', fontFamily: "'Crimson Text',serif" }}>No potions</span>
+              )}
+            </div>
+            <button
+              onClick={() => { ui.toggleModal('inventory'); setShowMobilePanel(false); }}
+              style={{
+                background: 'transparent', border: `1px solid ${T.accent}`,
+                color: T.gold, padding: '3px 10px', fontSize: 10, cursor: 'pointer',
+                fontFamily: "'Cinzel','Palatino Linotype',serif", flexShrink: 0,
+              }}
+            >
+              🎒 Inventory
+            </button>
+          </div>
         )}
         <SideQuestPanel
           quests={gameState.player?.quests || []}

@@ -17,7 +17,7 @@ interface SideQuestPanelProps {
   onOpenLog: () => void;
 }
 
-const SLOT_COUNT = 6;
+const SLOT_COUNT = 2;
 
 export function SideQuestPanel({ quests, onOpenQuest, onToggleTrack, onOpenLog }: SideQuestPanelProps) {
   const { T, tf, t } = useTheme();
@@ -56,7 +56,7 @@ export function SideQuestPanel({ quests, onOpenQuest, onToggleTrack, onOpenLog }
         </button>
       </div>
 
-      {/* 2-col × 3-row slot grid */}
+      {/* 2-slot list */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
         {Array.from({ length: SLOT_COUNT }).map((_, i) => {
           const q = slots[i];
