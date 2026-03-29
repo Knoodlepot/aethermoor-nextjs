@@ -272,6 +272,11 @@ export default function Home() {
           <button onClick={openOptions} style={secondaryButtonStyle}>
             Options
           </button>
+          {playerId && (
+            <button onClick={() => setShowTokenShop(true)} style={secondaryButtonStyle}>
+              Top Up Tokens
+            </button>
+          )}
         </div>
 
         {/* Account & Theme */}
@@ -304,7 +309,7 @@ export default function Home() {
             </button>
           )}
 
-          {tokenBalance !== null && (
+          {playerId && (
             <div
               onClick={() => setShowTokenShop(true)}
               title="Buy more tokens"
@@ -314,21 +319,20 @@ export default function Home() {
                 gap: 6,
                 cursor: 'pointer',
                 padding: '0.5rem 0.85rem',
-                border: `1px solid ${tokenBorderColor(tokenBalance)}`,
+                border: `1px solid ${tokenBorderColor(tokenBalance ?? 0)}`,
                 borderRadius: 4,
-                background: tokenBalance <= 10 ? '#e0404022' : 'transparent',
+                background: (tokenBalance ?? 0) <= 10 && tokenBalance !== null ? '#e0404022' : 'transparent',
                 transition: 'all 0.2s',
               }}
             >
               <span>🪙</span>
               <span style={{
                 fontSize: '0.9rem',
-                color: tokenColor(tokenBalance),
-                fontWeight: tokenBalance <= 20 ? 'bold' : 'normal',
+                color: tokenBalance !== null ? tokenColor(tokenBalance) : '#7a6040',
+                fontWeight: tokenBalance !== null && tokenBalance <= 20 ? 'bold' : 'normal',
                 fontFamily: 'Georgia, serif',
-                animation: tokenBalance <= 10 ? 'pulse 1s infinite' : 'none',
               }}>
-                {tokenBalance}
+                {tokenBalance !== null ? tokenBalance : '—'}
               </span>
             </div>
           )}
