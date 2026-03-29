@@ -20,7 +20,7 @@ export default function AuthPage() {
     if (data.token) {
       // AuthScreen has already persisted the token via storageSet
       // Redirect to game
-      window.location.href = '/game';
+      window.location.href = '/';
     }
   }
 
