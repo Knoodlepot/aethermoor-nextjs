@@ -23,39 +23,5 @@ async function hmac(secret: string, data: string): Promise<string> {
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Always allow: invite links, API, closed page
-  if (
-    pathname.startsWith('/invite/') ||
-    pathname.startsWith('/api/') ||
-    pathname.startsWith('/closed') ||
-    pathname.startsWith('/admin') ||
-    pathname.startsWith('/auth')
-  ) {
-    return NextResponse.next();
-  }
-
-  const secret = process.env.SESSION_SECRET;
-
-  // If gate isn't configured, pass through (so dev environments without the var aren't bricked)
-  if (!secret) {
-    return NextResponse.next();
-  }
-
-  const cookieValue = request.cookies.get(BETA_COOKIE)?.value ?? '';
-  const colonIdx = cookieValue.lastIndexOf(':');
-
-  if (colonIdx !== -1) {
-    const token = cookieValue.slice(0, colonIdx);
-    const providedHmac = cookieValue.slice(colonIdx + 1);
-    const expectedHmac = await hmac(secret, token);
-    if (providedHmac === expectedHmac) {
-      return NextResponse.next();
-    }
-  }
-
-  const closedUrl = request.nextUrl.clone();
-  closedUrl.pathname = '/closed';
-  return NextResponse.redirect(closedUrl);
+  return NextResponse.next();
 }
