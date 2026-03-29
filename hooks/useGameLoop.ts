@@ -145,7 +145,10 @@ export function useGameLoop(
         // ── buy:<name>:<price> ──
         if (command.startsWith('buy:')) {
           const shopCtx = updatedPlayer.context;
-          if (shopCtx !== 'town' && shopCtx !== 'npc') {
+          const locationGrid: Record<string, any> = (updatedSeed.travelMatrix as any)?.locationGrid || {};
+          const locType = locationGrid[updatedPlayer.location]?.type;
+          const inSettlement = ['hamlet', 'village', 'town', 'city', 'capital'].includes(locType);
+          if (shopCtx !== 'town' && shopCtx !== 'npc' && shopCtx !== 'farm' && !inSettlement) {
             return { success: false, error: 'No shop available here — find a settlement or merchant.' };
           }
           const parts = command.split(':');
@@ -167,7 +170,10 @@ export function useGameLoop(
         // ── sell:<name>:<price> ──
         if (command.startsWith('sell:')) {
           const sellCtx = updatedPlayer.context;
-          if (sellCtx !== 'town' && sellCtx !== 'npc') {
+          const sellLocationGrid: Record<string, any> = (updatedSeed.travelMatrix as any)?.locationGrid || {};
+          const sellLocType = sellLocationGrid[updatedPlayer.location]?.type;
+          const sellInSettlement = ['hamlet', 'village', 'town', 'city', 'capital'].includes(sellLocType);
+          if (sellCtx !== 'town' && sellCtx !== 'npc' && sellCtx !== 'farm' && !sellInSettlement) {
             return { success: false, error: 'No shop available here — find a settlement or merchant.' };
           }
           const parts = command.split(':');
