@@ -42,15 +42,16 @@ export default function Home() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
-    fetch('/api/tokens/balance', { credentials: 'include' })
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d?.balance != null) setTokenBalance(d.balance); })
-      .catch(() => {});
-
     fetch('/api/auth/me', { credentials: 'include' })
       .then((r) => r.ok ? r.json() : null)
       .then((d) => {
-        if (d?.playerId != null) setPlayerId(String(d.playerId));
+        if (d?.playerId != null) {
+          setPlayerId(String(d.playerId));
+          fetch('/api/tokens/balance', { credentials: 'include' })
+            .then((r) => r.ok ? r.json() : null)
+            .then((b) => { if (b?.balance != null) setTokenBalance(b.balance); })
+            .catch(() => {});
+        }
         setAuthLoaded(true);
       })
       .catch(() => { setAuthLoaded(true); });
