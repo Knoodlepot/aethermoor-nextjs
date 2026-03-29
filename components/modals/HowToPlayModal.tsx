@@ -49,6 +49,11 @@ const SECTIONS = [
     body: 'Each action costs 1 token. Tokens power the AI narrator. New players start with 50 free tokens — purchase more in the Token Shop when you run low. Your balance is shown at the top of the screen.',
   },
   {
+    icon: '🎒',
+    title: 'RATIONS & HUNGER',
+    body: 'Every journey consumes rations — roughly 1 per 8 hours of travel. If you run out, hunger sets in and you lose HP on the road instead. You will be warned when you are down to your last ration. Stock up at any shop before heading into the wilderness. Rations can also be eaten manually to restore HP, and crafted into better food at a campfire.',
+  },
+  {
     icon: '💾',
     title: 'SAVING',
     body: "Your adventure saves automatically after every action. Sign in to sync your save to the cloud — otherwise it's stored locally in your browser. Do not clear your browser data if you haven't signed in.",

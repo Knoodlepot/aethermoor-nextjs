@@ -409,6 +409,41 @@ export function useGameLoop(
           const destNode = lg[dest];
           const arrivalContext = TOWN_TYPES.has(destNode?.type) ? 'town' : 'explore';
 
+          // ── Hunger mechanic: consume 1 ration per 8 hours of travel ──
+          const rationCost = Math.max(1, Math.ceil(travelHours / 8));
+          let inventory = [...(updatedPlayer.inventory ?? [])];
+          let currentHp = updatedPlayer.hp ?? updatedPlayer.maxHp ?? 50;
+          let hungerMsg = '';
+          let rationWarning = '';
+
+          let rationsRemaining = rationCost;
+          for (let i = 0; i < rationsRemaining; i++) {
+            const idx = inventory.findIndex((item: string) => item.toLowerCase().includes('ration'));
+            if (idx !== -1) {
+              inventory.splice(idx, 1);
+            } else {
+              // No ration — take hunger damage
+              const hpLoss = 5;
+              currentHp = Math.max(1, currentHp - hpLoss);
+              hungerMsg += hungerMsg ? '' : '\n\nHunger gnaws at you on the road — you had no rations to eat.';
+            }
+          }
+
+          // Count remaining rations after consumption
+          const rationsLeft = inventory.reduce((sum: number, item: string) => {
+            if (!item.toLowerCase().includes('ration')) return sum;
+            const qtyMatch = item.match(/[x×](\d+)$/i) || item.match(/\((\d+)\)$/) || item.match(/^(\d+)[x×\s]/i);
+            return sum + (qtyMatch ? parseInt(qtyMatch[1], 10) : 1);
+          }, 0);
+
+          if (rationsLeft === 1) {
+            rationWarning = '\n\n⚠ You have only 1 ration left. Stock up before your next journey or you may go hungry.';
+          } else if (rationsLeft === 0 && hungerMsg === '') {
+            rationWarning = '\n\n⚠ You have no rations left. Your next journey will be made on an empty stomach.';
+          }
+
+          const fullMsg = msg + hungerMsg + rationWarning;
+
           updatedPlayer = {
             ...updatedPlayer,
             gold: (updatedPlayer.gold ?? 0) - cost,
@@ -417,12 +452,14 @@ export function useGameLoop(
             gameHour: newHour,
             gameDay: newDay,
             exploredLocations: Array.from(exploredSet),
+            inventory,
+            hp: currentHp,
           };
           gs.setPlayer(updatedPlayer);
-          gs.setNarrative(msg);
+          gs.setNarrative(fullMsg);
           gs.addLogEntry('action', `fast_travel → ${dest} (${methodLabel})`);
-          gs.addLogEntry('response', msg.substring(0, 100));
-          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, msg, gs.log);
+          gs.addLogEntry('response', fullMsg.substring(0, 100));
+          await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, fullMsg, gs.log);
           return { success: true };
         }
 
