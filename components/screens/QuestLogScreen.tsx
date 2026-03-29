@@ -313,8 +313,17 @@ export function QuestLogScreen({
                 )}
                 {a === 2 && (isComplete || isCurrent) && worldSeed.villainName && (
                   <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>
-                    Villain: <span style={{ color: '#c04030' }}>{worldSeed.villainName}</span>
+                    Villain:{' '}
+                    <span style={{
+                      color: (worldSeed as any).villainDefeated ? T.textFaint : '#c04030',
+                      textDecoration: (worldSeed as any).villainDefeated ? 'line-through' : 'none',
+                    }}>
+                      {worldSeed.villainName}
+                    </span>
                     <span style={{ color: T.textFaint }}> · {worldSeed.villainType}</span>
+                    {(worldSeed as any).villainDefeated && (
+                      <span style={{ color: '#60a060', marginLeft: 6 }}>✓ Defeated</span>
+                    )}
                   </div>
                 )}
                 {a === 3 && worldSeed.allyRevealed && worldSeed.allyName && (

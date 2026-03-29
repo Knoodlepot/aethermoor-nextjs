@@ -29,6 +29,7 @@ export function stripContextTag(text: string): string {
   t = t.replace(/\{"npcTravel"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"wanted"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"villainAlly"\s*:\s*true\}/g, '');
+  t = t.replace(/\{"villainDefeated"\s*:\s*(true|\{[^}]+\})\}/g, '');
   t = t.replace(/\{"worldEvent"\s*:\s*\{[\s\S]+?\}\}/g, '');
   t = t.replace(/\{"grantAbility"\s*:\s*"[^"]+"\}/g, '');
   t = t.replace(/\{"questComplete"\s*:\s*"[^"]+"\}/g, '');
@@ -262,6 +263,22 @@ export function extractWantedTag(text: string): any {
  */
 export function extractVillainAllyTag(text: string): boolean {
   return /\{"villainAlly"\s*:\s*true\}/.test(text);
+}
+
+/**
+ * Extract villain defeated tag: {"villainDefeated":true} or {"villainDefeated":{"newThreat":"Name","newThreatType":"type"}}
+ */
+export function extractVillainDefeatedTag(text: string): { defeated: boolean; newThreat?: string; newThreatType?: string } | null {
+  const simple = /\{"villainDefeated"\s*:\s*true\}/.test(text);
+  if (simple) return { defeated: true };
+  const m = text.match(/\{"villainDefeated"\s*:\s*(\{[^}]+\})\}/);
+  if (m) {
+    try {
+      const data = JSON.parse(m[1]);
+      return { defeated: true, newThreat: data.newThreat, newThreatType: data.newThreatType };
+    } catch { return { defeated: true }; }
+  }
+  return null;
 }
 
 /**
@@ -511,6 +528,7 @@ export interface ParsedTags {
   npcTravel: any;
   wanted: any;
   villainAlly: boolean;
+  villainDefeated: { defeated: boolean; newThreat?: string; newThreatType?: string } | null;
   worldEvent: any;
   grantAbility: string | null;
   questComplete: string | null;
@@ -554,6 +572,7 @@ export function parseAllTags(narrative: string): ParsedTags {
     npcTravel: extractNpcTravelTag(narrative),
     wanted: extractWantedTag(narrative),
     villainAlly: extractVillainAllyTag(narrative),
+    villainDefeated: extractVillainDefeatedTag(narrative),
     worldEvent: extractWorldEventTag(narrative),
     grantAbility: extractGrantAbilityTag(narrative),
     questComplete: extractQuestCompleteTag(narrative),
@@ -795,6 +814,16 @@ export function processParsedTags(
   // Villain ally — goes on worldSeed not player
   if (tags.villainAlly) {
     updatedSeed = { ...updatedSeed, villainAllied: true };
+  }
+
+  // Villain defeated early — record on worldSeed, optionally set new threat
+  if (tags.villainDefeated?.defeated) {
+    updatedSeed = {
+      ...updatedSeed,
+      villainDefeated: true,
+      ...(tags.villainDefeated.newThreat ? { villainName: tags.villainDefeated.newThreat } : {}),
+      ...(tags.villainDefeated.newThreatType ? { villainType: tags.villainDefeated.newThreatType } : {}),
+    };
   }
 
   // World event — keyed by location on worldSeed.worldEvents
