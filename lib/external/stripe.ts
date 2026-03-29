@@ -47,9 +47,9 @@ export const TOKEN_PACKAGES: Record<string, TokenPackage> = {
     priceId: 'price_1T92wKKvhVLecCSvnhNCNVHc',
   },
   immortal: {
-    tokens: 8500,
+    tokens: 9000,
     pence: 4999,
-    label: '8,500 Tokens',
+    label: '9,000 Tokens',
     priceId: 'price_1T92yTKvhVLecCSvRqpaI9j2',
   },
 };

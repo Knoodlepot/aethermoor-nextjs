@@ -205,7 +205,7 @@ const PACKAGES = [
   { id: 'hero',       name: 'Hero',       tokens: 750,  price: 5.00  },
   { id: 'legend',     name: 'Legend',     tokens: 1500, price: 9.99  },
   { id: 'champion',   name: 'Champion',   tokens: 3500, price: 19.99 },
-  { id: 'immortal',   name: 'Immortal',   tokens: 7300, price: 49.99 },
+  { id: 'immortal',   name: 'Immortal',   tokens: 9000, price: 49.99 },
 ];
 
 const TABS = ['PLAYERS', 'GIFT LOG', 'CALCULATOR', 'SUPPORT', 'SETTINGS', 'DISCORD', 'COSTS'];

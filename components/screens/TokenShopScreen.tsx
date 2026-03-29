@@ -9,7 +9,7 @@ const TOKEN_PACKAGES = [
   { pkg: 'hero',       label: 'Hero',       tokens: 650,   price: '£5.00' },
   { pkg: 'legend',     label: 'Legend',     tokens: 1500,  price: '£9.99' },
   { pkg: 'champion',   label: 'Champion',   tokens: 3500,  price: '£19.99' },
-  { pkg: 'immortal',   label: 'Immortal',   tokens: 8500,  price: '£49.99' },
+  { pkg: 'immortal',   label: 'Immortal',   tokens: 9000,  price: '£49.99' },
 ];
 
 function tokenColor(t: number): string {

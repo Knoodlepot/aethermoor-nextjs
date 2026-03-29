@@ -14,7 +14,7 @@ const PACKAGES = [
   { label: 'Hero',       tokens: 650,   price: '£5.00',  pencePerToken: 0.77 },
   { label: 'Legend',     tokens: 1500,  price: '£9.99',  pencePerToken: 0.67 },
   { label: 'Champion',   tokens: 3500,  price: '£19.99', pencePerToken: 0.57 },
-  { label: 'Immortal',   tokens: 8500,  price: '£49.99', pencePerToken: 0.59 },
+  { label: 'Immortal',   tokens: 9000,  price: '£49.99', pencePerToken: 0.56 },
 ];
 
 const MODEL_COSTS = [
