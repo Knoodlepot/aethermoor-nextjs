@@ -17,6 +17,24 @@ export function FeedbackModal({ playerId, currentLocation, lastInput, onClose }:
   const [type, setType] = useState<FeedbackType>('bug');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [screenshot, setScreenshot] = useState<{ base64: string; filename: string } | null>(null);
+  const [screenshotError, setScreenshotError] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setScreenshotError('Please select an image file.'); return; }
+    if (file.size > 4 * 1024 * 1024) { setScreenshotError('Screenshot must be under 4 MB.'); return; }
+    setScreenshotError(null);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Strip data URL prefix to get raw base64
+      const base64 = result.split(',')[1];
+      setScreenshot({ base64, filename: file.name });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const typeLabels: Record<FeedbackType, string> = {
     bug: 'Bug Report',
@@ -31,7 +49,7 @@ export function FeedbackModal({ playerId, currentLocation, lastInput, onClose }:
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, message: message.trim(), playerId, currentLocation, lastInput }),
+        body: JSON.stringify({ type, message: message.trim(), playerId, currentLocation, lastInput, screenshot }),
       });
       if (res.ok) {
         setStatus('sent');
@@ -102,6 +120,27 @@ export function FeedbackModal({ playerId, currentLocation, lastInput, onClose }:
                 outline: 'none', width: '100%', boxSizing: 'border-box',
               }}
             />
+
+            {/* Screenshot upload */}
+            <div>
+              <label style={{ color: T.textMuted, fontSize: '0.8rem', display: 'block', marginBottom: 6 }}>
+                Screenshot (optional, max 4 MB)
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ color: T.text, fontSize: '0.8rem', width: '100%' }}
+              />
+              {screenshotError && (
+                <div style={{ color: '#e04040', fontSize: '0.75rem', marginTop: 4 }}>{screenshotError}</div>
+              )}
+              {screenshot && !screenshotError && (
+                <div style={{ color: '#80c060', fontSize: '0.75rem', marginTop: 4 }}>
+                  ✓ {screenshot.filename} attached
+                </div>
+              )}
+            </div>
 
             {/* Context shown to the user */}
             <div style={{ color: T.textMuted, fontSize: '0.75rem', lineHeight: 1.5 }}>

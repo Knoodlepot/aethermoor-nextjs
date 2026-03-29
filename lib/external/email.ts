@@ -8,6 +8,7 @@ export interface EmailOptions {
   subject: string;
   text: string;
   html?: string;
+  attachments?: { filename: string; content: string }[];
 }
 
 /**
@@ -18,6 +19,7 @@ export async function sendEmail({
   subject,
   text,
   html,
+  attachments,
 }: EmailOptions): Promise<{ success: boolean; error?: string }> {
 
   // In development or without API key, just log ONCE per session
@@ -44,6 +46,7 @@ export async function sendEmail({
         subject,
         text,
         html: html || `<p>${text.replace(/\n/g, '</p><p>')}</p>`,
+        ...(attachments?.length ? { attachments } : {}),
       }),
     });
 

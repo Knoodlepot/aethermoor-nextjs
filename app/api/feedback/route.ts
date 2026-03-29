@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { type, message, playerId, currentLocation, lastInput } = body;
+    const { type, message, playerId, currentLocation, lastInput, screenshot } = body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return NextResponse.json({ error: 'bad_request', message: 'Message is required.' }, { status: 400 });
@@ -42,11 +42,17 @@ export async function POST(req: NextRequest) {
       <p style="white-space:pre-wrap">${message.trim().replace(/</g, '&lt;')}</p>
     `;
 
+    const attachments: { filename: string; content: string }[] = [];
+    if (screenshot?.base64 && screenshot?.filename && typeof screenshot.base64 === 'string' && screenshot.base64.length < 6_000_000) {
+      attachments.push({ filename: screenshot.filename, content: screenshot.base64 });
+    }
+
     await sendEmail({
       to: SUPPORT_EMAIL,
       subject: `[Aethermoor ${typeLabel}] ${message.trim().slice(0, 60)}`,
       text,
       html,
+      ...(attachments.length ? { attachments } : {}),
     });
 
     return NextResponse.json({ ok: true });
