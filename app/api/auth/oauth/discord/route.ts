@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { exchangeDiscordCode } from '@/lib/external/oauth';
 import * as auth from '@/lib/auth';
 
+export async function GET(request: NextRequest) {
+  const { searchParams, origin } = request.nextUrl;
+  const homeUrl = new URL('/', origin);
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+  const error = searchParams.get('error');
+  if (code) homeUrl.searchParams.set('code', code);
+  if (state) homeUrl.searchParams.set('state', state);
+  if (error) homeUrl.searchParams.set('error', error);
+  return NextResponse.redirect(homeUrl);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
