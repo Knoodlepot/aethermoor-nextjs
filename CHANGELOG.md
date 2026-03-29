@@ -1,6 +1,11 @@
 ## [Unreleased]
 
 ### Added
+- **You can now delete your account**: A "Delete account" option is available in the Account panel (accessible from the top-right menu). You'll be asked to confirm with your password. Deleting your account permanently removes your characters, saves, and tokens — this cannot be undone.
+- **Cookie consent banner**: A notice now appears on first visit explaining what cookies the site uses and giving you the option to accept optional analytics or limit to the session cookie only. Your choice is saved and respected.
+- **Age confirmation is now tied to your account**: Previously the 18+ age gate was only remembered in your current browser. It is now also saved to your account, so it won't reappear when you log in from a different device.
+
+### Added
 - **Content moderation now issues warning and ban cards**: Explicit content triggers a yellow card warning message in-game. A second violation, or any severe content, issues a red card that locks the text input and action buttons until an admin reviews the incident. You'll see a clear message explaining the reason.
 - **Admin panel: Moderation tab**: All yellow and red card incidents are now visible in a dedicated Moderation tab in the admin panel. Each row shows the card type, the player's email, the reason, and the exact text that triggered the warning. Incidents can be dismissed from the panel; dismissing a red card lifts the account lock.
 
