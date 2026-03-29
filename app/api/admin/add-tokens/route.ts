@@ -4,9 +4,10 @@ import { addTokens } from '@/lib/tokens';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { secret, playerId, amount, reason } = body;
+    const { playerId, amount, reason } = body;
+    const adminSecret = request.headers.get('x-admin-secret');
 
-    if (!secret || secret !== process.env.SESSION_SECRET) {
+    if (!adminSecret || adminSecret !== process.env.SESSION_SECRET) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

@@ -396,7 +396,6 @@ export default function AdminPage() {
     const amount = parseInt(giftAmount, 10);
     if (isNaN(amount) || amount <= 0) { setGiftMsg('Enter a valid amount.'); return; }
     const data = await adminPost('/api/admin/add-tokens', {
-      secret,
       playerId: profile.player.player_id,
       amount,
       reason: giftNote || 'Admin grant',
@@ -1125,7 +1124,6 @@ export default function AdminPage() {
                     const amount = parseInt(supportGift, 10);
                     if (isNaN(amount) || amount <= 0) { setSupportGiftMsg('Enter a valid amount.'); return; }
                     const data = await adminPost('/api/admin/add-tokens', {
-                      secret,
                       playerId: supportProfile.player.player_id,
                       amount,
                       reason: supportGiftNote || 'Support grant',

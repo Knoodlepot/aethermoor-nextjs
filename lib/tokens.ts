@@ -32,24 +32,21 @@ export async function getBalance(playerId: string): Promise<number> {
  */
 export async function ensurePlayerRow(playerId: string): Promise<void> {
   try {
-    const existing = await query(
-      `SELECT player_id FROM players WHERE player_id = $1`,
+    // Use ON CONFLICT DO NOTHING to avoid race condition where two concurrent
+    // requests both see no row and both INSERT, granting 50 tokens twice.
+    const result = await query(
+      `INSERT INTO players (player_id, tokens, created_at, updated_at)
+       VALUES ($1, 50, NOW(), NOW())
+       ON CONFLICT (player_id) DO NOTHING`,
       [playerId]
     );
 
-    if (existing.rows.length === 0) {
-      // Create new player with 50 bonus tokens
-      await query(
-        `INSERT INTO players (player_id, tokens, created_at, updated_at)
-         VALUES ($1, $2, NOW(), NOW())`,
-        [playerId, 50]
-      );
-
-      // Log the token award
+    if (result.rowCount! > 0) {
+      // Row was actually inserted — log the welcome bonus
       await query(
         `INSERT INTO token_log (player_id, change, reason, model_tier, created_at)
-         VALUES ($1, $2, $3, NULL, NOW())`,
-        [playerId, 50, 'New player bonus']
+         VALUES ($1, 50, 'New player bonus', NULL, NOW())`,
+        [playerId]
       );
     }
   } catch (error) {
