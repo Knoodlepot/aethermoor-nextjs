@@ -308,7 +308,11 @@ export function QuestLogScreen({
                 </div>
                 {(isComplete || isCurrent) && (
                   <div style={{ fontSize: 11, color: T.textMuted, fontStyle: 'italic', lineHeight: 1.5 }}>
-                    {isComplete ? ACT_SUMMARIES[a] : `💡 ${ACT_HINTS[a]}`}
+                    {isComplete
+                      ? ACT_SUMMARIES[a]
+                      : isCurrent && a === 2 && (worldSeed as any).villainDefeated
+                        ? '💡 The primary threat has fallen — but the darkness does not end here. A new danger stirs in the power vacuum.'
+                        : `💡 ${ACT_HINTS[a]}`}
                   </div>
                 )}
                 {a === 2 && (isComplete || isCurrent) && worldSeed.villainName && (
