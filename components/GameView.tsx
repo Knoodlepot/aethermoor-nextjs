@@ -184,6 +184,8 @@ function GameContent() {
   const prevHpRef = useRef<number | null>(null);
   const [hpFlash, setHpFlash] = useState<'heal' | 'damage' | null>(null);
   const hasFiredCatchUp = useRef(false);
+  const rightColRef = useRef<HTMLDivElement>(null);
+  const [rightColHasMore, setRightColHasMore] = useState(false);
 
   // Fetch token balance on mount and after Stripe return
   useEffect(() => {
@@ -443,6 +445,17 @@ function GameContent() {
       return () => clearTimeout(t);
     }
   }, [player?.gold]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Check right-column overflow whenever content changes
+  useEffect(() => {
+    const el = rightColRef.current;
+    if (!el) return;
+    const check = () => setRightColHasMore(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }); // run every render — cheap enough
 
   // ── Command handlers ────────────────────────────────────────────────────────
 
@@ -981,6 +994,7 @@ function GameContent() {
         overflow: 'hidden',
         flexShrink: 0,
         borderLeft: `1px solid ${T.border}`,
+        position: 'relative',
       }}
     >
       {rightPanelOrder.map(({ id, label, h }) => {
@@ -1023,7 +1037,15 @@ function GameContent() {
 
       {/* Scrollable area — only used when NOT driven by layout config */}
       {!layoutCfg && (
-        <div className="ae-right-col" style={{ flex: 1, overflowY: 'auto' }}>
+        <div
+          ref={rightColRef}
+          className="ae-right-col"
+          style={{ flex: 1, overflowY: 'auto' }}
+          onScroll={() => {
+            const el = rightColRef.current;
+            if (el) setRightColHasMore(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
+          }}
+        >
           {ui.currentEnemy && PANEL_MAP.combat}
           {worldSeed && PANEL_MAP.mainQuest}
           {player && (
@@ -1070,6 +1092,39 @@ function GameContent() {
       )}
 
       {actionButtons}
+
+      {/* Scroll-down hint — shown when right column has hidden content below */}
+      {rightColHasMore && (
+        <div
+          onClick={() => {
+            const el = rightColRef.current;
+            if (el) el.scrollBy({ top: 120, behavior: 'smooth' });
+          }}
+          style={{
+            position: 'absolute',
+            bottom: 40,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: T.panelAlt,
+            border: `1px solid ${T.border}`,
+            borderRadius: 12,
+            padding: '3px 10px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 10,
+            color: T.textMuted,
+            fontFamily: "'Cinzel','Palatino Linotype',serif",
+            letterSpacing: 1,
+            animation: 'pulse 2s ease-in-out infinite',
+            zIndex: 10,
+            userSelect: 'none' as const,
+          }}
+        >
+          ▼ more
+        </div>
+      )}
     </div>
   );
 
