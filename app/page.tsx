@@ -273,11 +273,6 @@ export default function Home() {
           <button onClick={openOptions} style={secondaryButtonStyle}>
             Options
           </button>
-          {playerId && (
-            <button onClick={() => setShowTokenShop(true)} style={secondaryButtonStyle}>
-              Top Up Tokens
-            </button>
-          )}
         </div>
 
         {/* Account & Theme */}
@@ -310,6 +305,11 @@ export default function Home() {
             </button>
           )}
 
+          {playerId && (
+            <button onClick={() => setShowTokenShop(true)} style={secondaryButtonStyle}>
+              Top Up Tokens
+            </button>
+          )}
           {playerId && (
             <div
               onClick={() => setShowTokenShop(true)}
