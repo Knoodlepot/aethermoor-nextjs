@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
     const { account, error } = await exchangeGoogleCode(code, redirectUri);
 
     if (!account || error) {
+      console.error('[OAUTH GOOGLE route] exchange failed:', error, '| redirectUri from client:', redirectUri);
       return NextResponse.json(
         { error: 'oauth_failed', message: error || 'Google OAuth failed' },
         { status: 400 }

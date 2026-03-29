@@ -84,7 +84,7 @@ export function AuthScreen({ onAuth, resetToken }: AuthScreenProps) {
           if (data.token) {
             onAuth(data);
           } else {
-            setError(data.error || 'OAuth login failed.');
+            setError(data.message || data.error || 'OAuth login failed.');
           }
         })
         .catch(() => setError('OAuth network error.'))

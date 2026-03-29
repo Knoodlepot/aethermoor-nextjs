@@ -126,7 +126,10 @@ export async function exchangeGoogleCode(
     const tokenData = await tokenRes.json();
 
     if (!tokenData.access_token) {
-      return { account: null, error: 'Failed to exchange authorization code' };
+      const googleError = tokenData.error || 'unknown';
+      const googleDesc = tokenData.error_description || '';
+      console.error('[OAUTH GOOGLE] token exchange failed:', googleError, googleDesc, '| redirect_uri:', redirectUri || GOOGLE_REDIRECT_URI || '(empty)');
+      return { account: null, error: `Google error: ${googleError}${googleDesc ? ' — ' + googleDesc : ''}` };
     }
 
     // Get user info
