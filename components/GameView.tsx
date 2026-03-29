@@ -977,6 +977,7 @@ function GameContent() {
 
   const rightColumn = (
     <div
+      data-tour="rightpanel"
       style={{
         width: rightColW,
         display: 'flex',

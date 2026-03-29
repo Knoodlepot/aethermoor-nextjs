@@ -28,7 +28,7 @@ const STEPS: Step[] = [
     body: 'Save your game, adjust music and sound effects, or send feedback from up here. Your progress is also saved automatically to the cloud.',
   },
   {
-    target: 'contextbar',
+    target: 'rightpanel',
     title: 'Character & World',
     body: 'Open your character sheet, skill tree, inventory, quests, bestiary, and more from these buttons.',
   },
