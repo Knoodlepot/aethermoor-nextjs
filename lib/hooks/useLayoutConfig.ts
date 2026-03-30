@@ -126,6 +126,17 @@ export function useLayoutConfig(): DerivedLayout | null {
     ];
   }
 
+  // Migration: ensure miniMap immediately follows sideQuests — saved layouts may have
+  // other panels (e.g. eventLog) drifting between them from layout editor positioning.
+  const sideIdx = rightPanels.findIndex(p => p.id === 'sideQuests');
+  const mapIdx  = rightPanels.findIndex(p => p.id === 'miniMap');
+  if (sideIdx >= 0 && mapIdx >= 0 && mapIdx !== sideIdx + 1) {
+    const map = rightPanels[mapIdx];
+    const without = rightPanels.filter(p => p.id !== 'miniMap');
+    without.splice(sideIdx + 1, 0, map);
+    rightPanels = without;
+  }
+
   return {
     rightColW,
     rightPanels,
