@@ -51,10 +51,18 @@ export async function GET(request: NextRequest) {
       [resolvedId]
     );
 
+    // Purchase history
+    const purchases = await query(
+      `SELECT id, stripe_session_id, tokens_awarded, amount_pence, status, created_at
+       FROM purchases WHERE player_id = $1 ORDER BY created_at DESC LIMIT 20`,
+      [resolvedId]
+    );
+
     return NextResponse.json({
       player: playerResult.rows[0],
       tokenLog: tokenLog.rows,
       incidents: incidents.rows,
+      purchases: purchases.rows,
     });
   } catch (error) {
     console.error('[ADMIN PLAYER]', error);

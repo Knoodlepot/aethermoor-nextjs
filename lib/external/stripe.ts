@@ -154,6 +154,25 @@ export function getTokenPackages(): Array<{
 }
 
 /**
+ * Issue a full refund for a Stripe checkout session.
+ * Retrieves the payment intent from the session and refunds it in full.
+ */
+export async function issueRefund(stripeSessionId: string): Promise<{ success: boolean; refundId?: string; error?: string }> {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(stripeSessionId);
+    const paymentIntentId = session.payment_intent as string;
+    if (!paymentIntentId) {
+      return { success: false, error: 'No payment intent found for this session' };
+    }
+    const refund = await stripe.refunds.create({ payment_intent: paymentIntentId });
+    return { success: true, refundId: refund.id };
+  } catch (error: any) {
+    console.error('[STRIPE REFUND]', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Validate Stripe is configured
  */
 export function validateStripeConfig(): boolean {

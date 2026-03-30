@@ -200,6 +200,9 @@ export async function migrateDb(): Promise<void> {
         `ALTER TABLE leaderboard_entries ADD COLUMN IF NOT EXISTS country_code TEXT`,
         `ALTER TABLE token_log ADD COLUMN IF NOT EXISTS model_tier TEXT`,
         `ALTER TABLE moderation_incidents ADD COLUMN IF NOT EXISTS card_type TEXT CHECK (card_type IN ('yellow', 'red'))`,
+        // Allow 'refunded' as a purchase status
+        `ALTER TABLE purchases DROP CONSTRAINT IF EXISTS purchases_status_check`,
+        `ALTER TABLE purchases ADD CONSTRAINT purchases_status_check CHECK (status IN ('pending', 'completed', 'failed', 'refunded'))`,
         // ICO compliance: server-side age verification flag
         // DEFAULT TRUE so existing accounts (who already passed the client-side gate) are unaffected.
         // New accounts are explicitly set to FALSE in registration/OAuth code.

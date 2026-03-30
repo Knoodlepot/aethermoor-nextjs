@@ -191,10 +191,19 @@ const S = {
 
 interface GiftEntry { pid: string; amount: number; note: string; ts: string; }
 interface ActivePlayer { player_id: string; email: string; api_calls: number; last_active: string; }
+interface PurchaseRecord {
+  id: string;
+  stripe_session_id: string | null;
+  tokens_awarded: number;
+  amount_pence: number;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  created_at: string;
+}
 interface PlayerProfile {
   player: { player_id: string; tokens: number; total_spent: number; email: string; verified: boolean; created_at: string };
   tokenLog: { id: number; change: number; reason: string; created_at: string }[];
   incidents: { id: number; source: string; reason: string; trigger_text: string; status: string; created_at: string }[];
+  purchases: PurchaseRecord[];
 }
 
 // ── Calculator data ──────────────────────────────────────────────────────────
@@ -255,6 +264,8 @@ export default function AdminPage() {
   const [giftMsg, setGiftMsg] = React.useState('');
   const [confirmClear, setConfirmClear] = React.useState(false);
   const [clearMsg, setClearMsg] = React.useState('');
+  const [refundConfirm, setRefundConfirm] = React.useState<string | null>(null); // purchaseId pending confirm
+  const [refundMsg, setRefundMsg] = React.useState('');
 
   // Gift log
   const [giftLog, setGiftLog] = React.useState<GiftEntry[]>([]);
@@ -420,6 +431,15 @@ export default function AdminPage() {
     if (data.error) { setClearMsg(`Error: ${data.error}`); return; }
     setClearMsg(`✓ Cleared ${data.cleared} incident(s)`);
     setConfirmClear(false);
+    fetchPlayer();
+  }
+
+  async function handleRefund(purchaseId: string) {
+    setRefundMsg('Processing refund...');
+    const data = await adminPost('/api/admin/refund', { purchaseId });
+    setRefundConfirm(null);
+    if (data.error) { setRefundMsg(`Error: ${data.error}`); return; }
+    setRefundMsg(`✓ Refunded £${(data.amountPence / 100).toFixed(2)} — ${data.tokensDeducted} tokens deducted`);
     fetchPlayer();
   }
 
@@ -795,6 +815,58 @@ export default function AdminPage() {
                       )}
                     </div>
                     {clearMsg && <div style={S.msg(clearMsg.startsWith('✓') ? 'ok' : 'err')}>{clearMsg}</div>}
+                  </>
+                )}
+
+                {/* Purchase history + refund */}
+                {profile.purchases?.length > 0 && (
+                  <>
+                    <div style={S.divider} />
+                    <div style={{ ...S.cardTitle, fontSize: 10, marginBottom: 8 }}>PURCHASE HISTORY</div>
+                    {refundMsg && <div style={S.msg(refundMsg.startsWith('✓') ? 'ok' : refundMsg.startsWith('Processing') ? 'info' : 'err')}>{refundMsg}</div>}
+                    <table style={S.table}>
+                      <thead><tr>
+                        <th style={S.th}>DATE</th>
+                        <th style={S.th}>AMOUNT</th>
+                        <th style={S.th}>TOKENS</th>
+                        <th style={S.th}>STATUS</th>
+                        <th style={S.th}>ACTION</th>
+                      </tr></thead>
+                      <tbody>
+                        {profile.purchases.map((p) => (
+                          <tr key={p.id}>
+                            <td style={{ ...S.td, fontSize: 11, color: '#8a7a5a' }}>{fmtDate(p.created_at)}</td>
+                            <td style={{ ...S.td, fontFamily: 'monospace' }}>£{(p.amount_pence / 100).toFixed(2)}</td>
+                            <td style={{ ...S.td, color: '#c9a84c', fontFamily: 'monospace' }}>+{p.tokens_awarded}</td>
+                            <td style={S.td}>
+                              <span style={{
+                                ...S.pill,
+                                borderColor: p.status === 'completed' ? '#408040' : p.status === 'refunded' ? '#804040' : '#5a4a2a',
+                                color: p.status === 'completed' ? '#80c080' : p.status === 'refunded' ? '#c08080' : '#8a7a5a',
+                              }}>
+                                {p.status.toUpperCase()}
+                              </span>
+                            </td>
+                            <td style={S.td}>
+                              {p.status === 'completed' && p.stripe_session_id && (
+                                refundConfirm === p.id ? (
+                                  <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                    <span style={{ fontSize: 11, color: '#c04030' }}>Confirm?</span>
+                                    <button style={{ ...S.btnDanger, padding: '2px 8px', fontSize: 9 }} onClick={() => handleRefund(p.id)}>YES</button>
+                                    <button style={{ ...S.btnSmall, padding: '2px 8px' }} onClick={() => setRefundConfirm(null)}>NO</button>
+                                  </span>
+                                ) : (
+                                  <button style={{ ...S.btnDanger, padding: '2px 8px', fontSize: 9 }} onClick={() => { setRefundConfirm(p.id); setRefundMsg(''); }}>
+                                    REFUND
+                                  </button>
+                                )
+                              )}
+                              {p.status === 'refunded' && <span style={{ fontSize: 11, color: '#8a7a5a', fontStyle: 'italic' }}>refunded</span>}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </>
                 )}
 
