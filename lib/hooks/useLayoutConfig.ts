@@ -109,10 +109,22 @@ export function useLayoutConfig(): DerivedLayout | null {
     .map(p => ({ id: p.id, label: p.label, w: Math.max(60, Math.round(p.w * scaleW)) }));
 
   // Right-column panels: x >= narrativeRight, sorted top to bottom
-  const rightPanels = panels
+  let rightPanels = panels
     .filter(p => p.id !== 'narrative' && p.id !== 'input' && p.x >= narrativeRight)
     .sort((a, b) => a.y - b.y)
     .map(p => ({ id: p.id, label: p.label, h: Math.max(40, Math.round(p.h * scaleH)) }));
+
+  // Migration: inject quickSlot after contextBar if a saved layout is missing it
+  // (layouts saved before 2026-03-29 won't have this panel)
+  if (!rightPanels.some(p => p.id === 'quickSlot')) {
+    const cbIdx = rightPanels.findIndex(p => p.id === 'contextBar');
+    const insertAt = cbIdx >= 0 ? cbIdx + 1 : rightPanels.length;
+    rightPanels = [
+      ...rightPanels.slice(0, insertAt),
+      { id: 'quickSlot', label: 'Quick Slot', h: 0 },
+      ...rightPanels.slice(insertAt),
+    ];
+  }
 
   return {
     rightColW,
