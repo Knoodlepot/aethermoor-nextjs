@@ -1040,8 +1040,8 @@ function GameContent() {
         if (id in PANEL_MAP) {
           const node = PANEL_MAP[id];
           if (!node) return null;
-          // Without a layout config, scroll-area panels are rendered in the scrollable section below — skip here
-          if (!layoutCfg && (id === 'combat' || id === 'mainQuest' || id === 'sideQuests' || id === 'miniMap' || id === 'eventLog')) {
+          // Content panels always live in the scrollable section below, never the sticky area
+          if (id === 'combat' || id === 'mainQuest' || id === 'sideQuests' || id === 'miniMap' || id === 'eventLog') {
             return null;
           }
           // Fixed-content panels auto-size — applying a saved flexBasis height clips their borders/content
@@ -1074,24 +1074,22 @@ function GameContent() {
         return null;
       })}
 
-      {/* Scrollable area — only used when NOT driven by layout config */}
-      {!layoutCfg && (
-        <div
-          ref={rightColRef}
-          className="ae-right-col"
-          style={{ flex: 1, overflowY: 'auto' }}
-          onScroll={() => {
-            const el = rightColRef.current;
-            if (el) setRightColHasMore(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
-          }}
-        >
-          {ui.currentEnemy && PANEL_MAP.combat}
-          {worldSeed && PANEL_MAP.mainQuest}
-          {PANEL_MAP.sideQuests}
-          {player && worldSeed && PANEL_MAP.miniMap}
-          {PANEL_MAP.eventLog}
-        </div>
-      )}
+      {/* Scrollable area — always rendered; content panels always live here */}
+      <div
+        ref={rightColRef}
+        className="ae-right-col"
+        style={{ flex: 1, overflowY: 'auto' }}
+        onScroll={() => {
+          const el = rightColRef.current;
+          if (el) setRightColHasMore(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
+        }}
+      >
+        {ui.currentEnemy && PANEL_MAP.combat}
+        {worldSeed && PANEL_MAP.mainQuest}
+        {PANEL_MAP.sideQuests}
+        {player && worldSeed && PANEL_MAP.miniMap}
+        {PANEL_MAP.eventLog}
+      </div>
 
       {actionButtons}
 
