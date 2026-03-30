@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-type Tab = 'terms' | 'privacy' | 'refund';
+type Tab = 'terms' | 'privacy' | 'cookies' | 'refund';
 
 const sec: React.CSSProperties = {
   background: '#13100a',
@@ -42,7 +42,7 @@ function TermsContent() {
     <section style={sec}>
       <h2 style={h2s}>Terms of Service</h2>
       <p style={{ color: '#8a6f4b', fontSize: 13, marginTop: 0 }}>
-        Last updated: 2026-03-14 · Operator: Aethermoor (UK-based independent developer)
+        Last updated: 2026-03-30 · Operator: Knoodlepot Studio (UK-based independent developer)
       </p>
 
       <p>By accessing or using Aethermoor you agree to these Terms of Service in full. If you do not agree, do not use the service. These terms apply worldwide; jurisdiction-specific provisions are listed below and take precedence where required by local law.</p>
@@ -110,13 +110,16 @@ function PrivacyContent() {
     <section style={sec}>
       <h2 style={h2s}>Privacy Policy</h2>
       <p style={{ color: '#8a6f4b', fontSize: 13, marginTop: 0 }}>
-        Last updated: 2026-03-14 · Data Controller: Aethermoor (UK-based independent developer)
+        Last updated: 2026-03-30 · Data Controller: Knoodlepot Studio (UK-based independent developer)
       </p>
 
       <p>This Privacy Policy explains how we collect, use, store, and share personal data when you use Aethermoor. We are committed to protecting your privacy and complying with applicable data protection laws worldwide.</p>
 
       <h3 style={h3s}>1. Who We Are</h3>
-      <p>Aethermoor is operated by an independent developer based in the United Kingdom. For the purposes of UK data protection law, we are the <strong>data controller</strong>. For all privacy matters — including Subject Access Requests, deletion requests, and complaints — contact us at: <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a>.</p>
+      <p>Aethermoor is operated by <strong>Knoodlepot Studio</strong>, an independent developer based in the United Kingdom. For the purposes of UK data protection law, we are the <strong>data controller</strong>.<br /><br />
+      <strong>Registered address:</strong> [POSTAL_ADDRESS — add once PO Box is set up]<br />
+      <strong>Contact email:</strong> <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a><br /><br />
+      For all privacy matters — including Subject Access Requests, deletion requests, and complaints — contact us at the email address above.</p>
 
       <h3 style={h3s}>2. What Data We Collect</h3>
       <p><strong>Account data:</strong> Email address, username, and hashed password when you register an account.<br />
@@ -151,7 +154,8 @@ function PrivacyContent() {
       <p>Our infrastructure is hosted on services based in the United States and European Union. When personal data is transferred outside the UK or EEA, we ensure appropriate safeguards are in place — including Standard Contractual Clauses (SCCs) approved by the UK ICO and/or the European Commission, or reliance on adequacy decisions. For transfers outside these regions, we apply equivalent measures as required by applicable law.</p>
 
       <h3 style={h3s}>7. Cookies & Local Storage</h3>
-      <p>We use browser <strong>local storage</strong> to save your game progress on your device — this is functionally necessary and does not track you across websites. <strong>Session cookies</strong> are used strictly for authentication and are deleted when you log out or your session expires. We do not use advertising, tracking, or analytics cookies. If this changes, we will update this policy and request consent where required by law.</p>
+      <p>We use browser <strong>local storage</strong> to save your game progress, theme preference, and cookie consent choice on your device — this is functionally necessary and does not track you across websites. <strong>Session cookies</strong> are used strictly for authentication and are deleted when you log out or your session expires.<br /><br />
+      We use <strong>PostHog</strong> for anonymous usage analytics — this is only activated if you explicitly accept analytics cookies via the cookie consent banner shown when you first visit. You can withdraw this consent at any time by clearing your browser's local storage for this site. We do not use advertising or cross-site tracking cookies. See the <strong>Cookie Policy</strong> tab for full details.</p>
 
       <h3 style={h3s}>8. Security</h3>
       <p>We implement appropriate technical and organisational measures to protect your personal data against unauthorised access, loss, disclosure, alteration, or destruction. Passwords are stored as hashed values and never in plain text. Despite these measures, no transmission over the internet is completely secure; you provide data at your own risk and we encourage the use of strong, unique passwords.</p>
@@ -222,7 +226,7 @@ function RefundContent() {
     <section style={sec}>
       <h2 style={h2s}>Refund Policy</h2>
       <p style={{ color: '#8a6f4b', fontSize: 13, marginTop: 0 }}>
-        Last updated: 2026-03-14 · Operator: Aethermoor (UK-based independent developer)
+        Last updated: 2026-03-30 · Operator: Knoodlepot Studio (UK-based independent developer)
       </p>
 
       <p>This Refund Policy explains your rights when purchasing Aether Tokens. Where applicable law grants you rights beyond those described here, those legal rights take precedence and we will honour them.</p>
@@ -316,12 +320,110 @@ function RefundContent() {
   );
 }
 
+function CookiesContent() {
+  return (
+    <section style={sec}>
+      <h2 style={h2s}>Cookie Policy</h2>
+      <p style={{ color: '#8a6f4b', fontSize: 13, marginTop: 0 }}>
+        Last updated: 2026-03-30 · Operator: Knoodlepot Studio (UK-based independent developer)
+      </p>
+
+      <p>This Cookie Policy explains what cookies and similar storage technologies we use on Aethermoor, why we use them, and how you can control them.</p>
+
+      <h3 style={h3s}>1. What Are Cookies?</h3>
+      <p>Cookies are small text files placed on your device when you visit a website. We also use <strong>browser local storage</strong> — a similar technology that stores data locally on your device without an expiry date unless you clear it manually. Neither cookies nor local storage can execute code or transmit viruses.</p>
+
+      <h3 style={h3s}>2. Cookies We Use</h3>
+
+      <h4 style={h4s}>Strictly Necessary (always active)</h4>
+      <p>These are required for the game to function. They cannot be disabled without breaking core features.</p>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, marginTop: 8 }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #2e2010' }}>
+            <th style={{ textAlign: 'left', padding: '6px 8px', color: '#c4873a' }}>Name</th>
+            <th style={{ textAlign: 'left', padding: '6px 8px', color: '#c4873a' }}>Type</th>
+            <th style={{ textAlign: 'left', padding: '6px 8px', color: '#c4873a' }}>Purpose</th>
+            <th style={{ textAlign: 'left', padding: '6px 8px', color: '#c4873a' }}>Expires</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ borderBottom: '1px solid #1a1408' }}>
+            <td style={{ padding: '6px 8px' }}>ae_session</td>
+            <td style={{ padding: '6px 8px' }}>HTTP Cookie</td>
+            <td style={{ padding: '6px 8px' }}>Keeps you logged in. Contains a signed authentication token — no personal data is readable from the cookie itself.</td>
+            <td style={{ padding: '6px 8px' }}>Session (deleted on logout)</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #1a1408' }}>
+            <td style={{ padding: '6px 8px' }}>aethermoor_* (local storage)</td>
+            <td style={{ padding: '6px 8px' }}>Local Storage</td>
+            <td style={{ padding: '6px 8px' }}>Stores your game save (offline/demo mode), theme preference, UI layout, quick-slot settings, and event log on your device. Never sent to our servers unless you use Cloud Save.</td>
+            <td style={{ padding: '6px 8px' }}>Until you clear site data</td>
+          </tr>
+          <tr style={{ borderBottom: '1px solid #1a1408' }}>
+            <td style={{ padding: '6px 8px' }}>aethermoor_cookie_consent</td>
+            <td style={{ padding: '6px 8px' }}>Local Storage</td>
+            <td style={{ padding: '6px 8px' }}>Stores your cookie consent choice ('all' or 'essential') so we do not show the banner on every visit.</td>
+            <td style={{ padding: '6px 8px' }}>Until you clear site data</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 style={{ ...h4s, marginTop: 20 }}>Analytics (optional — requires your consent)</h4>
+      <p>These are only activated if you click <strong>"Accept All"</strong> on the cookie consent banner. If you select "Essential Only", these are never loaded.</p>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, marginTop: 8 }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #2e2010' }}>
+            <th style={{ textAlign: 'left', padding: '6px 8px', color: '#c4873a' }}>Provider</th>
+            <th style={{ textAlign: 'left', padding: '6px 8px', color: '#c4873a' }}>Purpose</th>
+            <th style={{ textAlign: 'left', padding: '6px 8px', color: '#c4873a' }}>Data sent</th>
+            <th style={{ textAlign: 'left', padding: '6px 8px', color: '#c4873a' }}>Privacy policy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style={{ padding: '6px 8px' }}>PostHog</td>
+            <td style={{ padding: '6px 8px' }}>Anonymous usage analytics — helps us understand which features are used and improve the game.</td>
+            <td style={{ padding: '6px 8px' }}>Anonymised page views and interaction events. No personal identifiers, no payment data, no chat content.</td>
+            <td style={{ padding: '6px 8px' }}><a href="https://posthog.com/privacy" style={linkStyle} target="_blank" rel="noopener noreferrer">posthog.com/privacy</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style={h3s}>3. What We Do NOT Use</h3>
+      <p>We do not use:<br />
+      — Advertising or retargeting cookies<br />
+      — Cross-site tracking cookies<br />
+      — Social media tracking pixels<br />
+      — Any third-party marketing or profiling technologies</p>
+
+      <h3 style={h3s}>4. How to Manage Your Preferences</h3>
+      <p><strong>Cookie consent banner:</strong> When you first visit, a banner gives you the choice of "Accept All" (includes analytics) or "Essential Only". Your choice is saved in local storage.<br /><br />
+      <strong>Withdraw consent:</strong> To withdraw analytics consent after the fact, open your browser's developer tools, go to Application → Local Storage → aethermoor.knoodlepotstudio.com, and delete the <code style={{ color: '#f0c060', background: '#1a1408', padding: '1px 4px' }}>aethermoor_cookie_consent</code> key. The banner will reappear on your next visit.<br /><br />
+      <strong>Browser settings:</strong> You can also block or delete all cookies via your browser settings (usually under Privacy & Security). Note that blocking strictly necessary cookies will prevent you from logging in.</p>
+
+      <h3 style={h3s}>5. Third-Party Processors</h3>
+      <p>PostHog processes analytics data on our behalf under a Data Processing Agreement. Their infrastructure is hosted in the EU/US. Data transfers comply with UK GDPR adequacy requirements. See <a href="https://posthog.com/privacy" style={linkStyle} target="_blank" rel="noopener noreferrer">posthog.com/privacy</a> for their full data practices.</p>
+
+      <h3 style={h3s}>6. Changes to This Policy</h3>
+      <p>If we add new cookies or change how we use existing ones, we will update this page and — where required by law — re-request your consent via the banner.</p>
+
+      <h3 style={h3s}>7. Contact</h3>
+      <p>For any questions about our use of cookies:<br />
+      Email: <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a><br />
+      Subject: "Cookie Policy Query"</p>
+
+      <p style={note}>This Cookie Policy is provided in good faith. For legal advice specific to your situation, consult a qualified legal professional.</p>
+    </section>
+  );
+}
+
 export default function LegalPage() {
   const [activeTab, setActiveTab] = useState<Tab>('terms');
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'terms',   label: 'Terms of Service' },
     { id: 'privacy', label: 'Privacy Policy' },
+    { id: 'cookies', label: 'Cookie Policy' },
     { id: 'refund',  label: 'Refund Policy' },
   ];
 
@@ -340,7 +442,7 @@ export default function LegalPage() {
         <h1 style={{ color: '#f0c060', fontFamily: '"Cinzel", Georgia, serif', letterSpacing: 1 }}>
           Aethermoor Legal
         </h1>
-        <div style={{ color: '#8a6f4b', fontSize: 13 }}>Last updated: 2026-03-14</div>
+        <div style={{ color: '#8a6f4b', fontSize: 13 }}>Last updated: 2026-03-30</div>
 
         {/* Tab navigation */}
         <nav aria-label="Legal sections" style={{
@@ -390,6 +492,7 @@ export default function LegalPage() {
         {/* Tab content — only the active tab is rendered */}
         {activeTab === 'terms'   && <TermsContent />}
         {activeTab === 'privacy' && <PrivacyContent />}
+        {activeTab === 'cookies' && <CookiesContent />}
         {activeTab === 'refund'  && <RefundContent />}
       </div>
     </div>
