@@ -103,8 +103,9 @@ export function useLayoutConfig(): DerivedLayout | null {
   const narrativeRight = narrative ? narrative.x + narrative.w : (screenW * 0.70) / scaleW;
 
   // Bottom-row panels: x < narrativeRight (in narrative column area), sorted left to right
+  // eventLog is excluded — it belongs in the right-column scrollable section, not the bottom row
   const bottomPanels = panels
-    .filter(p => p.id !== 'narrative' && p.id !== 'input' && p.x < narrativeRight)
+    .filter(p => p.id !== 'narrative' && p.id !== 'input' && p.id !== 'eventLog' && p.x < narrativeRight)
     .sort((a, b) => a.x - b.x)
     .map(p => ({ id: p.id, label: p.label, w: Math.max(60, Math.round(p.w * scaleW)) }));
 
