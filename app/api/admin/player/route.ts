@@ -51,10 +51,21 @@ export async function GET(request: NextRequest) {
       [resolvedId]
     );
 
-    // Purchase history
+    // Purchase history — include tokens spent since each purchase (from token_log negative changes)
     const purchases = await query(
-      `SELECT id, stripe_session_id, tokens_awarded, amount_pence, status, created_at
-       FROM purchases WHERE player_id = $1 ORDER BY created_at DESC LIMIT 20`,
+      `SELECT
+         pu.id, pu.stripe_session_id, pu.tokens_awarded, pu.amount_pence, pu.status, pu.created_at,
+         ABS(COALESCE((
+           SELECT SUM(tl.change)
+           FROM token_log tl
+           WHERE tl.player_id = pu.player_id
+             AND tl.change < 0
+             AND tl.created_at >= pu.created_at
+         ), 0)) AS tokens_spent_since
+       FROM purchases pu
+       WHERE pu.player_id = $1
+       ORDER BY pu.created_at DESC
+       LIMIT 20`,
       [resolvedId]
     );
 

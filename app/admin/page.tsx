@@ -198,6 +198,7 @@ interface PurchaseRecord {
   amount_pence: number;
   status: 'pending' | 'completed' | 'failed' | 'refunded';
   created_at: string;
+  tokens_spent_since: number;
 }
 interface PlayerProfile {
   player: { player_id: string; tokens: number; total_spent: number; email: string; verified: boolean; created_at: string };
@@ -850,10 +851,22 @@ export default function AdminPage() {
                             <td style={S.td}>
                               {p.status === 'completed' && p.stripe_session_id && (
                                 refundConfirm === p.id ? (
-                                  <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                                    <span style={{ fontSize: 11, color: '#c04030' }}>Confirm?</span>
-                                    <button style={{ ...S.btnDanger, padding: '2px 8px', fontSize: 9 }} onClick={() => handleRefund(p.id)}>YES</button>
-                                    <button style={{ ...S.btnSmall, padding: '2px 8px' }} onClick={() => setRefundConfirm(null)}>NO</button>
+                                  <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                    <span style={{ fontSize: 11, color: '#c9a84c' }}>
+                                      {p.tokens_awarded} awarded · <span style={{ color: p.tokens_spent_since > 0 ? '#c04030' : '#80c080' }}>{p.tokens_spent_since} spent since</span> · {profile!.player.tokens} balance now
+                                    </span>
+                                    <span style={{ fontSize: 10, color: '#8a7a5a', fontStyle: 'italic' }}>
+                                      {p.tokens_spent_since === 0
+                                        ? 'No tokens used — clean refund.'
+                                        : p.tokens_spent_since >= p.tokens_awarded
+                                          ? 'All tokens from this purchase have been used.'
+                                          : `${p.tokens_awarded - p.tokens_spent_since} tokens appear unspent.`}
+                                    </span>
+                                    <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                      <span style={{ fontSize: 11, color: '#c04030' }}>Issue full refund?</span>
+                                      <button style={{ ...S.btnDanger, padding: '2px 8px', fontSize: 9 }} onClick={() => handleRefund(p.id)}>YES</button>
+                                      <button style={{ ...S.btnSmall, padding: '2px 8px' }} onClick={() => setRefundConfirm(null)}>NO</button>
+                                    </span>
                                   </span>
                                 ) : (
                                   <button style={{ ...S.btnDanger, padding: '2px 8px', fontSize: 9 }} onClick={() => { setRefundConfirm(p.id); setRefundMsg(''); }}>
