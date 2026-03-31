@@ -20,8 +20,8 @@ const LANGUAGES: { name: string; native: string; warning: string }[] = [
   { name: 'Portuguese', native: 'Português',  warning: 'A narração pode não ser 100% precisa.' },
   { name: 'Dutch',      native: 'Nederlands', warning: 'De vertelling is mogelijk niet 100% correct.' },
   { name: 'Polish',     native: 'Polski',     warning: 'Narracja może nie być w 100% poprawna.' },
-  { name: 'Russian',    native: 'Русский',    warning: 'Повествование может быть неточным.' },
-  { name: 'Swedish',    native: 'Svenska',    warning: 'Berättelsen kanske inte är 100% korrekt.' },
+  { name: 'Lithuanian', native: 'Lietuvių',   warning: 'Pasakojimas gali būti ne visiškai tikslus.' },
+  { name: 'Swedish',   native: 'Svenska',    warning: 'Berättelsen kanske inte är 100% korrekt.' },
   { name: 'Norwegian',  native: 'Norsk',      warning: 'Fortellingen er kanskje ikke 100 % korrekt.' },
   { name: 'Danish',     native: 'Dansk',      warning: 'Fortællingen er muligvis ikke 100% korrekt.' },
   { name: 'Japanese',   native: '日本語',      warning: 'ナレーションは100%正確ではない場合があります。' },
@@ -31,6 +31,7 @@ const LANGUAGES: { name: string; native: string; warning: string }[] = [
   { name: 'Hindi',      native: 'हिन्दी',     warning: 'कथन 100% सटीक नहीं हो सकता।' },
   { name: 'Turkish',    native: 'Türkçe',     warning: 'Anlatım %100 doğru olmayabilir.' },
   { name: 'Greek',      native: 'Ελληνικά',   warning: 'Η αφήγηση μπορεί να μην είναι 100% ακριβής.' },
+  { name: 'Welsh',      native: 'Cymraeg',    warning: 'Efallai na fydd y naratif yn 100% cywir.' },
 ];
 
 const FUN_LANGUAGES: { name: string; native: string; warning: string }[] = [
