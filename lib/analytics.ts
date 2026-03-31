@@ -86,4 +86,7 @@ export const analytics = {
   sessionStart() {
     trackEvent('session_start');
   },
+  languageSelected(language: string) {
+    trackEvent('language_selected', { language });
+  },
 };

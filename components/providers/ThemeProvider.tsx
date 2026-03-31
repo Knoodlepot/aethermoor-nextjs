@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { translate } from '@/lib/i18n';
+import { analytics } from '@/lib/analytics';
 
 // Theme color definitions
 export const THEMES = {
@@ -198,6 +199,7 @@ export function ThemeProvider({
   const setLanguage = (v: string) => {
     setLanguageState(v);
     localStorage.setItem('rpg-language', v);
+    analytics.languageSelected(v);
   };
 
   const t = (key: string) => translate(language, key);
