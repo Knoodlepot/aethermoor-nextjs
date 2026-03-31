@@ -29,9 +29,13 @@ const LANGUAGES: { name: string; native: string; warning: string }[] = [
   { name: 'Korean',     native: '한국어',      warning: '내레이션이 100% 정확하지 않을 수 있습니다.' },
   { name: 'Arabic',     native: 'العربية',    warning: 'قد لا تكون السرد دقيقاً بنسبة 100٪.' },
   { name: 'Hindi',      native: 'हिन्दी',     warning: 'कथन 100% सटीक नहीं हो सकता।' },
-  { name: 'Turkish',    native: 'Türkçe',     warning: 'Anlatım %100 doğru olmayabilir.' },
-  { name: 'Greek',      native: 'Ελληνικά',   warning: 'Η αφήγηση μπορεί να μην είναι 100% ακριβής.' },
-  { name: 'Welsh',      native: 'Cymraeg',    warning: 'Efallai na fydd y naratif yn 100% cywir.' },
+  { name: 'Turkish',            native: 'Türkçe',              warning: 'Anlatım %100 doğru olmayabilir.' },
+  { name: 'Greek',              native: 'Ελληνικά',            warning: 'Η αφήγηση μπορεί να μην είναι 100% ακριβής.' },
+  { name: 'Welsh',              native: 'Cymraeg',             warning: 'Efallai na fydd y naratif yn 100% cywir.' },
+  { name: 'Indonesian',         native: 'Bahasa Indonesia',    warning: 'Narasi mungkin tidak 100% akurat.' },
+  { name: 'Vietnamese',         native: 'Tiếng Việt',          warning: 'Lời kể có thể không chính xác 100%.' },
+  { name: 'Brazilian Portuguese', native: 'Português (Brasil)', warning: 'A narração pode não ser 100% precisa.' },
+  { name: 'Thai',               native: 'ภาษาไทย',             warning: 'คำบรรยายอาจไม่ถูกต้อง 100%' },
 ];
 
 const FUN_LANGUAGES: { name: string; native: string; warning: string }[] = [
@@ -40,6 +44,7 @@ const FUN_LANGUAGES: { name: string; native: string; warning: string }[] = [
   { name: 'Old Norse',     native: 'Norrœnt mál',   warning: 'The narrator speaks in the tongue of the ancient Vikings. Results may be gloriously imperfect.' },
   { name: 'Shakespearean', native: 'Shakespearean', warning: 'Forsooth! The narrator doth speak in the manner of the Bard. Verily.' },
   { name: 'Klingon',       native: 'tlhIngan Hol',  warning: 'nuqneH! The narrator will attempt Klingon. Honour demands it.' },
+  { name: 'Orc',           native: 'Orcish',        warning: "Me try tell story good. Orc not always use best words." },
 ];
 
 const TEXT_SIZES: { id: TextSize; label: string; desc: string }[] = [
