@@ -101,8 +101,8 @@ export interface UIContext {
   clearQuestLogInitialId: () => void;
 
   // Death screen
-  deathInfo: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string } | null;
-  showDeathScreen: (info: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string }) => void;
+  deathInfo: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string; savedGold?: number } | null;
+  showDeathScreen: (info: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string; savedGold?: number }) => void;
 
   // Event log
   eventLog: EventLogEntry[];
@@ -224,9 +224,9 @@ export function useUI(): UIContext {
   }, []);
 
   // Death screen
-  const [deathInfo, setDeathInfo] = useState<{ name: string; cls: string; level: number; gameDay: number; finalNarrative: string } | null>(null);
+  const [deathInfo, setDeathInfo] = useState<{ name: string; cls: string; level: number; gameDay: number; finalNarrative: string; savedGold?: number } | null>(null);
 
-  const showDeathScreen = useCallback((info: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string }) => {
+  const showDeathScreen = useCallback((info: { name: string; cls: string; level: number; gameDay: number; finalNarrative: string; savedGold?: number }) => {
     setDeathInfo(info);
     setScreen('death');
   }, []);

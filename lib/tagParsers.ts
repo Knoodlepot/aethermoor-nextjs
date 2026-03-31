@@ -970,17 +970,30 @@ export function processParsedTags(
 
   // HP change — damage (negative) or healing (positive), clamped to [0, maxHp]
   if (tags.hpChange !== null) {
-    const newHp = Math.max(0, Math.min(updatedPlayer.maxHp, (updatedPlayer.hp || 0) + tags.hpChange));
+    let hpDelta = tags.hpChange;
+    // battle_scarred: take 10% less damage
+    if (hpDelta < 0 && (updatedPlayer as any).legacyPerks?.includes('battle_scarred')) {
+      hpDelta = Math.ceil(hpDelta * 0.9);
+    }
+    let newHp = Math.max(0, Math.min(updatedPlayer.maxHp, (updatedPlayer.hp || 0) + hpDelta));
+    // touched_by_fate: survive a killing blow once per run
+    if (newHp <= 0 && (updatedPlayer as any).legacyPerks?.includes('touched_by_fate') && !(updatedPlayer as any).touchedByFateUsed) {
+      newHp = 1;
+      updatedPlayer = { ...updatedPlayer, touchedByFateUsed: true } as any;
+      warnings.push('touched_by_fate');
+    }
     updatedPlayer = { ...updatedPlayer, hp: newHp };
-    if (tags.hpChange < 0) {
-      eventLogEntries.push({ type: 'incoming', value: tags.hpChange, timestamp: Date.now() });
+    if (hpDelta < 0) {
+      eventLogEntries.push({ type: 'incoming', value: hpDelta, timestamp: Date.now() });
     }
   }
 
   // XP gain — grant XP, check for level-up, apply rewards per level gained
   if (tags.xpGain !== null && tags.xpGain.value > 0) {
     const oldLevel = updatedPlayer.level || 1;
-    const newXp = (updatedPlayer.xp || 0) + tags.xpGain.value;
+    // loremaster: +20% XP gains
+    const xpMultiplier = (updatedPlayer as any).legacyPerks?.includes('loremaster') ? 1.2 : 1;
+    const newXp = (updatedPlayer.xp || 0) + Math.round(tags.xpGain.value * xpMultiplier);
     eventLogEntries.push({ type: 'xp', value: tags.xpGain.value, reason: tags.xpGain.reason, timestamp: Date.now() });
     const newLevel = Math.min(xpToLevel(newXp), LEVEL_CAP);
     const levelsGained = newLevel - oldLevel;

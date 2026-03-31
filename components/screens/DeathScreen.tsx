@@ -22,10 +22,11 @@ interface DeathScreenProps {
   level: number;
   gameDay: number;
   finalNarrative: string;
+  savedGold?: number;
   onBeginAnew: () => void;
 }
 
-export function DeathScreen({ name, cls, level, gameDay, finalNarrative, onBeginAnew }: DeathScreenProps) {
+export function DeathScreen({ name, cls, level, gameDay, finalNarrative, savedGold, onBeginAnew }: DeathScreenProps) {
   const { T, tf } = useTheme();
 
   const verse = useMemo(() => {
@@ -122,6 +123,13 @@ export function DeathScreen({ name, cls, level, gameDay, finalNarrative, onBegin
         >
           {verse}
         </p>
+
+        {/* Graverobber — saved gold notice */}
+        {savedGold != null && savedGold > 0 && (
+          <div style={{ background: '#1a1208', border: '1px solid #6a4a1a', borderRadius: 4, padding: '10px 16px', marginBottom: 24, fontSize: 13, color: '#c8a050' }}>
+            ⚰️ <strong>Graverobber:</strong> {savedGold}g was salvaged from your corpse and will be added to your next character.
+          </div>
+        )}
 
         {/* Divider */}
         <div

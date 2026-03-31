@@ -669,9 +669,13 @@ function buildNarratorSystem(p: any, w: any): string {
   const bestiaryTypes = Array.isArray(p.bestiary) ? p.bestiary.length : 0;
 
   const legacyTitle = sanitiseStr(p.legacyTitle, 60);
-  const legacyPerks = Array.isArray(p.legacyPerks) && p.legacyPerks.length > 0
-    ? p.legacyPerks.map((pk: any) => sanitiseStr(pk, 50)).join(', ')
+  const legacyPerkIds: string[] = Array.isArray(p.legacyPerks) ? p.legacyPerks : [];
+  const legacyPerks = legacyPerkIds.length > 0
+    ? legacyPerkIds.map((pk: any) => sanitiseStr(pk, 50)).join(', ')
     : null;
+  const hasSilverTongue = legacyPerkIds.includes('silver_tongue');
+  const hasNotorious    = legacyPerkIds.includes('notorious');
+  const hasHoarder      = legacyPerkIds.includes('hoarder');
 
   const companion = p.companion ?? null;
   const companionStr = companion
@@ -821,6 +825,9 @@ ${bestiaryCount > 0 ? `KILLS: ${bestiaryCount} total across ${bestiaryTypes} ene
 SUBCLASS: ${(p as any).subclass ?? 'None — player will choose at level 10'}
 ${legacyTitle ? `LEGACY TITLE: ${legacyTitle} (earned in a previous run — the world has heard of them)` : ''}
 ${legacyPerks ? `LEGACY HONOURS: ${legacyPerks}` : ''}
+${hasSilverTongue ? `LEGACY PERK — SILVER TONGUE: This player has an uncanny gift for persuasion and deception earned through a past life. Give their social approaches, lies, negotiations, and smooth talk a meaningfully higher chance of success than you would otherwise grant. They don't always succeed, but the odds tip noticeably in their favour.` : ''}
+${hasNotorious ? `LEGACY PERK — NOTORIOUS: This player's name is feared. Minion-tier enemies (tier 1) who encounter them alone or in small groups should sometimes hesitate, back away, or flee outright rather than fight — perhaps 1 in 3 encounters. Named enemies, bosses, and enemies in groups or defending territory are unaffected.` : ''}
+${hasHoarder ? `LEGACY PERK — HOARDER: This player has an unnaturally large pack. Do not comment on or limit their inventory size — they can carry considerably more than a normal traveller. Never suggest they are encumbered or must drop items due to weight unless they are explicitly carrying something enormous (e.g. a full suit of plate, a barrel, a body).` : ''}
 ${companionStr ? `COMPANION: ${companionStr}` : 'COMPANION: None — player may recruit one companion through roleplay.'}
 ${unlockedSkillDescs.length > 0 ? `UNLOCKED SKILLS: ${unlockedSkillDescs.join('; ')}` : ''}
 ${travelMatrixStr ? travelMatrixStr : ''}

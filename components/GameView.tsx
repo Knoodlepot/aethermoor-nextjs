@@ -74,6 +74,7 @@ function GameContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isNewGame = searchParams.get('new') === '1';
+  const graverobberGold = parseInt(searchParams.get('savedGold') ?? '0', 10) || 0;
   const { T, tf, isDyslexic, t } = useTheme();
   const layoutCfg = useLayoutConfig();
 
@@ -285,11 +286,13 @@ function GameContent() {
         });
       }
 
+      const basePlayer = INIT_PLAYER(name, cls, startLoc, worldData);
       const player = {
-        ...INIT_PLAYER(name, cls, startLoc, worldData),
+        ...basePlayer,
         location: startLoc,
         exploredLocations: initialExplored,
         quests: [mainQuestEntry],
+        gold: (basePlayer.gold ?? 0) + graverobberGold,
       };
 
       gameState.setPlayer(player as any);
@@ -1817,9 +1820,11 @@ function GameContent() {
         level={ui.deathInfo.level}
         gameDay={ui.deathInfo.gameDay}
         finalNarrative={ui.deathInfo.finalNarrative}
+        savedGold={ui.deathInfo.savedGold}
         onBeginAnew={() => {
+          const sg = ui.deathInfo?.savedGold;
           ui.setScreen('game');
-          router.push('/game?new=1');
+          router.push(sg ? `/game?new=1&savedGold=${sg}` : '/game?new=1');
         }}
       />
     );

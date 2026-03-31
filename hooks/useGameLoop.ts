@@ -371,7 +371,9 @@ export function useGameLoop(
           if (updatedPlayer.location === dest) return { success: false, error: 'Already there' };
           if ((updatedPlayer as any).combat?.inCombat) return { success: false, error: 'Cannot travel during combat' };
           if (updatedPlayer.context === 'dungeon') return { success: false, error: 'Cannot travel from a dungeon' };
-          if ((updatedPlayer.gold ?? 0) < cost) return { success: false, error: 'Not enough gold' };
+          // sea_legs: barge and sea travel is free
+          const effectiveCost = (['barge', 'boat'].includes(method) && (updatedPlayer as any).legacyPerks?.includes('sea_legs')) ? 0 : cost;
+          if ((updatedPlayer.gold ?? 0) < effectiveCost) return { success: false, error: 'Not enough gold' };
 
           // Calculate travel hours from locationGrid coords
           const lg: Record<string, any> = (updatedSeed.travelMatrix as any)?.locationGrid || {};
@@ -410,7 +412,11 @@ export function useGameLoop(
           const arrivalContext = TOWN_TYPES.has(destNode?.type) ? 'town' : 'explore';
 
           // ── Hunger mechanic: consume 1 ration per 8 hours of travel ──
-          const rationCost = Math.max(1, Math.ceil(travelHours / 8));
+          const baseRationCost = Math.max(1, Math.ceil(travelHours / 8));
+          // rations_master: halve ration consumption
+          const rationCost = (updatedPlayer as any).legacyPerks?.includes('rations_master')
+            ? Math.max(1, Math.ceil(baseRationCost / 2))
+            : baseRationCost;
           let inventory = [...(updatedPlayer.inventory ?? [])];
           let currentHp = updatedPlayer.hp ?? updatedPlayer.maxHp ?? 50;
           let hungerMsg = '';
@@ -446,7 +452,7 @@ export function useGameLoop(
 
           updatedPlayer = {
             ...updatedPlayer,
-            gold: (updatedPlayer.gold ?? 0) - cost,
+            gold: (updatedPlayer.gold ?? 0) - effectiveCost,
             location: dest,
             context: arrivalContext,
             gameHour: newHour,
@@ -512,19 +518,57 @@ export function useGameLoop(
           const keepsake    = `${villainName}'s Signet`;
 
           const freshPlayer = INIT_PLAYER(updatedPlayer.name, updatedPlayer.class, startLocation, worldData);
+          const newPerks: string[] = opts.perks ?? [];
+
+          // Apply start-of-run perk bonuses
+          let ngGold = (freshPlayer.gold ?? 0) + (opts.gold ?? 0);
+          let ngInventory = [...(freshPlayer.inventory ?? []), keepsake];
+          let ngReputation = opts.reputation ?? 0;
+          let ngSkillPoints = freshPlayer.skillPoints ?? 0;
+          let ngFactionStandings = { ...(opts.factionStandings ?? freshPlayer.factionStandings) };
+          let ngMaxHp = freshPlayer.maxHp ?? 50;
+
+          if (newPerks.includes('moneyed'))          ngGold += 500;
+          if (newPerks.includes('veterans_grit'))    ngMaxHp += 25;
+          if (newPerks.includes('renowned'))         ngReputation += 100;
+          if (newPerks.includes('ancient_blood'))    ngSkillPoints += 2;
+          if (newPerks.includes('well_provisioned')) {
+            for (let i = 0; i < 20; i++) ngInventory.push('Rations');
+          }
+          if (newPerks.includes('connected')) {
+            Object.keys(ngFactionStandings).forEach(fid => {
+              ngFactionStandings[fid] = (ngFactionStandings[fid] ?? 0) + 200;
+            });
+          }
+          if (newPerks.includes('gifted')) {
+            const RARE_ITEMS = ['Enchanted Dagger', 'Ring of Warding', 'Silver Sword', 'Purification Charm', 'Enchanted Chainmail'];
+            ngInventory.push(RARE_ITEMS[Math.floor(Math.random() * RARE_ITEMS.length)]);
+          }
+          if (newPerks.includes('cartographer')) {
+            // Mark all locations as explored
+            const lg: Record<string, any> = (newSeedObj as any).travelMatrix?.locationGrid || {};
+            ngInventory = ngInventory; // explored handled below
+            const allLocations = Object.keys(lg);
+            (freshPlayer as any).exploredLocations = allLocations;
+          }
+
           const ngPlayer = {
             ...freshPlayer,
-            gold:             (freshPlayer.gold ?? 0) + (opts.gold ?? 0),
-            reputation:       opts.reputation ?? 0,
-            inventory:        [...(freshPlayer.inventory ?? []), keepsake],
+            gold:             ngGold,
+            reputation:       ngReputation,
+            maxHp:            ngMaxHp,
+            hp:               ngMaxHp,
+            inventory:        ngInventory,
             achievements:     updatedPlayer.achievements ?? [],
             ngPlusCount:      (opts.count ?? 1),
             legacyTitle,
-            legacyPerks:      opts.perks ?? [],
+            legacyPerks:      newPerks,
             legacyItems:      [...(opts.items ?? []), { name: keepsake, desc: `A keepsake from the fallen ${villainName}.` }],
-            factionStandings: opts.factionStandings ?? freshPlayer.factionStandings,
+            factionStandings: ngFactionStandings,
+            skillPoints:      ngSkillPoints,
             modelTier:        (updatedPlayer as any).modelTier ?? 'haiku',
             language:         (updatedPlayer as any).language  ?? 'English',
+            exploredLocations: (freshPlayer as any).exploredLocations ?? [startLocation],
           };
 
           gs.setPlayer(ngPlayer);
@@ -738,6 +782,24 @@ export function useGameLoop(
 
         // 3a. Handle player death (hp reached 0 from hpChange tag)
         if (updatedPlayer.hp <= 0) {
+          // touched_by_fate fires in tagParsers — if it triggered, hp is already 1, skip death
+          const perks: string[] = (updatedPlayer as any).legacyPerks ?? [];
+          const deathCount = (updatedPlayer as any).deathCount || 0;
+          const isFirstDeath = deathCount === 0;
+
+          // survivor: first death no save wipe — just restore to 1 HP and continue
+          if (perks.includes('survivor') && isFirstDeath) {
+            updatedPlayer = {
+              ...updatedPlayer,
+              hp: 1,
+              deathCount: 1,
+            } as typeof updatedPlayer;
+            gs.setPlayer(updatedPlayer);
+            gs.appendNarrative('\n\n*Against all odds, you cling to life — your survival instincts drag you back from the brink.*');
+            await storage.saveGame(updatedPlayer, updatedSeed, gs.messages, gs.narrative, gs.log);
+            return { success: true };
+          }
+
           const gravestone = {
             name: updatedPlayer.name,
             level: updatedPlayer.level,
@@ -745,10 +807,14 @@ export function useGameLoop(
             day: updatedPlayer.gameDay || 1,
             epitaph: `Fell in battle on Day ${updatedPlayer.gameDay || 1}.`,
           };
+
+          // graverobber: save 50% of gold to carry to next character
+          const savedGold = perks.includes('graverobber') ? Math.floor((updatedPlayer.gold ?? 0) * 0.5) : 0;
+
           const deadPlayer = {
             ...updatedPlayer,
             hp: 0,
-            deathCount: (updatedPlayer.deathCount || 0) + 1,
+            deathCount: deathCount + 1,
             gravestones: [...(updatedPlayer.gravestones || []), gravestone],
           };
           // Save the gravestone record before wiping the save
@@ -760,6 +826,7 @@ export function useGameLoop(
             level: updatedPlayer.level,
             gameDay: updatedPlayer.gameDay || 1,
             finalNarrative: cleanNarrative,
+            savedGold,
           });
           return { success: true };
         }

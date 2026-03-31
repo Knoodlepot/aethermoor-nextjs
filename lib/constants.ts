@@ -1384,7 +1384,19 @@ export const NG_PLUS_PERKS: NgPlusPerk[] = [
   { id: "survivor", icon: "💪", name: "Survivor", desc: "First death each run: no gold/gear/stat penalty." },
   { id: "loremaster", icon: "📚", name: "Loremaster", desc: "All XP gains +20%." },
   { id: "merchants_friend", icon: "💰", name: "Merchant's Friend", desc: "All shop prices 25% cheaper." },
-  { id: "shadow_walker", icon: "👣", name: "Shadow Walker", desc: "Flee always succeeds; road ambush chance halved." },
+  { id: "shadow_walker",    icon: "👣", name: "Shadow Walker",    desc: "Flee always succeeds; road ambush chance halved." },
+  { id: "silver_tongue",    icon: "🗣️", name: "Silver Tongue",    desc: "Persuasion and deception succeed more often — your words carry unusual weight." },
+  { id: "notorious",        icon: "☠️", name: "Notorious",         desc: "Minion-tier enemies sometimes flee rather than fight — your legend precedes you." },
+  { id: "cartographer",     icon: "🗺️", name: "Cartographer",      desc: "All world map locations are revealed from the start of your new run." },
+  { id: "sea_legs",         icon: "⚓", name: "Sea Legs",          desc: "Barge and sea vessel fast travel costs no gold." },
+  { id: "moneyed",          icon: "💎", name: "Moneyed",           desc: "Start each run with 500 extra gold." },
+  { id: "well_provisioned", icon: "🎒", name: "Well Provisioned",  desc: "Start each run with 20 extra rations." },
+  { id: "rations_master",   icon: "🍞", name: "Rations Master",    desc: "Rations consumed while travelling are halved." },
+  { id: "graverobber",      icon: "⚰️", name: "Graverobber",       desc: "On death, 50% of your gold is saved and carried to your next character." },
+  { id: "ancient_blood",    icon: "🩸", name: "Ancient Blood",     desc: "Start each run with 2 extra skill points." },
+  { id: "gifted",           icon: "✨", name: "Gifted",            desc: "Start each run with a rare item in your inventory." },
+  { id: "hoarder",          icon: "📦", name: "Hoarder",           desc: "Carry 10 extra inventory slots — the narrator will not limit your pack." },
+  { id: "touched_by_fate",  icon: "🌠", name: "Touched by Fate",   desc: "Once per run, a killing blow leaves you at 1 HP instead of killing you." },
 ];
 
 // ============================================
