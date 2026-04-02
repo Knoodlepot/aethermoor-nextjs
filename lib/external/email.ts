@@ -42,7 +42,7 @@ export async function sendEmail({
       body: JSON.stringify({
         from: EMAIL_FROM,
         to: [to],
-        reply_to: ['support.aethermoor@gmail.com'],
+        reply_to: ['Knoodlepot@knoodlepotstudio.com'],
         subject,
         text,
         html: html || `<p>${text.replace(/\n/g, '</p><p>')}</p>`,
@@ -136,7 +136,7 @@ export async function sendWelcomeEmail(
       '',
       'Play now: https://aethermoor.com',
       '',
-      'Need help? Email support.aethermoor@gmail.com',
+      'Need help? Email Knoodlepot@knoodlepotstudio.com',
     ].join('\n'),
     html: `
       <div style="background:#0d0b07;color:#c4a87a;font-family:Georgia,serif;padding:32px 28px;max-width:520px;margin:0 auto">
@@ -160,7 +160,7 @@ export async function sendWelcomeEmail(
         <hr style="border:none;border-top:1px solid #2e2010;margin:28px 0 16px"/>
         <p style="color:#6a5535;font-size:0.8rem;margin:0">
           Questions? Reply to this email or write to
-          <a href="mailto:support.aethermoor@gmail.com" style="color:#a08060">support.aethermoor@gmail.com</a>
+          <a href="mailto:Knoodlepot@knoodlepotstudio.com" style="color:#a08060">Knoodlepot@knoodlepotstudio.com</a>
         </p>
       </div>
     `,

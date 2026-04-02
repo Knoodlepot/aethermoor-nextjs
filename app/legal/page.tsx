@@ -118,7 +118,7 @@ function PrivacyContent() {
       <h3 style={h3s}>1. Who We Are</h3>
       <p>Aethermoor is operated by <strong>Knoodlepot Studio</strong>, an independent developer based in the United Kingdom. For the purposes of UK data protection law, we are the <strong>data controller</strong>.<br /><br />
       <strong>Registered address:</strong> [POSTAL_ADDRESS — add once PO Box is set up]<br />
-      <strong>Contact email:</strong> <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a><br /><br />
+      <strong>Contact email:</strong> <a href="mailto:Knoodlepot@knoodlepotstudio.com" style={linkStyle}>Knoodlepot@knoodlepotstudio.com</a><br /><br />
       For all privacy matters — including Subject Access Requests, deletion requests, and complaints — contact us at the email address above.</p>
 
       <h3 style={h3s}>2. What Data We Collect</h3>
@@ -180,7 +180,7 @@ function PrivacyContent() {
       <p>EU residents have rights under the <strong>General Data Protection Regulation (GDPR)</strong> in full, including all rights listed above. A valid legal basis exists for every processing activity we carry out. Where consent is the legal basis, it is freely given, specific, informed, and unambiguous; you may withdraw it at any time. You may lodge a complaint with your national <strong>Data Protection Authority (DPA)</strong>. We do not knowingly collect data from individuals under 16 (or the lower age of digital consent set by your EU member state). Cross-border transfers comply with Chapter V GDPR requirements.</p>
 
       <h4 style={h4s}>United States</h4>
-      <p><strong>California (CCPA/CPRA):</strong> You have the right to know what personal information is collected and how it is used; the right to delete personal information; the right to opt out of sale or sharing (we do not sell or share personal information for cross-context behavioural advertising); the right to correct inaccurate information; and the right to non-discrimination for exercising these rights. Verified requests receive a response within <strong>45 days</strong> (extendable by a further 45 with notice). Submit requests to <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a>.<br /><br />
+      <p><strong>California (CCPA/CPRA):</strong> You have the right to know what personal information is collected and how it is used; the right to delete personal information; the right to opt out of sale or sharing (we do not sell or share personal information for cross-context behavioural advertising); the right to correct inaccurate information; and the right to non-discrimination for exercising these rights. Verified requests receive a response within <strong>45 days</strong> (extendable by a further 45 with notice). Submit requests to <a href="mailto:Knoodlepot@knoodlepotstudio.com" style={linkStyle}>Knoodlepot@knoodlepotstudio.com</a>.<br /><br />
       <strong>Other US state privacy laws:</strong> We honour verified consumer rights requests from residents of any US state with a comprehensive privacy law, including Virginia (CDPA), Colorado (CPA), Connecticut (CTDPA), Texas (TDPSA), Oregon (OCPA), Montana (MCDPA), and others.<br /><br />
       <strong>COPPA:</strong> We do not knowingly collect personal information from children under 13. If you believe a child has provided us with data, contact us immediately for deletion.<br /><br />
       <strong>CAN-SPAM Act:</strong> All commercial emails include a functioning unsubscribe mechanism and comply with CAN-SPAM requirements.</p>
@@ -199,7 +199,7 @@ function PrivacyContent() {
       <strong>South Korea (PIPA):</strong> We comply with the <strong>Personal Information Protection Act (PIPA)</strong>. You have rights to access, correction, deletion, and suspension of processing. The <strong>Personal Information Protection Commission (PIPC)</strong> oversees compliance. Certain categories of data require separate consent under PIPA.<br /><br />
       <strong>China (PIPL):</strong> We comply with the <strong>Personal Information Protection Law (PIPL, effective 2021)</strong>, the <strong>Data Security Law</strong>, and the <strong>Cybersecurity Law</strong>. Users in China have rights to access, copy, correct, delete, and transfer personal information. Cross-border data transfers comply with applicable PIPL requirements including security assessments or standard contractual clauses where required. Separate consent is obtained for sensitive personal information.<br /><br />
       <strong>Singapore (PDPA):</strong> We comply with the <strong>Personal Data Protection Act 2012 (PDPA)</strong>. You may access and correct your personal data and withdraw consent at any time. The <strong>Personal Data Protection Commission (PDPC)</strong> handles complaints and oversees compliance.<br /><br />
-      <strong>India (DPDP Act 2023):</strong> We comply with the <strong>Digital Personal Data Protection Act 2023</strong>. You have rights to access information about processing, correction, erasure, and grievance redressal. We appoint a grievance officer for Indian users; contact <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a>.<br /><br />
+      <strong>India (DPDP Act 2023):</strong> We comply with the <strong>Digital Personal Data Protection Act 2023</strong>. You have rights to access information about processing, correction, erasure, and grievance redressal. We appoint a grievance officer for Indian users; contact <a href="mailto:Knoodlepot@knoodlepotstudio.com" style={linkStyle}>Knoodlepot@knoodlepotstudio.com</a>.<br /><br />
       <strong>Thailand (PDPA):</strong> We comply with the <strong>Personal Data Protection Act B.E. 2562 (2019)</strong>, which grants rights similar to GDPR including access, rectification, erasure, restriction, portability, and objection.<br /><br />
       <strong>Other APAC jurisdictions:</strong> We observe applicable privacy legislation in New Zealand (Privacy Act 2020), Malaysia (PDPA 2010), Philippines (Data Privacy Act 2012 / Republic Act 10173), Indonesia (Personal Data Protection Law 2022), and Vietnam (Decree 13/2023/ND-CP).</p>
 
@@ -212,7 +212,7 @@ function PrivacyContent() {
 
       <h3 style={h3s}>10. Contact & Data Requests</h3>
       <p>For any privacy matter — including Subject Access Requests, deletion requests, corrections, or complaints — please contact us:<br />
-      Email: <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a><br />
+      Email: <a href="mailto:Knoodlepot@knoodlepotstudio.com" style={linkStyle}>Knoodlepot@knoodlepotstudio.com</a><br />
       Subject: "Privacy Request — [type of request]"<br />
       We will acknowledge your request promptly and respond within the timeframe required by applicable law (typically 30 days for UK/EU requests; 45 days for California).</p>
 
@@ -244,7 +244,7 @@ function RefundContent() {
       In all other cases, refunds are subject to the statutory rights applicable in your jurisdiction as set out below.</p>
 
       <h3 style={h3s}>3. How to Request a Refund</h3>
-      <p>Contact us at <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a> with the subject line <strong>"Refund Request"</strong>. Please include: your account username or registered email, the transaction ID from your purchase receipt, the date of purchase, and a description of the issue. We aim to acknowledge requests within 2 business days and resolve them within 10 business days. Refunds are issued via the original payment method where possible.</p>
+      <p>Contact us at <a href="mailto:Knoodlepot@knoodlepotstudio.com" style={linkStyle}>Knoodlepot@knoodlepotstudio.com</a> with the subject line <strong>"Refund Request"</strong>. Please include: your account username or registered email, the transaction ID from your purchase receipt, the date of purchase, and a description of the issue. We aim to acknowledge requests within 2 business days and resolve them within 10 business days. Refunds are issued via the original payment method where possible.</p>
 
       <h3 style={h3s}>4. Chargebacks</h3>
       <p>If you initiate a chargeback through your bank or card provider without first contacting us, we reserve the right to suspend your account pending investigation. We will provide full evidence of the transaction to your payment provider and we honour legitimate chargeback outcomes. Frivolous or fraudulent chargebacks may result in permanent account termination.</p>
@@ -286,7 +286,7 @@ function RefundContent() {
       <p>Under the <strong>Consumer Guarantees Act 1993 (CGA)</strong>, services and digital products must be fit for purpose, of acceptable quality, and as described. If these guarantees are not met, you are entitled to a remedy proportionate to the failure. The <strong>Fair Trading Act 1986</strong> prohibits misleading and deceptive conduct. Contact the <strong>Commerce Commission New Zealand</strong> at comcom.govt.nz if disputes cannot be resolved with us directly.</p>
 
       <h4 style={h4s}>Brazil & Latin America</h4>
-      <p><strong>Brazil:</strong> The <strong>Consumer Defence Code (CDC, Law 8.078/1990)</strong> grants consumers a statutory <strong>7-day cooling-off period</strong> from the date of purchase or delivery for all purchases made outside a physical establishment (including online). This right applies regardless of whether the digital content has been accessed. To exercise this right, notify us within 7 calendar days at <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a> for a full refund. Complaints may also be submitted to <strong>PROCON</strong> (your state consumer protection service) or at Consumidor.gov.br.<br /><br />
+      <p><strong>Brazil:</strong> The <strong>Consumer Defence Code (CDC, Law 8.078/1990)</strong> grants consumers a statutory <strong>7-day cooling-off period</strong> from the date of purchase or delivery for all purchases made outside a physical establishment (including online). This right applies regardless of whether the digital content has been accessed. To exercise this right, notify us within 7 calendar days at <a href="mailto:Knoodlepot@knoodlepotstudio.com" style={linkStyle}>Knoodlepot@knoodlepotstudio.com</a> for a full refund. Complaints may also be submitted to <strong>PROCON</strong> (your state consumer protection service) or at Consumidor.gov.br.<br /><br />
       <strong>Argentina:</strong> <strong>Law 24.240</strong> (Consumer Defence Law) grants equivalent protections including a right of repentance within 10 days of purchase for distance contracts.<br /><br />
       <strong>Mexico:</strong> The <strong>Ley Federal de Protección al Consumidor</strong> governs consumer rights; <strong>PROFECO</strong> handles complaints.<br /><br />
       <strong>Colombia:</strong> <strong>Law 1480 of 2011</strong> (Consumer Statute) grants a 5-business-day right of withdrawal for distance contracts.<br /><br />
@@ -311,7 +311,7 @@ function RefundContent() {
 
       <h3 style={h3s}>Contact</h3>
       <p>For all refund requests and billing queries:<br />
-      Email: <a href="mailto:support.aethermoor@gmail.com" style={{ ...linkStyle, textDecoration: 'underline', textUnderlineOffset: 2 }}>support.aethermoor@gmail.com</a><br />
+      Email: <a href="mailto:Knoodlepot@knoodlepotstudio.com" style={{ ...linkStyle, textDecoration: 'underline', textUnderlineOffset: 2 }}>Knoodlepot@knoodlepotstudio.com</a><br />
       Subject line: <strong>Refund Request — [your username]</strong><br />
       Include: Transaction ID, purchase date, account email, and a description of the issue.</p>
 
@@ -409,7 +409,7 @@ function CookiesContent() {
 
       <h3 style={h3s}>7. Contact</h3>
       <p>For any questions about our use of cookies:<br />
-      Email: <a href="mailto:support.aethermoor@gmail.com" style={linkStyle}>support.aethermoor@gmail.com</a><br />
+      Email: <a href="mailto:Knoodlepot@knoodlepotstudio.com" style={linkStyle}>Knoodlepot@knoodlepotstudio.com</a><br />
       Subject: "Cookie Policy Query"</p>
 
       <p style={note}>This Cookie Policy is provided in good faith. For legal advice specific to your situation, consult a qualified legal professional.</p>

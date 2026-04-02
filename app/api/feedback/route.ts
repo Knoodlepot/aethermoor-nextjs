@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/external/email';
 import { getIP, isIpRateLimited } from '@/lib/ratelimit';
 
-const SUPPORT_EMAIL = 'support.aethermoor@gmail.com';
+const SUPPORT_EMAIL = 'Knoodlepot@knoodlepotstudio.com';
 
 export async function POST(req: NextRequest) {
   // 5 submissions per hour per IP

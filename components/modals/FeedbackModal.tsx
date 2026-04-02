@@ -149,7 +149,7 @@ export function FeedbackModal({ playerId, currentLocation, lastInput, onClose }:
 
             {status === 'error' && (
               <div style={{ color: '#e04040', fontSize: '0.85rem' }}>
-                Could not send — please try again or email support.aethermoor@gmail.com
+                Could not send — please try again or email Knoodlepot@knoodlepotstudio.com
               </div>
             )}
 
