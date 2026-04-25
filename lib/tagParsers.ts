@@ -863,6 +863,8 @@ export function processParsedTags(
       // If gate fails, tag is silently ignored — narrator will retry on a later action
     } else if (tags.mainQuestAct === 'complete' && !updatedSeed.mainQuestComplete) {
       updatedSeed = { ...updatedSeed, mainQuestComplete: true };
+    } else if (tags.mainQuestAct === 'failed' && !updatedSeed.mainQuestFailed) {
+      updatedSeed = { ...updatedSeed, mainQuestFailed: true };
     }
   }
 

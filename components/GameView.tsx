@@ -48,6 +48,7 @@ import { TokenShopScreen } from '@/components/screens/TokenShopScreen';
 import AchievementScreen from '@/components/screens/AchievementScreen';
 import CompanionScreen from '@/components/screens/CompanionScreen';
 import EndingScreen from '@/components/screens/EndingScreen';
+import BadEndingScreen from '@/components/screens/BadEndingScreen';
 import { SubclassScreen } from '@/components/screens/SubclassScreen';
 
 // Modals
@@ -1993,6 +1994,15 @@ function GameContent() {
           worldSeed={gameState.worldSeed}
           onClose={() => ui.closeModal('ending')}
           onNewGame={() => { ui.closeModal('ending'); ui.openModal('ngPlus'); }}
+          onLogout={() => auth.logout()}
+        />
+      )}
+
+      {ui.showBadEnding && player && (
+        <BadEndingScreen
+          player={player}
+          worldSeed={gameState.worldSeed}
+          onNewGame={() => { ui.closeModal('badEnding'); ui.openModal('ngPlus'); }}
           onLogout={() => auth.logout()}
         />
       )}

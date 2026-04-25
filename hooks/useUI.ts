@@ -26,6 +26,7 @@ export interface UIContext {
   showFactionOffer: boolean;
   showNGPlusScreen: boolean;
   showEnding: boolean;
+  showBadEnding: boolean;
   showDungeonWarning: boolean;
   showTokenShop: boolean;
   showAchievements: boolean;
@@ -135,6 +136,7 @@ export function useUI(): UIContext {
   const [showFactionOffer, setShowFactionOffer] = useState(false);
   const [showNGPlusScreen, setShowNGPlusScreen] = useState(false);
   const [showEnding, setShowEnding] = useState(false);
+  const [showBadEnding, setShowBadEnding] = useState(false);
   const [showDungeonWarning, setShowDungeonWarning] = useState(false);
   const [showTokenShop, setShowTokenShop] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
@@ -309,6 +311,7 @@ export function useUI(): UIContext {
       factionOffer: [showFactionOffer, setShowFactionOffer],
       ngPlus: [showNGPlusScreen, setShowNGPlusScreen],
       ending: [showEnding, setShowEnding],
+      badEnding: [showBadEnding, setShowBadEnding],
       dungeonWarning: [showDungeonWarning, setShowDungeonWarning],
       tokenShop: [showTokenShop, setShowTokenShop],
       achievements: [showAchievements, setShowAchievements],
@@ -335,6 +338,7 @@ export function useUI(): UIContext {
     showFactionOffer,
     showNGPlusScreen,
     showEnding,
+    showBadEnding,
     showDungeonWarning,
     mapOpen,
     showTokenShop,
@@ -393,6 +397,7 @@ export function useUI(): UIContext {
     showFactionOffer,
     showNGPlusScreen,
     showEnding,
+    showBadEnding,
     showDungeonWarning,
     showTokenShop,
     showAchievements,

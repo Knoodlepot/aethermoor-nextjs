@@ -195,6 +195,7 @@ export interface WorldSeed {
   // Main quest fields
   currentAct?: number;
   mainQuestComplete?: boolean;
+  mainQuestFailed?: boolean;
   questTitle?: string;
   templateIcon?: string;
   act1Complete?: boolean;

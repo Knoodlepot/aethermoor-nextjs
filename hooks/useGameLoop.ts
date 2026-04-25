@@ -862,21 +862,47 @@ export function useGameLoop(
           ui.openModal('ending');
         }
 
+        // 4b-ii. Detect bad ending (villain wins) — open bad ending screen once
+        if ((updatedSeed as any).mainQuestFailed && !(gs.worldSeed as any)?.mainQuestFailed) {
+          ui.openModal('badEnding');
+        }
+
+        // 4b-iii. Catch Claude refusals leaking into narrative — replace with a terse in-world deflection
+        const REFUSAL_MARKERS = [
+          'the rules i follow prevent',
+          "i'm not able to write",
+          'i cannot write',
+          "i can't generate",
+          "i'm unable to",
+          "i won't narrate",
+          "i won't write",
+          "i won't reduce",
+          "i can't narrate",
+          'safety rule',
+          'that\'s a hard safety rule',
+        ];
+        const isRefusal = REFUSAL_MARKERS.some((m) =>
+          cleanNarrative.toLowerCase().includes(m)
+        );
+        const displayNarrative = isRefusal
+          ? 'Nothing comes of it. The world moves on around you.'
+          : cleanNarrative;
+
         // 4c. Update all game state
         gs.setPlayer(updatedPlayer);
         gs.setWorldSeed(updatedSeed);
-        gs.setNarrative(cleanNarrative);
-        gs.addMessage('assistant', cleanNarrative);
+        gs.setNarrative(displayNarrative);
+        gs.addMessage('assistant', displayNarrative);
         ui.setPlayerStatusEffects(updatedPlayer.statusEffects || []);
 
         // 5. Add to game log
         gs.addLogEntry('action', command);
-        gs.addLogEntry('response', cleanNarrative.substring(0, 100));
+        gs.addLogEntry('response', displayNarrative.substring(0, 100));
 
         // 6. Save game state — include assistant response in saved history
         const fullMessages = [
           ...userMessages,
-          { role: 'assistant', content: cleanNarrative },
+          { role: 'assistant', content: displayNarrative },
         ];
         await storage.saveGame(updatedPlayer, updatedSeed, fullMessages, cleanNarrative, gs.log);
 
