@@ -117,7 +117,7 @@ function PrivacyContent() {
 
       <h3 style={h3s}>1. Who We Are</h3>
       <p>Aethermoor is operated by <strong>Knoodlepot Studio</strong>, an independent developer based in the United Kingdom. For the purposes of UK data protection law, we are the <strong>data controller</strong>.<br /><br />
-      <strong>Registered address:</strong> 16, Chester Gardens, Royal Sutton Coldfield, B73 5HF<br />
+      <strong>Registered address:</strong> United Kingdom (full address available on request)<br />
       <strong>Contact email:</strong> <a href="mailto:Knoodlepot@knoodlepotstudio.com" style={linkStyle}>Knoodlepot@knoodlepotstudio.com</a><br /><br />
       For all privacy matters — including Subject Access Requests, deletion requests, and complaints — contact us at the email address above.</p>
 
